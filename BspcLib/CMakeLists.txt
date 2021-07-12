@@ -6,17 +6,14 @@ set(
 	SOURCES
 		${BSPC_DIR}/l_bsp_ent.c
 		${BSPC_DIR}/l_bsp_ent.h
-		${BSPC_DIR}/l_bsp_q3.h
 		${BSPC_DIR}/l_bsp_q1.c
 		${BSPC_DIR}/l_bsp_q1.h
 		${BSPC_DIR}/l_bsp_q3.c
 		${BSPC_DIR}/l_bsp_q3.h
 		${BSPC_DIR}/l_cmd.c
-		${BSPC_DIR}/l_cmd.h
 		${BSPC_DIR}/l_log.c
-		${BSPC_DIR}/l_log.h
+		${BSPC_DIR}/l_math.c
 		${BSPC_DIR}/l_mem.c
-		${BSPC_DIR}/l_mem.h
 		${BOTLIB_DIR}/l_script.c
 		${BOTLIB_DIR}/l_script.h
 		BspcLibIncludes.hpp

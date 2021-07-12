@@ -19,6 +19,8 @@ extern "C"
 #include "l_bsp_q1.h"
 #include "l_bsp_q3.h"
 
+void	Q3_WriteBSPFile( char *filename );
+
 #undef true
 #undef false
 
