@@ -26,6 +26,8 @@ extern "C"
 #include "l_log.h"
 #include "l_bsp_q1.h"
 #include "l_bsp_q3.h"
+#include "q3files.h"
+#include "qfiles.h"
 
 void	Q3_WriteBSPFile( char *filename );
 
