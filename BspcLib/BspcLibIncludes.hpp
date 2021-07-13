@@ -1,4 +1,11 @@
 #pragma once
+#include <stdio.h>
+#include <string.h>
+#include <stdlib.h>
+#include <errno.h>
+#include <ctype.h>
+#include <time.h>
+#include <stdarg.h>
 
 #ifdef __GNUC__
 #pragma GCC diagnostic push
@@ -11,6 +18,7 @@ extern "C"
 
 #define false Q_false
 #define true Q_true
+#define strupr Q_strupr
 
 #include "l_cmd.h"
 #include "l_math.h"
@@ -23,6 +31,7 @@ void	Q3_WriteBSPFile( char *filename );
 
 #undef true
 #undef false
+#undef strupr
 
 } // extern "C"
 
