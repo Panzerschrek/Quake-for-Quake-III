@@ -155,6 +155,8 @@ int ConvertNode(const q1_dnode_t& in_node)
 		out_node.maxs[i]= in_node.maxs[i];
 	}
 
+	out_node.planeNum = in_node.planenum;
+
 	for(size_t child_index = 0; child_index < 2; ++child_index)
 	{
 		const short child = in_node.children[child_index];
@@ -163,6 +165,8 @@ int ConvertNode(const q1_dnode_t& in_node)
 		else
 			out_node.children[child_index]= ConvertNode(q1_dnodes[child]);
 	}
+
+	// TODO - fill other fields.
 
 	const int out_node_index = q3_numnodes;
 	q3_dnodes[out_node_index]= out_node;
@@ -179,8 +183,8 @@ void ConvertModel(const q1_dmodel_t& in_model)
 
 	//if(q3_nummodels == 0)
 	{
-		out_model.firstSurface = 0;
-		out_model.numSurfaces = q3_numDrawSurfaces;
+		out_model.firstSurface = in_model.firstface;
+		out_model.numSurfaces = in_model.numfaces;
 	}
 
 	ConvertNode(q1_dnodes[in_model.headnode[0]]);
@@ -219,7 +223,7 @@ void ConvertMap()
 		}
 
 		{
-		"origin" "96 0 -8"
+		"origin" "0 0 0"
 		"classname" "info_player_deathmatch"
 		}
 	)";
