@@ -11,6 +11,8 @@ void AllocateQ3Map()
 	q3_dentdata = new char[Q3_MAX_MAP_ENTSTRING];
 	q3_numleafs = 0;
 	q3_dleafs = new q3_dleaf_t[Q3_MAX_MAP_LEAFS];
+	q3_numplanes = 0;
+	q3_dplanes = new q3_dplane_t[Q3_MAX_MAP_PLANES];
 	q3_numnodes = 0;
 	q3_dnodes = new q3_dnode_t[Q3_MAX_MAP_NODES];
 	q3_numleafsurfaces = 0;
@@ -35,6 +37,23 @@ void AllocateQ3Map()
 	q3_drawSurfaces = new q3_dsurface_t[Q3_MAX_MAP_DRAW_SURFS];
 	q3_numFogs = 0;
 	q3_dfogs = new q3_dfog_t[Q3_MAX_MAP_FOGS];
+}
+
+void ConvertPlane(const q1_dplane_t& in_plane)
+{
+	q3_dplane_t out_plane{};
+	std::memcpy(out_plane.normal, in_plane.normal, sizeof(float) * 3);
+	out_plane.dist= in_plane.dist;
+
+	q3_dplanes[q3_numplanes]= out_plane;
+	++q3_numplanes;
+}
+
+void ConvertPlanes()
+{
+	// Make 1 to 1 planes conversion.
+	for(int i= 0; i < q1_numplanes; ++i)
+		ConvertPlane(q1_dplanes[i]);
 }
 
 void ConvertSurface(const q1_dface_t& in_surface)
@@ -160,10 +179,35 @@ void ConvertModels()
 	}
 }
 
+void PopulateShaders()
+{
+	q3_dshader_t out_shader{};
+	std::strcpy(out_shader.shader, "base_wall/metaltech10final");
+	q3_dshaders[q3_numShaders]= out_shader;
+	++q3_numShaders;
+}
+
 void ConvertMap()
 {
+	ConvertPlanes();
 	ConvertSurfaces();
 	ConvertModels();
+	PopulateShaders();
+
+	const char entities[]=
+	R"(
+		{
+		"classname" "worldspawn"
+		}
+
+		{
+		"origin" "96 0 -8"
+		"classname" "info_player_deathmatch"
+		}
+	)";
+
+	std::strcpy(q3_dentdata, entities);
+	q3_entdatasize = sizeof(entities);
 }
 
 int main()
