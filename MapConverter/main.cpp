@@ -117,7 +117,7 @@ void ConvertSurfaces()
 		ConvertSurface(q1_dfaces[i]);
 }
 
-int ConvertLeaf(const q1_dleaf_t& in_leaf)
+void ConvertLeaf(const q1_dleaf_t& in_leaf)
 {
 	q3_dleaf_t out_leaf{};
 	for(int i= 0; i < 3; ++i)
@@ -139,14 +139,17 @@ int ConvertLeaf(const q1_dleaf_t& in_leaf)
 
 	// TODO - fill other fields.
 
-	const int out_leaf_index = q3_numleafs;
-	q3_dleafs[out_leaf_index]= out_leaf;
+	q3_dleafs[q3_numleafs]= out_leaf;
 	++q3_numleafs;
-	return out_leaf_index;
 }
 
-// Returns out node/leaf index.
-int ConvertNode(const q1_dnode_t& in_node)
+void ConvertLeafs()
+{
+	for(int i= 0; i < q1_numleafs; ++i)
+		ConvertLeaf(q1_dleafs[i]);
+}
+
+void ConvertNode(const q1_dnode_t& in_node)
 {
 	q3_dnode_t out_node{};
 	for(int i= 0; i < 3; ++i)
@@ -155,23 +158,24 @@ int ConvertNode(const q1_dnode_t& in_node)
 		out_node.maxs[i]= in_node.maxs[i];
 	}
 
-	out_node.planeNum = in_node.planenum;
+	out_node.planeNum = in_node.planenum; // Planes converted 1 to 1
 
 	for(size_t child_index = 0; child_index < 2; ++child_index)
 	{
 		const short child = in_node.children[child_index];
-		if(child < 0)
-			out_node.children[child_index]= -1 - ConvertLeaf(q1_dleafs[-1 - child]);
-		else
-			out_node.children[child_index]= ConvertNode(q1_dnodes[child]);
+		out_node.children[child_index]= child; // Nodes and leafs converted 1 to 1
 	}
 
 	// TODO - fill other fields.
 
-	const int out_node_index = q3_numnodes;
-	q3_dnodes[out_node_index]= out_node;
+	q3_dnodes[q3_numnodes]= out_node;
 	++q3_numnodes;
-	return out_node_index;
+}
+
+void ConvertNodes()
+{
+	for(int i= 0; i < q1_numnodes; ++i)
+		ConvertNode(q1_dnodes[i]);
 }
 
 void ConvertModel(const q1_dmodel_t& in_model)
@@ -179,15 +183,11 @@ void ConvertModel(const q1_dmodel_t& in_model)
 	q3_dmodel_t out_model{};
 	std::memcpy(out_model.mins, in_model.mins, sizeof(float) * 3);
 	std::memcpy(out_model.maxs, in_model.maxs, sizeof(float) * 3);
+
+	out_model.firstSurface = in_model.firstface;
+	out_model.numSurfaces = in_model.numfaces;
+
 	// TODO - fill other fields.
-
-	//if(q3_nummodels == 0)
-	{
-		out_model.firstSurface = in_model.firstface;
-		out_model.numSurfaces = in_model.numfaces;
-	}
-
-	ConvertNode(q1_dnodes[in_model.headnode[0]]);
 
 	q3_dmodels[q3_nummodels]= out_model;
 	++q3_nummodels;
@@ -213,6 +213,8 @@ void ConvertMap()
 {
 	ConvertPlanes();
 	ConvertSurfaces();
+	ConvertLeafs();
+	ConvertNodes();
 	ConvertModels();
 	PopulateShaders();
 
