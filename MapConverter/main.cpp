@@ -78,7 +78,12 @@ void ConvertSurface(const q1_dface_t& in_surface)
 		// TODO - fill real normal.
 		out_vertex.normal[0]= 0.0f;
 		out_vertex.normal[1]= 0.0f;
-		out_vertex.normal[2]= 2.0f;
+		out_vertex.normal[2]= 1.0f;
+
+		out_vertex.color[0]= 255;
+		out_vertex.color[1]= 255;
+		out_vertex.color[2]= 255;
+		out_vertex.color[3]= 255;
 
 		// TODO - fill other vertex fields.
 
@@ -92,11 +97,12 @@ void ConvertSurface(const q1_dface_t& in_surface)
 	const int triangle_count= out_surface.numVerts - 2;
 	for(int i= 0; i < triangle_count; ++i)
 	{
-		q3_drawIndexes[ out_surface.firstIndex + i* 3     ]= out_surface.firstVert;
-		q3_drawIndexes[ out_surface.firstIndex + i* 3 + 1 ]= out_surface.firstVert + i + 1;
-		q3_drawIndexes[ out_surface.firstIndex + i* 3 + 2 ]= out_surface.firstVert + i + 2;
+		q3_drawIndexes[ out_surface.firstIndex + i * 3 + 0 ]= 0;
+		q3_drawIndexes[ out_surface.firstIndex + i * 3 + 1 ]= i + 1;
+		q3_drawIndexes[ out_surface.firstIndex + i * 3 + 2 ]= i + 2;
 	}
 	q3_numDrawIndexes+= triangle_count * 3;
+	out_surface.numIndexes= triangle_count * 3;
 
 	// TODO - fill other fields.
 
@@ -114,8 +120,11 @@ void ConvertSurfaces()
 int ConvertLeaf(const q1_dleaf_t& in_leaf)
 {
 	q3_dleaf_t out_leaf{};
-	std::memcpy(out_leaf.mins, in_leaf.mins, sizeof(float) * 3);
-	std::memcpy(out_leaf.maxs, in_leaf.maxs, sizeof(float) * 3);
+	for(int i= 0; i < 3; ++i)
+	{
+		out_leaf.mins[i]= in_leaf.mins[i];
+		out_leaf.maxs[i]= in_leaf.maxs[i];
+	}
 
 	// Extract marksurfaces (indexes of surfaces related to this leaf).
 	// It is fine to copy marksurfaces directly since we convert surfaces 1 to 1.
@@ -124,7 +133,7 @@ int ConvertLeaf(const q1_dleaf_t& in_leaf)
 	for(int mark_surface_index= 0; mark_surface_index < in_leaf.nummarksurfaces; ++mark_surface_index)
 	{
 		const auto mark_surface = q1_dmarksurfaces[in_leaf.firstmarksurface + mark_surface_index];
-		q3_dleafsurfaces[q3_numleafsurfaces + mark_surface_index] = mark_surface;
+		q3_dleafsurfaces[out_leaf.firstLeafSurface + mark_surface_index] = mark_surface;
 	}
 	q3_numleafsurfaces+= in_leaf.nummarksurfaces;
 
@@ -140,8 +149,11 @@ int ConvertLeaf(const q1_dleaf_t& in_leaf)
 int ConvertNode(const q1_dnode_t& in_node)
 {
 	q3_dnode_t out_node{};
-	std::memcpy(out_node.mins, in_node.mins, sizeof(float) * 3);
-	std::memcpy(out_node.maxs, in_node.maxs, sizeof(float) * 3);
+	for(int i= 0; i < 3; ++i)
+	{
+		out_node.mins[i]= in_node.mins[i];
+		out_node.maxs[i]= in_node.maxs[i];
+	}
 
 	for(size_t child_index = 0; child_index < 2; ++child_index)
 	{
@@ -164,6 +176,12 @@ void ConvertModel(const q1_dmodel_t& in_model)
 	std::memcpy(out_model.mins, in_model.mins, sizeof(float) * 3);
 	std::memcpy(out_model.maxs, in_model.maxs, sizeof(float) * 3);
 	// TODO - fill other fields.
+
+	//if(q3_nummodels == 0)
+	{
+		out_model.firstSurface = 0;
+		out_model.numSurfaces = q3_numDrawSurfaces;
+	}
 
 	ConvertNode(q1_dnodes[in_model.headnode[0]]);
 
