@@ -37,11 +37,78 @@ void AllocateQ3Map()
 	q3_dfogs = new q3_dfog_t[Q3_MAX_MAP_FOGS];
 }
 
+void ConvertSurface(const q1_dface_t& in_surface)
+{
+	q3_dsurface_t out_surface{};
+	out_surface.shaderNum = 0;
+
+	out_surface.surfaceType = MST_PLANAR;
+
+	// Extract vertices from edges and build polygon.
+	out_surface.firstVert= q3_numDrawVerts;
+	for(int edge_index= 0; edge_index < in_surface.numedges; ++edge_index)
+	{
+		const int e= q1_dsurfedges[in_surface.firstedge + edge_index];
+		const q1_dvertex_t& in_vertex=
+			e >= 0
+				? q1_dvertexes[ q1_dedges[+e].v[0] ]
+				: q1_dvertexes[ q1_dedges[-e].v[1] ];
+
+		q3_drawVert_t out_vertex{};
+		std::memcpy(out_vertex.xyz, in_vertex.point, sizeof(float) * 3);
+		// TODO - fill real normal.
+		out_vertex.normal[0]= 0.0f;
+		out_vertex.normal[1]= 0.0f;
+		out_vertex.normal[2]= 2.0f;
+
+		// TODO - fill other vertex fields.
+
+		q3_drawVerts[q3_numDrawVerts]= out_vertex;
+		++q3_numDrawVerts;
+	}
+	out_surface.numVerts= q3_numDrawVerts - out_surface.firstVert;
+
+	// Generate simple indexes for polygon triangles.
+	out_surface.firstIndex= q3_numDrawIndexes;
+	const int triangle_count= out_surface.numVerts - 2;
+	for(int i= 0; i < triangle_count; ++i)
+	{
+		q3_drawIndexes[ out_surface.firstIndex + i* 3     ]= out_surface.firstVert;
+		q3_drawIndexes[ out_surface.firstIndex + i* 3 + 1 ]= out_surface.firstVert + i + 1;
+		q3_drawIndexes[ out_surface.firstIndex + i* 3 + 2 ]= out_surface.firstVert + i + 2;
+	}
+	q3_numDrawIndexes+= triangle_count * 3;
+
+	// TODO - fill other fields.
+
+	q3_drawSurfaces[q3_numDrawSurfaces]= out_surface;
+	++q3_numDrawSurfaces;
+}
+
+void ConvertSurfaces()
+{
+	// Make 1 to 1 surfaces conversion.
+	for(int i= 0; i < q1_numfaces; ++i)
+		ConvertSurface(q1_dfaces[i]);
+}
+
 int ConvertLeaf(const q1_dleaf_t& in_leaf)
 {
 	q3_dleaf_t out_leaf{};
 	std::memcpy(out_leaf.mins, in_leaf.mins, sizeof(float) * 3);
 	std::memcpy(out_leaf.maxs, in_leaf.maxs, sizeof(float) * 3);
+
+	// Extract marksurfaces (indexes of surfaces related to this leaf).
+	// It is fine to copy marksurfaces directly since we convert surfaces 1 to 1.
+	out_leaf.firstLeafSurface= q3_numleafsurfaces;
+	out_leaf.numLeafSurfaces= in_leaf.nummarksurfaces;
+	for(int mark_surface_index= 0; mark_surface_index < in_leaf.nummarksurfaces; ++mark_surface_index)
+	{
+		const auto mark_surface = q1_dmarksurfaces[in_leaf.firstmarksurface + mark_surface_index];
+		q3_dleafsurfaces[q3_numleafsurfaces + mark_surface_index] = mark_surface;
+	}
+	q3_numleafsurfaces+= in_leaf.nummarksurfaces;
+
 	// TODO - fill other fields.
 
 	const int out_leaf_index = q3_numleafs;
@@ -85,12 +152,18 @@ void ConvertModel(const q1_dmodel_t& in_model)
 	++q3_nummodels;
 }
 
-void ConvertMap()
+void ConvertModels()
 {
 	for(int model_index = 0; model_index < q1_nummodels; ++model_index)
 	{
 		ConvertModel(q1_dmodels[model_index]);
 	}
+}
+
+void ConvertMap()
+{
+	ConvertSurfaces();
+	ConvertModels();
 }
 
 int main()
