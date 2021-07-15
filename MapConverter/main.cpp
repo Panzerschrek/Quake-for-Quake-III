@@ -221,7 +221,7 @@ void ConvertModels()
 void PopulateShaders()
 {
 	q3_dshader_t out_shader{};
-	std::strcpy(out_shader.shader, "base_wall/metaltech10final");
+	std::strcpy(out_shader.shader, "textures/base_wall/steed1gf");
 	q3_dshaders[q3_numShaders]= out_shader;
 	++q3_numShaders;
 }
