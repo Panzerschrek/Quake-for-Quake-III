@@ -59,10 +59,11 @@ void ConvertPlanes()
 		ConvertPlane(q1_dplanes[i]);
 }
 
+// You must export textures before this call!
 void ConvertSurface(const q1_dface_t& in_surface)
 {
 	q3_dsurface_t out_surface{};
-	out_surface.shaderNum = 0;
+
 
 	out_surface.surfaceType = MST_PLANAR;
 
@@ -73,8 +74,16 @@ void ConvertSurface(const q1_dface_t& in_surface)
 		normal[i]= q1_dplanes[in_surface.planenum].normal[i] * normal_sign;
 
 	const q1_texinfo_t& tex= q1_texinfo[in_surface.texinfo];
-	// TODO - read scale to convert Q1 pixel coords to normalized (OpenGL) Q3 coords.
-	const float tex_scale[2]{ 0.0625f, 0.0625f };
+
+	const auto miptexlump= reinterpret_cast<const q1_dmiptexlump_t*>(q1_dtexdata);
+	const auto miptex= reinterpret_cast<const q1_miptex_t*>(q1_dtexdata + miptexlump->dataofs[tex.miptex]);
+
+	if(tex.miptex >= 0 && tex.miptex < q3_numShaders)
+		out_surface.shaderNum = tex.miptex;
+	else
+		out_surface.shaderNum= 0;
+
+	const float tex_scale[2]{ 1.0f / float(miptex->width), 1.0f / float(miptex->height) };
 
 	// Extract vertices from edges and build polygon.
 	out_surface.firstVert= q3_numDrawVerts;
@@ -223,10 +232,18 @@ void ConvertModels()
 
 void PopulateShaders()
 {
-	q3_dshader_t out_shader{};
-	std::strcpy(out_shader.shader, "textures/base_wall/steed1gf");
-	q3_dshaders[q3_numShaders]= out_shader;
-	++q3_numShaders;
+	// Export textures 1 to 1.
+	const auto miptexlump= reinterpret_cast<const q1_dmiptexlump_t*>(q1_dtexdata);
+
+	for(int i= 0; i < miptexlump->nummiptex; ++i)
+	{
+		const auto miptex= reinterpret_cast<const q1_miptex_t*>(q1_dtexdata + miptexlump->dataofs[i]);
+
+		q3_dshader_t out_shader{};
+		std::snprintf(out_shader.shader, sizeof(out_shader.shader), "textures/q3e1m1/%s.tga", miptex->name);
+		q3_dshaders[q3_numShaders]= out_shader;
+		++q3_numShaders;
+	}
 }
 
 void ConvertEntities()
@@ -275,21 +292,22 @@ void ExtractTextures()
 			tmp_tex_data[ c * 4 + 3 ]= 255;
 		}
 
-		const std::string out_file_name = std::string("textures_extracted/") + miptex->name;
+		const std::string out_file_name = std::string("textures_extracted/") + miptex->name + ".tga";
 		WriteTGA(out_file_name.c_str(), tmp_tex_data.data(), int(miptex->width), int(miptex->height));
 	}
 }
 
 void ConvertMap()
 {
+	ExtractTextures();
+	PopulateShaders();
+
 	ConvertPlanes();
 	ConvertSurfaces();
 	ConvertLeafs();
 	ConvertNodes();
 	ConvertModels();
-	PopulateShaders();
 	ConvertEntities();
-	ExtractTextures();
 }
 
 int main()
