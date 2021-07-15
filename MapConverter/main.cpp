@@ -226,6 +226,12 @@ void PopulateShaders()
 	++q3_numShaders;
 }
 
+void ConvertEntities()
+{
+	std::memcpy(q3_dentdata, q1_dentdata, size_t(q1_entdatasize));
+	q3_entdatasize= q1_entdatasize;
+}
+
 void ConvertMap()
 {
 	ConvertPlanes();
@@ -234,21 +240,7 @@ void ConvertMap()
 	ConvertNodes();
 	ConvertModels();
 	PopulateShaders();
-
-	const char entities[]=
-	R"(
-		{
-		"classname" "worldspawn"
-		}
-
-		{
-		"origin" "0 0 0"
-		"classname" "info_player_deathmatch"
-		}
-	)";
-
-	std::strcpy(q3_dentdata, entities);
-	q3_entdatasize = sizeof(entities);
+	ConvertEntities();
 }
 
 int main()
