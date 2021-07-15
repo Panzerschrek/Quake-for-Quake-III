@@ -63,6 +63,16 @@ void ConvertSurface(const q1_dface_t& in_surface)
 
 	out_surface.surfaceType = MST_PLANAR;
 
+	const float normal_sign= in_surface.side == 0 ? 1.0f : -1.0f;
+	float normal[3]{};
+
+	for(int i= 0; i < 3; ++i)
+		normal[i]= q1_dplanes[in_surface.planenum].normal[i] * normal_sign;
+
+	const q1_texinfo_t& tex= q1_texinfo[in_surface.texinfo];
+	// TODO - read scale to convert Q1 pixel coords to normalized (OpenGL) Q3 coords.
+	const float tex_scale[2]{ 0.0625f, 0.0625f };
+
 	// Extract vertices from edges and build polygon.
 	out_surface.firstVert= q3_numDrawVerts;
 	for(int edge_index= 0; edge_index < in_surface.numedges; ++edge_index)
@@ -75,14 +85,21 @@ void ConvertSurface(const q1_dface_t& in_surface)
 
 		q3_drawVert_t out_vertex{};
 		std::memcpy(out_vertex.xyz, in_vertex.point, sizeof(float) * 3);
-		// TODO - fill real normal.
-		out_vertex.normal[0]= 0.0f;
-		out_vertex.normal[1]= 0.0f;
-		out_vertex.normal[2]= 1.0f;
+		std::memcpy(out_vertex.normal, normal, sizeof(float) * 3);
 
-		out_vertex.color[0]= 255;
-		out_vertex.color[1]= 255;
-		out_vertex.color[2]= 255;
+		for(int i= 0; i < 2; ++i)
+		{
+			out_vertex.st[i]=
+				tex.vecs[i][0] * in_vertex.point[0] +
+				tex.vecs[i][1] * in_vertex.point[1] +
+				tex.vecs[i][2] * in_vertex.point[2] +
+				tex.vecs[i][3];
+			out_vertex.st[i]*= tex_scale[i];
+		}
+
+		out_vertex.color[0]= 192;
+		out_vertex.color[1]= 192;
+		out_vertex.color[2]= 192;
 		out_vertex.color[3]= 255;
 
 		// TODO - fill other vertex fields.
