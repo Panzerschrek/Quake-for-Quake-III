@@ -279,17 +279,20 @@ void ExtractTextures()
 
 		const auto miptex= reinterpret_cast<const q1_miptex_t*>(q1_dtexdata + miptexlump->dataofs[i]);
 
-		const unsigned int img_area= miptex->width * miptex->height;
-		tmp_tex_data.resize(img_area * 4);
+		tmp_tex_data.resize(miptex->width * miptex->height * 4);
 
 		const byte* const src_tex_data= reinterpret_cast<const byte*>(miptex) + miptex->offsets[0];
-		for(unsigned int c= 0; c < img_area; ++c)
+		// Flip image to convert to OpenGL coordinate system (used in Q3).
+		for(unsigned int y= 0; y < miptex->height; ++y)
+		for(unsigned int x= 0; x < miptex->width ; ++x)
 		{
-			const byte color_index= src_tex_data[c];
-			tmp_tex_data[ c * 4     ]= palette[ color_index * 3    ];
-			tmp_tex_data[ c * 4 + 1 ]= palette[ color_index * 3 + 1 ];
-			tmp_tex_data[ c * 4 + 2 ]= palette[ color_index * 3 + 2 ];
-			tmp_tex_data[ c * 4 + 3 ]= 255;
+			const unsigned int dst= x + y * miptex->width;
+			const unsigned int src= x + (miptex->height - 1 - y) * miptex->width;
+			const byte color_index= src_tex_data[src];
+			tmp_tex_data[ dst * 4     ]= palette[ color_index * 3    ];
+			tmp_tex_data[ dst * 4 + 1 ]= palette[ color_index * 3 + 1 ];
+			tmp_tex_data[ dst * 4 + 2 ]= palette[ color_index * 3 + 2 ];
+			tmp_tex_data[ dst * 4 + 3 ]= 255;
 		}
 
 		const std::string out_file_name = std::string("textures_extracted/") + miptex->name + ".tga";
