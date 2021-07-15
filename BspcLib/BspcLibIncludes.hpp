@@ -28,6 +28,7 @@ extern "C"
 #include "l_bsp_q3.h"
 #include "q3files.h"
 #include "qfiles.h"
+#include "imagelib.h"
 
 void	Q3_WriteBSPFile( char *filename );
 

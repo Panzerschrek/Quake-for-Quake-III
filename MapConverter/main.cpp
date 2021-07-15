@@ -1,5 +1,8 @@
 #include "BspcLibIncludes.hpp"
-#include  <cstring>
+#include <array>
+#include <cstring>
+#include <string>
+#include <vector>
 
 void AllocateQ3Map()
 {
@@ -232,6 +235,51 @@ void ConvertEntities()
 	q3_entdatasize= q1_entdatasize;
 }
 
+using Palette= std::array<byte, 256*3>;
+
+Palette LoadPalette()
+{
+	void* buffer= nullptr;
+	LoadFile(const_cast<char*>("palette.lmp"), &buffer, 0, sizeof(Palette));
+	Palette res;
+	std::memcpy(&res, buffer, sizeof(Palette));
+	FreeMemory(buffer);
+	return res;
+}
+
+void ExtractTextures()
+{
+	const Palette palette= LoadPalette();
+
+	std::vector<byte> tmp_tex_data;
+
+	const auto miptexlump= reinterpret_cast<const q1_dmiptexlump_t*>(q1_dtexdata);
+
+	for(int i= 0; i < miptexlump->nummiptex; ++i)
+	{
+		if(miptexlump->dataofs[i] < 0)
+			continue;
+
+		const auto miptex= reinterpret_cast<const q1_miptex_t*>(q1_dtexdata + miptexlump->dataofs[i]);
+
+		const unsigned int img_area= miptex->width * miptex->height;
+		tmp_tex_data.resize(img_area * 4);
+
+		const byte* const src_tex_data= reinterpret_cast<const byte*>(miptex) + miptex->offsets[0];
+		for(unsigned int c= 0; c < img_area; ++c)
+		{
+			const byte color_index= src_tex_data[c];
+			tmp_tex_data[ c * 4     ]= palette[ color_index * 3    ];
+			tmp_tex_data[ c * 4 + 1 ]= palette[ color_index * 3 + 1 ];
+			tmp_tex_data[ c * 4 + 2 ]= palette[ color_index * 3 + 2 ];
+			tmp_tex_data[ c * 4 + 3 ]= 255;
+		}
+
+		const std::string out_file_name = std::string("textures_extracted/") + miptex->name;
+		WriteTGA(out_file_name.c_str(), tmp_tex_data.data(), int(miptex->width), int(miptex->height));
+	}
+}
+
 void ConvertMap()
 {
 	ConvertPlanes();
@@ -241,6 +289,7 @@ void ConvertMap()
 	ConvertModels();
 	PopulateShaders();
 	ConvertEntities();
+	ExtractTextures();
 }
 
 int main()

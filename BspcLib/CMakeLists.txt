@@ -1,6 +1,7 @@
 set(Q3_CODE_DIR ${CMAKE_CURRENT_SOURCE_DIR}/../Quake-III-Arena/code)
 set(BSPC_DIR ${Q3_CODE_DIR}/bspc)
 set(BOTLIB_DIR ${Q3_CODE_DIR}/botlib)
+set(COMMON_DIR ${CMAKE_CURRENT_SOURCE_DIR}/../Quake-III-Arena/common)
 
 set(
 	SOURCES
@@ -16,9 +17,10 @@ set(
 		${BSPC_DIR}/l_mem.c
 		${BOTLIB_DIR}/l_script.c
 		${BOTLIB_DIR}/l_script.h
+		${COMMON_DIR}/imagelib.c
 		BspcLibIncludes.hpp
 		CommonFuncs.c
 	)
 add_library(BspcLib ${SOURCES})
-target_include_directories(BspcLib PUBLIC ${BSPC_DIR} ${BOTLIB_DIR} ${CMAKE_CURRENT_SOURCE_DIR})
+target_include_directories(BspcLib PUBLIC ${BSPC_DIR} ${BOTLIB_DIR} ${COMMON_DIR} ${CMAKE_CURRENT_SOURCE_DIR})
 target_compile_definitions(BspcLib PRIVATE QDECL= BSPC=)
