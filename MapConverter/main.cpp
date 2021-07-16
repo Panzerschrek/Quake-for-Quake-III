@@ -1,5 +1,7 @@
 #include "BspcLibIncludes.hpp"
+#include <algorithm>
 #include <array>
+#include <cassert>
 #include <cstring>
 #include <string>
 #include <vector>
@@ -64,8 +66,9 @@ void ConvertSurface(const q1_dface_t& in_surface)
 {
 	q3_dsurface_t out_surface{};
 
-
 	out_surface.surfaceType = MST_PLANAR;
+
+	// Set lightmap params later.
 
 	const float normal_sign= in_surface.side == 0 ? 1.0f : -1.0f;
 	float normal[3]{};
@@ -144,6 +147,145 @@ void ConvertSurfaces()
 	// Make 1 to 1 surfaces conversion.
 	for(int i= 0; i < q1_numfaces; ++i)
 		ConvertSurface(q1_dfaces[i]);
+}
+
+struct SurfaceLightmapInfo
+{
+	int surface_index;
+	int lightmap_size[2];
+	int lightmap_mins[2];
+};
+
+// Sort lightmaps by height, than by width.
+bool SurfaceLightmapInfoOdreding(const SurfaceLightmapInfo& l, const SurfaceLightmapInfo& r)
+{
+	if(l.lightmap_size[1] != r.lightmap_size[1])
+		return l.lightmap_size[1] > r.lightmap_size[1];
+	return l.lightmap_size[0] > r.lightmap_size[0];
+}
+
+// Surfaces should be converted before this call.
+void ConvertLightmaps()
+{
+	std::vector<SurfaceLightmapInfo> surfaces_lightmap_info;
+	surfaces_lightmap_info.reserve(size_t(q3_numDrawSurfaces));
+
+	for(int i= 0; i < q3_numDrawSurfaces; ++i)
+	{
+		const q1_dface_t& q1_surface= q1_dfaces[i];
+		if(q1_surface.lightofs < 0)
+			continue;
+
+		const q3_dsurface_t& surface= q3_drawSurfaces[i];
+		const q1_texinfo_t& tex= q1_texinfo[q1_surface.texinfo]; // Should be correct texinfo for 1 to 1 surfaces export.
+
+		SurfaceLightmapInfo out_info{};
+		out_info.surface_index= i;
+
+		// Calculate extents.
+		// See also "CalcSurfaceExtents" from Quake1.
+
+		float mins[2]{ +999999, +999999 };
+		float maxs[2]{ -999999, -999999 };
+
+		for(int v= surface.firstVert; v < surface.firstVert + surface.numVerts; ++v)
+		{
+			const q3_drawVert_t& vert= q3_drawVerts[v];
+			for (int j=0; j < 2; ++j)
+			{
+				const float val =
+					tex.vecs[j][0] * vert.xyz[0] +
+					tex.vecs[j][1] * vert.xyz[1] +
+					tex.vecs[j][2] * vert.xyz[2] +
+					tex.vecs[j][3];
+				if (val < mins[j])
+					mins[j] = val;
+				if (val > maxs[j])
+					maxs[j] = val;
+			}
+		}
+
+		for (int j=0; j < 2; ++j)
+		{
+			const int min= int(std::floor(mins[j] / 16.0f));
+			const int max= int(std::ceil(maxs[j] / 16.0f));
+
+			out_info.lightmap_mins[j]= min;
+			out_info.lightmap_size[j] = 1 + max - min;
+		}
+
+		surfaces_lightmap_info.push_back(out_info);
+	}
+
+	std::sort(surfaces_lightmap_info.begin(), surfaces_lightmap_info.end(), SurfaceLightmapInfoOdreding);
+
+	// Fill atlases line by line.
+	int current_x= 0;
+	int current_y= 0;
+	int current_z= 0;
+	int current_height= surfaces_lightmap_info.empty() ? 0 : surfaces_lightmap_info.front().lightmap_size[1];
+	const int lightmap_atlas_size= 128; // Q3 atlas size
+	const int lightmap_components= 3;
+	for(const SurfaceLightmapInfo& info : surfaces_lightmap_info)
+	{
+		// Place lightmap in atlas.
+		if(current_x + info.lightmap_size[0] > lightmap_atlas_size)
+		{
+			current_y+= current_height;
+			current_x= 0;
+			current_height= info.lightmap_size[1];
+			if(current_y + current_height > lightmap_atlas_size)
+			{
+				current_y= 0;
+				++current_z;
+			}
+		}
+		assert(info.lightmap_size[1] <= current_height);
+
+		const int surface_lightmap_pos[2]{ current_x, current_y };
+		current_x+= info.lightmap_size[0];
+
+		// Set surface parameters.
+
+		q3_dsurface_t& surface= q3_drawSurfaces[info.surface_index];
+		surface.lightmapNum= current_z;
+		surface.lightmapWidth = info.lightmap_size[0] - 1;
+		surface.lightmapHeight= info.lightmap_size[1] - 1;
+
+		// Set lightmap coordinates for vertices.
+		q1_dface_t& q1_surface= q1_dfaces[info.surface_index];
+		const q1_texinfo_t& tex= q1_texinfo[q1_surface.texinfo]; // Should be correct texinfo for 1 to 1 surfaces export.
+		for(int v= surface.firstVert; v < surface.firstVert + surface.numVerts; ++v)
+		{
+			q3_drawVert_t& vert= q3_drawVerts[v];
+
+			for(int j= 0; j < 2; ++j)
+			{
+				const float tex_coord =
+					tex.vecs[j][0] * vert.xyz[0] +
+					tex.vecs[j][1] * vert.xyz[1] +
+					tex.vecs[j][2] * vert.xyz[2] +
+					tex.vecs[j][3];
+				const float lightmap_coord= tex_coord / 16.0f - float(info.lightmap_mins[j]);
+				vert.lightmap[j]= (float(surface_lightmap_pos[j]) + lightmap_coord + 0.5f) / float(lightmap_atlas_size);
+			}
+		}
+
+		// Copy lighting data.
+		const byte* const src_lightmap_data= q1_dlightdata + q1_surface.lightofs;
+		byte* const dst_lightmap_data=
+			q3_lightBytes + (surface_lightmap_pos[0] + surface_lightmap_pos[1] * lightmap_atlas_size + current_z * lightmap_atlas_size * lightmap_atlas_size) * lightmap_components;
+		for(int y= 0; y < info.lightmap_size[1]; ++y)
+		for(int x= 0; x < info.lightmap_size[0]; ++x)
+		{
+			const int out_y= y;//info.lightmap_size[1] - 1 - y;
+			const byte src= src_lightmap_data[x + y * info.lightmap_size[0]];
+			byte* const dst= dst_lightmap_data + (x + out_y * lightmap_atlas_size) * lightmap_components;
+			for(int j= 0; j < lightmap_components; ++j)
+				dst[j]= src;
+		}
+	}
+	q3_numLightBytes= (current_z + 1) * lightmap_atlas_size * lightmap_atlas_size * lightmap_components;
 }
 
 void ConvertLeaf(const q1_dleaf_t& in_leaf)
@@ -307,6 +449,7 @@ void ConvertMap()
 
 	ConvertPlanes();
 	ConvertSurfaces();
+	ConvertLightmaps();
 	ConvertLeafs();
 	ConvertNodes();
 	ConvertModels();
