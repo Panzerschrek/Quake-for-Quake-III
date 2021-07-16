@@ -117,7 +117,7 @@ void ConvertSurface(const q1_dface_t& in_surface)
 		out_vertex.color[2]= 192;
 		out_vertex.color[3]= 255;
 
-		// TODO - fill other vertex fields.
+		// Set lightmap coords later.
 
 		q3_drawVerts[q3_numDrawVerts]= out_vertex;
 		++q3_numDrawVerts;
@@ -249,8 +249,10 @@ void ConvertLightmaps()
 
 		q3_dsurface_t& surface= q3_drawSurfaces[info.surface_index];
 		surface.lightmapNum= current_z;
-		surface.lightmapWidth = info.lightmap_size[0] - 1;
-		surface.lightmapHeight= info.lightmap_size[1] - 1;
+		surface.lightmapWidth = info.lightmap_size[0];
+		surface.lightmapHeight= info.lightmap_size[1];
+		surface.lightmapX= surface_lightmap_pos[0];
+		surface.lightmapY= surface_lightmap_pos[1];
 
 		// Set lightmap coordinates for vertices.
 		q1_dface_t& q1_surface= q1_dfaces[info.surface_index];
@@ -278,9 +280,9 @@ void ConvertLightmaps()
 		for(int y= 0; y < info.lightmap_size[1]; ++y)
 		for(int x= 0; x < info.lightmap_size[0]; ++x)
 		{
-			const int out_y= y;//info.lightmap_size[1] - 1 - y;
-			const byte src= src_lightmap_data[x + y * info.lightmap_size[0]];
-			byte* const dst= dst_lightmap_data + (x + out_y * lightmap_atlas_size) * lightmap_components;
+			const unsigned int light_scale= 192u; // Q3 clamps lightmap values a bit. So, reduce range.
+			const byte src= src_lightmap_data[x + y * info.lightmap_size[0]] * light_scale / 256u;
+			byte* const dst= dst_lightmap_data + (x + y * lightmap_atlas_size) * lightmap_components;
 			for(int j= 0; j < lightmap_components; ++j)
 				dst[j]= src;
 		}
