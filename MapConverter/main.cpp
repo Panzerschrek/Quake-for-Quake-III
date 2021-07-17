@@ -273,6 +273,11 @@ void ConvertLightmaps()
 			}
 		}
 
+		int style_count= 0;
+		for(int i= 0; i < MAXLIGHTMAPS && q1_surface.styles[i] != 255; ++i)
+			++style_count;
+		const int style_step= info.lightmap_size[0] * info.lightmap_size[1];
+
 		// Copy lighting data.
 		const byte* const src_lightmap_data= q1_dlightdata + q1_surface.lightofs;
 		byte* const dst_lightmap_data=
@@ -281,10 +286,18 @@ void ConvertLightmaps()
 		for(int x= 0; x < info.lightmap_size[0]; ++x)
 		{
 			const unsigned int light_scale= 192u; // Q3 clamps lightmap values a bit. So, reduce range.
-			const byte src= src_lightmap_data[x + y * info.lightmap_size[0]] * light_scale / 256u;
+
+			// Q3 does nto support lightstyles. So, just combone all lightmaps of this surface into one.
+			const byte* const src_ptr= src_lightmap_data + x + y * info.lightmap_size[0];
+			int src= 0;
+			for(int i= 0; i < style_count; ++i)
+				src+= src_ptr[i * style_step] * light_scale / 256u;
+			if(src > 255)
+				src= 255;
+
 			byte* const dst= dst_lightmap_data + (x + y * lightmap_atlas_size) * lightmap_components;
 			for(int j= 0; j < lightmap_components; ++j)
-				dst[j]= src;
+				dst[j]= byte(src);
 		}
 	}
 	q3_numLightBytes= (current_z + 1) * lightmap_atlas_size * lightmap_atlas_size * lightmap_components;
