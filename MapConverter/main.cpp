@@ -5,6 +5,7 @@
 #include <cstring>
 #include <string>
 #include <vector>
+#include <iostream>
 
 void AllocateQ3Map()
 {
@@ -75,6 +76,9 @@ void ConvertSurface(const q1_dface_t& in_surface)
 
 	for(int i= 0; i < 3; ++i)
 		normal[i]= q1_dplanes[in_surface.planenum].normal[i] * normal_sign;
+
+	std::memcpy(out_surface.lightmapVecs[2], normal, sizeof(float) * 3);
+	// TODO - set vec[0] and vec[1].
 
 	const q1_texinfo_t& tex= q1_texinfo[in_surface.texinfo];
 
@@ -147,6 +151,149 @@ void ConvertSurfaces()
 	// Make 1 to 1 surfaces conversion.
 	for(int i= 0; i < q1_numfaces; ++i)
 		ConvertSurface(q1_dfaces[i]);
+}
+
+int GetOrInserdPlane(const q3_dplane_t& plane)
+{
+	// TODO - search for exact plane.
+	const int res= q3_numplanes;
+	q3_dplanes[res]= plane;
+	++q3_numplanes;
+	return res;
+}
+
+void CreateSurfaceBrush(const q3_dsurface_t& surface)
+{
+	q3_dbrush_t out_brush{};
+	out_brush.shaderNum= surface.shaderNum;
+
+	out_brush.firstSide= q3_numbrushsides;
+
+	if(false)
+	{
+		// Add surface plane.
+		{
+			q3_dplane_t surface_plane{};
+			std::memcpy(surface_plane.normal, surface.lightmapVecs[2], sizeof(float) * 3);
+
+			{
+				const q3_drawVert_t& surface_vertex= q3_drawVerts[surface.firstVert];
+				surface_plane.dist= DotProduct(surface_plane.normal, surface_vertex.xyz);
+			}
+
+			q3_dbrushside_t surface_side{};
+			surface_side.planeNum= GetOrInserdPlane(surface_plane);
+			surface_side.shaderNum= surface.shaderNum;
+
+			q3_dbrushsides[q3_numbrushsides]= surface_side;
+			++q3_numbrushsides;
+		}
+
+		// Calculate base vertex for side planes.
+		float surface_center[3]{0.0f, 0.0f, 0.0f};
+		for(int i= 0; i < surface.numVerts; ++i)
+		{
+			const q3_drawVert_t& v= q3_drawVerts[surface.firstVert + i];
+			for(int j= 0; j < 3; ++j)
+				surface_center[j]+= v.xyz[j];
+		}
+		for(int j= 0; j < 3; ++j)
+			surface_center[j]/= float(surface.numVerts);
+
+		float center_shifted[3];
+		for(int j= 0; j < 3; ++j)
+			center_shifted[j]= surface_center[j] - 0.1f * surface.lightmapVecs[2][j];
+
+		// Create side planes
+		for(int i= 0; i < surface.numVerts; ++i)
+		{
+			const q3_drawVert_t& v0= q3_drawVerts[surface.firstVert + i];
+			const q3_drawVert_t& v1= q3_drawVerts[surface.firstVert + (i + 1) % surface.numVerts];
+
+			float vecs[2][3];
+			VectorSubtract(v0.xyz, center_shifted, vecs[0]);
+			VectorSubtract(v1.xyz, center_shifted, vecs[1]);
+			float normal[3];
+			CrossProduct(vecs[0], vecs[1], normal);
+			VectorNormalize(normal);
+			if(DotProduct(normal, normal) <= 0)
+				continue;
+
+			q3_dplane_t edge_plane{};
+			std::memcpy(edge_plane.normal, normal, sizeof(float) * 3);
+			edge_plane.dist= DotProduct(center_shifted, normal);
+
+			q3_dbrushside_t edge_side{};
+			edge_side.planeNum= GetOrInserdPlane(edge_plane);
+			edge_side.shaderNum= surface.shaderNum;
+
+			q3_dbrushsides[q3_numbrushsides]= edge_side;
+			++q3_numbrushsides;
+		}
+	}
+
+	if(true)
+	{
+		float mins[3]{ +999999, +999999, +999999 };
+		float maxs[3]{ -999999, -999999, -999999 };
+		for(int i= 0; i < surface.numVerts; ++i)
+		{
+			const q3_drawVert_t& v= q3_drawVerts[surface.firstVert + i];
+			for(int j= 0; j < 3; ++j)
+			{
+				if(v.xyz[j] < mins[j]) mins[j]= v.xyz[j];
+				if(v.xyz[j] > maxs[j]) maxs[j]= v.xyz[j];
+			}
+		}
+
+		for(int j= 0; j < 3; ++j)
+		{
+			mins[j]-= 1.0f;
+			maxs[j]+= 1.0f;
+		}
+
+		for(int j= 0; j < 3; ++j)
+		for(int k= 0; k < 2; ++k)
+		{
+			q3_dplane_t box_plane{};
+			box_plane.normal[j]= k == 0 ? (-1.0f) : (+1.0f);
+			box_plane.dist= -(k == 0 ? mins[j] : maxs[j]) * box_plane.normal[j];
+
+			q3_dbrushside_t box_side{};
+			box_side.planeNum= GetOrInserdPlane(box_plane);
+			box_side.shaderNum= surface.shaderNum;
+
+			q3_dbrushsides[q3_numbrushsides]= box_side;
+			++q3_numbrushsides;
+		}
+	}
+
+	out_brush.numSides= q3_numbrushsides - out_brush.firstSide;
+
+	q3_dbrushes[q3_numbrushes]= out_brush;
+	++q3_numbrushes;
+}
+
+void CreateLeafBrushes(q3_dleaf_t& leaf)
+{
+	// We have 1 to 1 brush to surface.
+	leaf.firstLeafBrush= q3_numleafbrushes;
+	for(int surface_index= leaf.firstLeafSurface; surface_index < leaf.firstLeafSurface + leaf.numLeafSurfaces; ++surface_index)
+	{
+		q3_dleafbrushes[q3_numleafbrushes]= surface_index;
+		++q3_numleafbrushes;
+	}
+	leaf.numLeafBrushes= q3_numleafbrushes - leaf.firstLeafBrush;
+}
+
+void CreateBrushes()
+{
+	// Create own brush for each surface.
+	for(int i= 0; i < q3_numDrawSurfaces; ++i)
+		CreateSurfaceBrush(q3_drawSurfaces[i]);
+
+	for(int i= 0; i < q3_numleafs; ++i)
+		CreateLeafBrushes(q3_dleafs[i]);
 }
 
 struct SurfaceLightmapInfo
@@ -373,6 +520,8 @@ void ConvertModel(const q1_dmodel_t& in_model)
 	out_model.firstSurface = in_model.firstface;
 	out_model.numSurfaces = in_model.numfaces;
 
+	//out_model.firstBrush= 0;
+	//out_model.numBrushes= q3_numbrushes;
 	// TODO - fill other fields.
 
 	q3_dmodels[q3_nummodels]= out_model;
@@ -398,6 +547,7 @@ void PopulateShaders()
 
 		q3_dshader_t out_shader{};
 		std::snprintf(out_shader.shader, sizeof(out_shader.shader), "textures/q3e1m1/%s.tga", miptex->name);
+		out_shader.contentFlags= CONTENTS_SOLID;
 		q3_dshaders[q3_numShaders]= out_shader;
 		++q3_numShaders;
 	}
@@ -407,6 +557,7 @@ void ConvertEntities()
 {
 	std::memcpy(q3_dentdata, q1_dentdata, size_t(q1_entdatasize));
 	q3_entdatasize= q1_entdatasize;
+	//std::cout << q3_dentdata << std::endl;
 }
 
 using Palette= std::array<byte, 256*3>;
@@ -467,6 +618,7 @@ void ConvertMap()
 	ConvertLightmaps();
 	ConvertLeafs();
 	ConvertNodes();
+	CreateBrushes();
 	ConvertModels();
 	ConvertEntities();
 }
