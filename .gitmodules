@@ -1,3 +1,6 @@
 [submodule "Quake-III-Arena"]
 	path = Quake-III-Arena
 	url = https://github.com/id-Software/Quake-III-Arena.git
+[submodule "quake_map_source"]
+	path = quake_map_source
+	url = https://github.com/fzwoch/quake_map_source.git
