@@ -4,3 +4,4 @@ project(Quake-for-Quake-III)
 
 add_subdirectory(BspcLib)
 add_subdirectory(MapConverter)
+add_subdirectory(WadExtractor)
