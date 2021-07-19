@@ -1,0 +1,28 @@
+This is a Quake Texture Wad I made......
+It contains EVERY texture in Quake v1.01, including the deatmatch level textures and ammo/health box textures.
+Build time: 20+ hours
+
+Known Bug: 
+The large arch textures, such as wenter01 and wexit01, are not right.  They are cut off.
+I am trying to figure out why.  The utility I wrote to extract the textures might not be able to handle such large textures.
+Every other mip texture extractor I have seen also has this problem.  
+Also, other wads, such as base.wad, medieval.wad, wizard.wad, etc. also have this problem.
+I am working on this as fast as I can.  Anyone who can help, please E-Mail me!
+
+Please don't ask for the utility I wrote, I am not going to give it to anyone.  
+It is very hard to use, and I only wrote it for my personal use.
+Besides, you don't need it, since every Quake texture is in this wad.
+
+The textures in this wad are named the exact same thing they were in the original id BSP's.
+They skip around alot in numbering and it's anybody's guess why some of the names are what they are.
+There are a few textures that are the exact same thing but with different names, and I left them that way so this wad would work with all existing levels.
+I did fix a problem that occured in some id levels, where a texture was named sky4, but was actually the texture for sky1.  
+E-Mail me with anything else you find wrong with the wad.
+
+Support id Software and buy Quake, it's worth it!
+Visit the BSP Studio 32 homepage at http://www.nw.sisna.com/tmi
+
+
+								Robert Miller
+								tmi@pdx.sisna.com
+								Master_G on IRC
