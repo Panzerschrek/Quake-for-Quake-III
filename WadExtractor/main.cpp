@@ -107,7 +107,11 @@ int main(const int argc, const char* const argv[])
 		std::strncpy(name_nt, lump.name, sizeof(lump.name));
 		std::cout << "Extracting \"" << name_nt << "\"." << std::endl;
 
-		const std::string out_file_name= out_dir + "/" + name_nt;
+		std::string name_upper= name_nt;
+		for(char& c : name_upper)
+			c= char(std::toupper(c));
+
+		const std::string out_file_name= out_dir + "/" + name_upper;
 		FILE* const out_file= std::fopen(out_file_name.c_str(), "wb");
 		if(out_file == nullptr)
 		{
