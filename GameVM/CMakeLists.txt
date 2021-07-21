@@ -4,6 +4,8 @@ else()
 	add_definitions(-DARCH_STRING=x64)
 	add_compile_options(-fPIC)
 	set(CMAKE_SHARED_LIBRARY_PREFIX "")
+	add_compile_options(-fvisibility=hidden -fvisibility-inlines-hidden)
+	list(APPEND CMAKE_SHARED_LINKER_FLAGS_RELEASE "-s -Wl,--gc-sections")
 endif()
 
 if(CMAKE_SIZEOF_VOID_P EQUAL 4)
