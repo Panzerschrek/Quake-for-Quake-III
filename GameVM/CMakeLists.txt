@@ -3,6 +3,7 @@ if(WIN32)
 else()
 	add_definitions(-DARCH_STRING=x64)
 	add_compile_options(-fPIC)
+	set(CMAKE_SHARED_LIBRARY_PREFIX "")
 endif()
 
 if(CMAKE_SIZEOF_VOID_P EQUAL 4)
