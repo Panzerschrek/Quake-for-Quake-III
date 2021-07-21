@@ -1,5 +1,8 @@
 if(WIN32)
 	add_definitions(-D__WIN64__)
+else()
+	add_definitions(-DARCH_STRING=x64)
+	add_compile_options(-fPIC)
 endif()
 
 if(CMAKE_SIZEOF_VOID_P EQUAL 4)
