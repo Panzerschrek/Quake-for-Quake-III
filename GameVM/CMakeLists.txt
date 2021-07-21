@@ -8,13 +8,11 @@ else()
 	set(LIB_SUFFIX "x86_64")
 endif()
 
-file(GLOB QCOMMON_SOURCES code/qcommon/q_math.c code/qcommon/q_shared.c)
+file(GLOB QCOMMON_SOURCES code/qcommon/*)
 add_library(qcommon STATIC ${QCOMMON_SOURCES})
 
 
 file(GLOB SERVER_SOURCES code/game/*)
-file(GLOB SERVER_SOURCES_EXCLUDE code/game/g_rankings.c)
-list(REMOVE_ITEM SERVER_SOURCES ${SERVER_SOURCES_EXCLUDE})
 add_library(qagame${LIB_SUFFIX} SHARED ${SERVER_SOURCES})
 target_link_libraries(qagame${LIB_SUFFIX} qcommon)
 
@@ -25,7 +23,5 @@ file(GLOB CLIENT_SOURCES
 	code/game/bg_pmove.c
 	code/game/bg_slidemove.c
 	)
-file(GLOB CLIENT_SOURCES_EXCLUDE code/cgame/cg_newdraw.c)
-list(REMOVE_ITEM CLIENT_SOURCES ${CLIENT_SOURCES_EXCLUDE})
 add_library(cgame${LIB_SUFFIX} SHARED ${CLIENT_SOURCES})
 target_link_libraries(cgame${LIB_SUFFIX} qcommon)
