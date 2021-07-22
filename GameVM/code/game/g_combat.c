@@ -369,9 +369,7 @@ void player_die( gentity_t *self, gentity_t *inflictor, gentity_t *attacker, int
 	if (attacker && attacker->client) {
 		attacker->client->lastkilled_client = self->s.number;
 
-		if ( attacker == self || OnSameTeam (self, attacker ) ) {
-			AddScore( attacker, self->r.currentOrigin, -1 );
-		} else {
+		{
 			AddScore( attacker, self->r.currentOrigin, 1 );
 
 			if( meansOfDeath == MOD_GAUNTLET ) {
@@ -404,25 +402,6 @@ void player_die( gentity_t *self, gentity_t *inflictor, gentity_t *attacker, int
 		}
 	} else {
 		AddScore( self, self->r.currentOrigin, -1 );
-	}
-
-	// Add team bonuses
-	Team_FragBonuses(self, inflictor, attacker);
-
-	// if I committed suicide, the flag does not fall, it returns.
-	if (meansOfDeath == MOD_SUICIDE) {
-		if ( self->client->ps.powerups[PW_NEUTRALFLAG] ) {		// only happens in One Flag CTF
-			Team_ReturnFlag( TEAM_FREE );
-			self->client->ps.powerups[PW_NEUTRALFLAG] = 0;
-		}
-		else if ( self->client->ps.powerups[PW_REDFLAG] ) {		// only happens in standard CTF
-			Team_ReturnFlag( TEAM_RED );
-			self->client->ps.powerups[PW_REDFLAG] = 0;
-		}
-		else if ( self->client->ps.powerups[PW_BLUEFLAG] ) {	// only happens in standard CTF
-			Team_ReturnFlag( TEAM_BLUE );
-			self->client->ps.powerups[PW_BLUEFLAG] = 0;
-		}
 	}
 
 	TossClientItems( self );
@@ -706,14 +685,6 @@ void G_Damage( gentity_t *targ, gentity_t *inflictor, gentity_t *attacker,
 	// check for completely getting out of the damage
 	if ( !(dflags & DAMAGE_NO_PROTECTION) ) {
 
-		// if TF_NO_FRIENDLY_FIRE is set, don't do damage to the target
-		// if the attacker was on the same team	
-		if ( targ != attacker && OnSameTeam (targ, attacker)  ) {
-			if ( !g_friendlyFire.integer ) {
-				return;
-			}
-		}
-
 		// check for godmode
 		if ( targ->flags & FL_GODMODE ) {
 			return;
@@ -735,11 +706,7 @@ void G_Damage( gentity_t *targ, gentity_t *inflictor, gentity_t *attacker,
 			&& targ != attacker && targ->health > 0
 			&& targ->s.eType != ET_MISSILE
 			&& targ->s.eType != ET_GENERAL) {
-		if ( OnSameTeam( targ, attacker ) ) {
-			attacker->client->ps.persistant[PERS_HITS]--;
-		} else {
-			attacker->client->ps.persistant[PERS_HITS]++;
-		}
+		attacker->client->ps.persistant[PERS_HITS]++;
 		attacker->client->ps.persistant[PERS_ATTACKEE_ARMOR] = (targ->health<<8)|(client->ps.stats[STAT_ARMOR]);
 	}
 
@@ -782,11 +749,6 @@ void G_Damage( gentity_t *targ, gentity_t *inflictor, gentity_t *attacker,
 			VectorCopy ( targ->r.currentOrigin, client->damage_from );
 			client->damage_fromWorld = qtrue;
 		}
-	}
-
-	// See if it's the player hurting the emeny flag carrier
-	if( g_gametype.integer == GT_CTF) {
-		Team_CheckHurtCarrier(targ, attacker);
 	}
 
 	if (targ->client) {

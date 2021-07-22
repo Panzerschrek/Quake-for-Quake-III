@@ -595,10 +595,6 @@ qboolean LogAccuracyHit( gentity_t *target, gentity_t *attacker ) {
 		return qfalse;
 	}
 
-	if ( OnSameTeam( target, attacker ) ) {
-		return qfalse;
-	}
-
 	return qtrue;
 }
 
