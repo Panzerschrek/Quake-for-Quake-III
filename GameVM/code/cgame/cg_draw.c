@@ -2165,23 +2165,7 @@ Perform all drawing needed to completely fill the screen
 =====================
 */
 void CG_DrawActive( stereoFrame_t stereoView ) {
-	// optionally draw the info screen instead
-	if ( !cg.snap ) {
-		CG_DrawInformation();
-		return;
-	}
-
-	// clear around the rendered view if sized down
-	CG_TileClear();
-
-	if(stereoView != STEREO_CENTER)
-		CG_DrawCrosshair3D();
-
-	// draw 3D view
 	trap_R_RenderScene( &cg.refdef );
-
-	// draw status bar and other floating elements
- 	CG_Draw2D(stereoView);
 }
 
 
