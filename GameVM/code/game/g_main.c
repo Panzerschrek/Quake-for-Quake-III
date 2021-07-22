@@ -1736,11 +1736,6 @@ void G_RunFrame( int levelTime ) {
 			continue;
 		}
 
-		if ( ent->s.eType == ET_MOVER ) {
-			G_RunMover( ent );
-			continue;
-		}
-
 		if ( i < MAX_CLIENTS ) {
 			G_RunClient( ent );
 			continue;

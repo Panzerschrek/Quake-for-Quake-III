@@ -453,17 +453,6 @@ const char *BuildShaderStateConfig( void );
 #define DAMAGE_NO_KNOCKBACK			0x00000004	// do not affect velocity, just view angles
 #define DAMAGE_NO_PROTECTION		0x00000008  // armor, shields, invulnerability, and godmode have no effect
 
-//
-// g_mover.c
-//
-void G_RunMover( gentity_t *ent );
-void Touch_DoorTrigger( gentity_t *ent, gentity_t *other, trace_t *trace );
-
-//
-// g_trigger.c
-//
-void trigger_teleporter_touch (gentity_t *self, gentity_t *other, trace_t *trace );
-
 
 //
 // g_misc.c

@@ -252,10 +252,7 @@ void	G_TouchTriggers( gentity_t *ent ) {
 
 		// ignore most entities if a spectator
 		if ( ent->client->sess.sessionTeam == TEAM_SPECTATOR ) {
-			if ( hit->s.eType != ET_TELEPORT_TRIGGER &&
-				// this is ugly but adding a new ET_? type will
-				// most likely cause network incompatibilities
-				hit->touch != Touch_DoorTrigger) {
+			if ( hit->s.eType != ET_TELEPORT_TRIGGER ) {
 				continue;
 			}
 		}
