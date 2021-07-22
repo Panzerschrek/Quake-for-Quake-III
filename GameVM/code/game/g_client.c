@@ -910,7 +910,7 @@ char *ClientConnect( int clientNum, qboolean firstTime, qboolean isBot ) {
   // we don't check password for bots and local client
   // NOTE: local client <-> "ip" "localhost"
   //   this means this client is not running in our current process
-	if ( !isBot && (strcmp(value, "localhost") != 0)) {
+	if (strcmp(value, "localhost") != 0) {
 		// check for a password
 		value = Info_ValueForKey (userinfo, "password");
 		if ( g_password.string[0] && Q_stricmp( g_password.string, "none" ) &&
@@ -938,14 +938,6 @@ char *ClientConnect( int clientNum, qboolean firstTime, qboolean isBot ) {
 	value = Info_ValueForKey( userinfo, "ip" );
 	if ( !strcmp( value, "localhost" ) ) {
 		client->pers.localClient = qtrue;
-	}
-
-	if( isBot ) {
-		ent->r.svFlags |= SVF_BOT;
-		ent->inuse = qtrue;
-		if( !G_BotConnect( clientNum, !firstTime ) ) {
-			return "BotConnectfailed";
-		}
 	}
 
 	// read or initialize the session data
@@ -1260,10 +1252,6 @@ void ClientDisconnect( int clientNum ) {
 	gentity_t	*tent;
 	int			i;
 
-	// cleanup if we are kicking a bot that
-	// hasn't spawned yet
-	G_RemoveQueuedBotBegin( clientNum );
-
 	ent = g_entities + clientNum;
 	if (!ent->client || ent->client->pers.connected == CON_DISCONNECTED) {
 		return;
@@ -1327,10 +1315,6 @@ void ClientDisconnect( int clientNum ) {
 	trap_SetConfigstring( CS_PLAYERS + clientNum, "");
 
 	CalculateRanks();
-
-	if ( ent->r.svFlags & SVF_BOT ) {
-		BotAIShutdownClient( clientNum, qfalse );
-	}
 }
 
 

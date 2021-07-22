@@ -230,7 +230,7 @@ Q_EXPORT intptr_t vmMain( int command, int arg0, int arg1, int arg2, int arg3, i
 	case GAME_CONSOLE_COMMAND:
 		return ConsoleCommand();
 	case BOTAI_START_FRAME:
-		return BotAIStartFrame( arg0 );
+		return 0;
 	}
 
 	return -1;
@@ -500,12 +500,6 @@ void G_InitGame( int levelTime, int randomSeed, int restart ) {
 		G_ModelIndex( SP_PODIUM_MODEL );
 	}
 
-	if ( trap_Cvar_VariableIntegerValue( "bot_enable" ) ) {
-		BotAISetup( restart );
-		BotAILoadMap( restart );
-		G_InitBots( restart );
-	}
-
 	G_RemapTeamShaders();
 
 	trap_SetConfigstring( CS_INTERMISSION, "" );
@@ -530,10 +524,6 @@ void G_ShutdownGame( int restart ) {
 
 	// write all the client session data so we can get it back
 	G_WriteSessionData();
-
-	if ( trap_Cvar_VariableIntegerValue( "bot_enable" ) ) {
-		BotAIShutdown( restart );
-	}
 }
 
 
@@ -1045,9 +1035,6 @@ void ExitLevel (void) {
 	gclient_t *cl;
 	char nextmap[MAX_STRING_CHARS];
 	char d1[MAX_STRING_CHARS];
-
-	//bot interbreeding
-	BotInterbreedEndMatch();
 
 	// if we are running a tournement map, kick the loser to spectator status,
 	// which will automatically grab the next spectator and restart
