@@ -40,157 +40,13 @@ void CG_TargetCommand_f( void ) {
 	trap_SendClientCommand( va( "gc %i %i", targetNum, atoi( test ) ) );
 }
 
-
-
-/*
-=================
-CG_SizeUp_f
-
-Keybinding command
-=================
-*/
-static void CG_SizeUp_f (void) {
-	trap_Cvar_Set("cg_viewsize", va("%i",(int)(cg_viewsize.integer+10)));
-}
-
-
-/*
-=================
-CG_SizeDown_f
-
-Keybinding command
-=================
-*/
-static void CG_SizeDown_f (void) {
-	trap_Cvar_Set("cg_viewsize", va("%i",(int)(cg_viewsize.integer-10)));
-}
-
-
-/*
-=============
-CG_Viewpos_f
-
-Debugging command to print the current position
-=============
-*/
-static void CG_Viewpos_f (void) {
-	CG_Printf ("(%i %i %i) : %i\n", (int)cg.refdef.vieworg[0],
-		(int)cg.refdef.vieworg[1], (int)cg.refdef.vieworg[2], 
-		(int)cg.refdefViewAngles[YAW]);
-}
-
-
-static void CG_ScoresDown_f( void ) {
-
-	if ( cg.scoresRequestTime + 2000 < cg.time ) {
-		// the scores are more than two seconds out of data,
-		// so request new ones
-		cg.scoresRequestTime = cg.time;
-		trap_SendClientCommand( "score" );
-
-		// leave the current scores up if they were already
-		// displayed, but if this is the first hit, clear them out
-		if ( !cg.showScores ) {
-			cg.showScores = qtrue;
-			cg.numScores = 0;
-		}
-	} else {
-		// show the cached contents even if they just pressed if it
-		// is within two seconds
-		cg.showScores = qtrue;
-	}
-}
-
-static void CG_ScoresUp_f( void ) {
-	if ( cg.showScores ) {
-		cg.showScores = qfalse;
-		cg.scoreFadeTime = cg.time;
-	}
-}
-
-static void CG_TellTarget_f( void ) {
-	int		clientNum;
-	char	command[128];
-	char	message[128];
-
-	clientNum = CG_CrosshairPlayer();
-	if ( clientNum == -1 ) {
-		return;
-	}
-
-	trap_Args( message, 128 );
-	Com_sprintf( command, 128, "tell %i %s", clientNum, message );
-	trap_SendClientCommand( command );
-}
-
-static void CG_TellAttacker_f( void ) {
-	int		clientNum;
-	char	command[128];
-	char	message[128];
-
-	clientNum = CG_LastAttacker();
-	if ( clientNum == -1 ) {
-		return;
-	}
-
-	trap_Args( message, 128 );
-	Com_sprintf( command, 128, "tell %i %s", clientNum, message );
-	trap_SendClientCommand( command );
-}
-
-/*
-==================
-CG_StartOrbit_f
-==================
-*/
-
-static void CG_StartOrbit_f( void ) {
-	char var[MAX_TOKEN_CHARS];
-
-	trap_Cvar_VariableStringBuffer( "developer", var, sizeof( var ) );
-	if ( !atoi(var) ) {
-		return;
-	}
-	if (cg_cameraOrbit.value != 0) {
-		trap_Cvar_Set ("cg_cameraOrbit", "0");
-		trap_Cvar_Set("cg_thirdPerson", "0");
-	} else {
-		trap_Cvar_Set("cg_cameraOrbit", "5");
-		trap_Cvar_Set("cg_thirdPerson", "1");
-		trap_Cvar_Set("cg_thirdPersonAngle", "0");
-		trap_Cvar_Set("cg_thirdPersonRange", "100");
-	}
-}
-
-/*
-static void CG_Camera_f( void ) {
-	char name[1024];
-	trap_Argv( 1, name, sizeof(name));
-	if (trap_loadCamera(name)) {
-		cg.cameraMode = qtrue;
-		trap_startCamera(cg.time);
-	} else {
-		CG_Printf ("Unable to load camera %s\n",name);
-	}
-}
-*/
-
-
 typedef struct {
 	char	*cmd;
 	void	(*function)(void);
 } consoleCommand_t;
 
 static consoleCommand_t	commands[] = {
-	{ "viewpos", CG_Viewpos_f },
-	{ "+scores", CG_ScoresDown_f },
-	{ "-scores", CG_ScoresUp_f },
-	{ "sizeup", CG_SizeUp_f },
-	{ "sizedown", CG_SizeDown_f },
 	{ "tcmd", CG_TargetCommand_f },
-	{ "tell_target", CG_TellTarget_f },
-	{ "tell_attacker", CG_TellAttacker_f },
-	{ "startOrbit", CG_StartOrbit_f },
 	//{ "camera", CG_Camera_f },
 	{ "loaddeferred", CG_LoadDeferredPlayers }	
 };
@@ -241,26 +97,5 @@ void CG_InitConsoleCommands( void ) {
 	// forwarded to the server after they are not recognized locally
 	//
 	trap_AddCommand ("kill");
-	trap_AddCommand ("say");
-	trap_AddCommand ("say_team");
-	trap_AddCommand ("tell");
-	trap_AddCommand ("give");
-	trap_AddCommand ("god");
-	trap_AddCommand ("notarget");
 	trap_AddCommand ("noclip");
-	trap_AddCommand ("where");
-	trap_AddCommand ("team");
-	trap_AddCommand ("follow");
-	trap_AddCommand ("follownext");
-	trap_AddCommand ("followprev");
-	trap_AddCommand ("levelshot");
-	trap_AddCommand ("addbot");
-	trap_AddCommand ("setviewpos");
-	trap_AddCommand ("callvote");
-	trap_AddCommand ("vote");
-	trap_AddCommand ("callteamvote");
-	trap_AddCommand ("teamvote");
-	trap_AddCommand ("stats");
-	trap_AddCommand ("teamtask");
-	trap_AddCommand ("loaddefered");	// spelled wrong, but not changing for demo
 }
