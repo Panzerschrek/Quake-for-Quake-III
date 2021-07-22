@@ -416,7 +416,6 @@ void Cmd_LevelShot_f(gentity_t *ent)
 		return;
 	}
 
-	BeginIntermission();
 	trap_SendServerCommand(ent-g_entities, "clientLevelShot");
 }
 
@@ -592,9 +591,6 @@ void SetTeam( gentity_t *ent, const char *s ) {
 		ent->client->ps.stats[STAT_HEALTH] = ent->health = 0;
 	}
 
-	// they go to the end of the line for tournements
-	if(team == TEAM_SPECTATOR && oldTeam != team)
-		AddTournamentQueue(client);
 
 	client->sess.sessionTeam = team;
 	client->sess.spectatorState = specState;
@@ -605,12 +601,7 @@ void SetTeam( gentity_t *ent, const char *s ) {
 		teamLeader = TeamLeader( team );
 		// if there is no team leader or the team leader is a bot and this client is not a bot
 		if ( teamLeader == -1 || ( !(g_entities[clientNum].r.svFlags & SVF_BOT) && (g_entities[teamLeader].r.svFlags & SVF_BOT) ) ) {
-			SetLeader( team, clientNum );
 		}
-	}
-	// make sure there is a team leader on the team the player came from
-	if ( oldTeam == TEAM_RED || oldTeam == TEAM_BLUE ) {
-		CheckTeamLeader( oldTeam );
 	}
 
 	// get and distribute relevant parameters

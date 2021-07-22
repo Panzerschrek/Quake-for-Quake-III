@@ -339,7 +339,6 @@ SelectSpectatorSpawnPoint
 ============
 */
 gentity_t *SelectSpectatorSpawnPoint( vec3_t origin, vec3_t angles ) {
-	FindIntermissionPoint();
 
 	VectorCopy( level.intermission_origin, origin );
 	VectorCopy( level.intermission_angle, angles );
@@ -906,9 +905,6 @@ char *ClientConnect( int clientNum, qboolean firstTime, qboolean isBot ) {
 		BroadcastTeamChange( client, -1 );
 	}
 
-	// count current clients and rank for scoreboard
-	CalculateRanks();
-
 	// for statistics
 //	client->areabits = areabits;
 //	if ( !client->areabits )
@@ -965,9 +961,6 @@ void ClientBegin( int clientNum ) {
 		}
 	}
 	G_LogPrintf( "ClientBegin: %i\n", clientNum );
-
-	// count current clients and rank for scoreboard
-	CalculateRanks();
 }
 
 /*
@@ -1153,9 +1146,6 @@ void ClientSpawn(gentity_t *ent) {
 
 			trap_LinkEntity (ent);
 		}
-	} else {
-		// move players to intermission
-		MoveClientToIntermission(ent);
 	}
 	// run a client frame to drop exactly to the floor,
 	// initialize animations and other things
@@ -1240,8 +1230,6 @@ void ClientDisconnect( int clientNum ) {
 	ent->client->sess.sessionTeam = TEAM_FREE;
 
 	trap_SetConfigstring( CS_PLAYERS + clientNum, "");
-
-	CalculateRanks();
 }
 
 

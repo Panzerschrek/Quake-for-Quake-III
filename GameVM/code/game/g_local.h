@@ -469,10 +469,8 @@ void SetClientViewAngle( gentity_t *ent, vec3_t angle );
 gentity_t *SelectSpawnPoint (vec3_t avoidPoint, vec3_t origin, vec3_t angles, qboolean isbot);
 void CopyToBodyQue( gentity_t *ent );
 void ClientRespawn(gentity_t *ent);
-void BeginIntermission (void);
 void InitBodyQue (void);
 void ClientSpawn( gentity_t *ent );
-void CalculateRanks( void );
 qboolean SpotWouldTelefrag( gentity_t *spot );
 
 //
@@ -491,10 +489,6 @@ void DeathmatchScoreboardMessage( gentity_t *ent );
 //
 // g_main.c
 //
-void MoveClientToIntermission( gentity_t *ent );
-void FindIntermissionPoint( void );
-void SetLeader(int team, int client);
-void CheckTeamLeader( int team );
 void G_RunThink (gentity_t *ent);
 void AddTournamentQueue(gclient_t *client);
 void QDECL G_LogPrintf( const char *fmt, ... ) __attribute__ ((format (printf, 1, 2)));
