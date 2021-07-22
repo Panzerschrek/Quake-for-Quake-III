@@ -955,11 +955,7 @@ void BeginIntermission( void ) {
 		}
 		MoveClientToIntermission( client );
 	}
-	// if single player game
-	if ( g_gametype.integer == GT_SINGLE_PLAYER ) {
-		UpdateTournamentInfo();
-		SpawnModelsOnVictoryPads();
-	}
+
 	// send the current scoring to all clients
 	SendScoreboardMessageToAllClients();
 

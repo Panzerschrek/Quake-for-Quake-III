@@ -476,11 +476,6 @@ qboolean	ConsoleCommand( void ) {
 		return qtrue;
 	}
 
-	if (Q_stricmp (cmd, "abort_podium") == 0) {
-		Svcmd_AbortPodium_f();
-		return qtrue;
-	}
-
 	if (Q_stricmp (cmd, "addip") == 0) {
 		Svcmd_AddIP_f();
 		return qtrue;
