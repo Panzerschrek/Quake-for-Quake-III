@@ -470,18 +470,6 @@ void trigger_teleporter_touch (gentity_t *self, gentity_t *other, trace_t *trace
 //
 void TeleportPlayer( gentity_t *player, vec3_t origin, vec3_t angles );
 
-
-//
-// g_weapon.c
-//
-qboolean LogAccuracyHit( gentity_t *target, gentity_t *attacker );
-void CalcMuzzlePoint ( gentity_t *ent, vec3_t forward, vec3_t right, vec3_t up, vec3_t muzzlePoint );
-void SnapVectorTowards( vec3_t v, vec3_t to );
-qboolean CheckGauntletAttack( gentity_t *ent );
-void Weapon_HookFree (gentity_t *ent);
-void Weapon_HookThink (gentity_t *ent);
-
-
 //
 // g_client.c
 //
@@ -505,10 +493,6 @@ qboolean	ConsoleCommand( void );
 void G_ProcessIPBans(void);
 qboolean G_FilterPacket (char *from);
 
-//
-// g_weapon.c
-//
-void FireWeapon( gentity_t *ent );
 
 //
 // g_cmds.c
