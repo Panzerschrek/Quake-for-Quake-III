@@ -580,61 +580,6 @@ static int CG_CalcViewValues( void ) {
 }
 
 
-/*
-=====================
-CG_PowerupTimerSounds
-=====================
-*/
-static void CG_PowerupTimerSounds( void ) {
-	int		i;
-	int		t;
-
-	// powerup timers going away
-	for ( i = 0 ; i < MAX_POWERUPS ; i++ ) {
-		t = cg.snap->ps.powerups[i];
-		if ( t <= cg.time ) {
-			continue;
-		}
-		if ( t - cg.time >= POWERUP_BLINKS * POWERUP_BLINK_TIME ) {
-			continue;
-		}
-		if ( ( t - cg.time ) / POWERUP_BLINK_TIME != ( t - cg.oldTime ) / POWERUP_BLINK_TIME ) {
-			trap_S_StartSound( NULL, cg.snap->ps.clientNum, CHAN_ITEM, cgs.media.wearOffSound );
-		}
-	}
-}
-
-/*
-=====================
-CG_AddBufferedSound
-=====================
-*/
-void CG_AddBufferedSound( sfxHandle_t sfx ) {
-	if ( !sfx )
-		return;
-	cg.soundBuffer[cg.soundBufferIn] = sfx;
-	cg.soundBufferIn = (cg.soundBufferIn + 1) % MAX_SOUNDBUFFER;
-	if (cg.soundBufferIn == cg.soundBufferOut) {
-		cg.soundBufferOut++;
-	}
-}
-
-/*
-=====================
-CG_PlayBufferedSounds
-=====================
-*/
-static void CG_PlayBufferedSounds( void ) {
-	if ( cg.soundTime < cg.time ) {
-		if (cg.soundBufferOut != cg.soundBufferIn && cg.soundBuffer[cg.soundBufferOut]) {
-			trap_S_StartLocalSound(cg.soundBuffer[cg.soundBufferOut], CHAN_ANNOUNCER);
-			cg.soundBuffer[cg.soundBufferOut] = 0;
-			cg.soundBufferOut = (cg.soundBufferOut + 1) % MAX_SOUNDBUFFER;
-			cg.soundTime = cg.time + 750;
-		}
-	}
-}
-
 //=========================================================================
 
 /*
@@ -701,14 +646,8 @@ void CG_DrawActiveFrame( int serverTime, stereoFrame_t stereoView, qboolean demo
 		CG_AddPacketEntities();			// adter calcViewValues, so predicted player state is correct
 	}
 
-	// add buffered sounds
-	CG_PlayBufferedSounds();
-
 	cg.refdef.time = cg.time;
 	memcpy( cg.refdef.areamask, cg.snap->areamask, sizeof( cg.refdef.areamask ) );
-
-	// warning sounds when powerup is wearing off
-	CG_PowerupTimerSounds();
 
 	// update audio positions
 	trap_S_Respatialize( cg.snap->ps.clientNum, cg.refdef.vieworg, cg.refdef.viewaxis, inwater );
