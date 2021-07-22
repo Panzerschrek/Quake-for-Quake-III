@@ -60,120 +60,6 @@ console doesn't pause the game.
 =============================================================================
 */
 
-/*
-=================
-CG_TestModel_f
-
-Creates an entity in front of the current position, which
-can then be moved around
-=================
-*/
-void CG_TestModel_f (void) {
-	vec3_t		angles;
-
-	cg.testGun = qfalse;
-	memset( &cg.testModelEntity, 0, sizeof(cg.testModelEntity) );
-	if ( trap_Argc() < 2 ) {
-		return;
-	}
-
-	Q_strncpyz (cg.testModelName, CG_Argv( 1 ), MAX_QPATH );
-	cg.testModelEntity.hModel = trap_R_RegisterModel( cg.testModelName );
-
-	if ( trap_Argc() == 3 ) {
-		cg.testModelEntity.backlerp = atof( CG_Argv( 2 ) );
-		cg.testModelEntity.frame = 1;
-		cg.testModelEntity.oldframe = 0;
-	}
-	if (! cg.testModelEntity.hModel ) {
-		CG_Printf( "Can't register model\n" );
-		return;
-	}
-
-	VectorMA( cg.refdef.vieworg, 100, cg.refdef.viewaxis[0], cg.testModelEntity.origin );
-
-	angles[PITCH] = 0;
-	angles[YAW] = 180 + cg.refdefViewAngles[1];
-	angles[ROLL] = 0;
-
-	AnglesToAxis( angles, cg.testModelEntity.axis );
-}
-
-/*
-=================
-CG_TestGun_f
-
-Replaces the current view weapon with the given model
-=================
-*/
-void CG_TestGun_f (void) {
-	CG_TestModel_f();
-
-	if ( !cg.testModelEntity.hModel ) {
-		return;
-	}
-
-	cg.testGun = qtrue;
-	cg.testModelEntity.renderfx = RF_MINLIGHT | RF_DEPTHHACK | RF_FIRST_PERSON;
-}
-
-
-void CG_TestModelNextFrame_f (void) {
-	cg.testModelEntity.frame++;
-	CG_Printf( "frame %i\n", cg.testModelEntity.frame );
-}
-
-void CG_TestModelPrevFrame_f (void) {
-	cg.testModelEntity.frame--;
-	if ( cg.testModelEntity.frame < 0 ) {
-		cg.testModelEntity.frame = 0;
-	}
-	CG_Printf( "frame %i\n", cg.testModelEntity.frame );
-}
-
-void CG_TestModelNextSkin_f (void) {
-	cg.testModelEntity.skinNum++;
-	CG_Printf( "skin %i\n", cg.testModelEntity.skinNum );
-}
-
-void CG_TestModelPrevSkin_f (void) {
-	cg.testModelEntity.skinNum--;
-	if ( cg.testModelEntity.skinNum < 0 ) {
-		cg.testModelEntity.skinNum = 0;
-	}
-	CG_Printf( "skin %i\n", cg.testModelEntity.skinNum );
-}
-
-static void CG_AddTestModel (void) {
-	int		i;
-
-	// re-register the model, because the level may have changed
-	cg.testModelEntity.hModel = trap_R_RegisterModel( cg.testModelName );
-	if (! cg.testModelEntity.hModel ) {
-		CG_Printf ("Can't register model\n");
-		return;
-	}
-
-	// if testing a gun, set the origin relative to the view origin
-	if ( cg.testGun ) {
-		VectorCopy( cg.refdef.vieworg, cg.testModelEntity.origin );
-		VectorCopy( cg.refdef.viewaxis[0], cg.testModelEntity.axis[0] );
-		VectorCopy( cg.refdef.viewaxis[1], cg.testModelEntity.axis[1] );
-		VectorCopy( cg.refdef.viewaxis[2], cg.testModelEntity.axis[2] );
-
-		// allow the position to be adjusted
-		for (i=0 ; i<3 ; i++) {
-			cg.testModelEntity.origin[i] += cg.refdef.viewaxis[0][i] * cg_gun_x.value;
-			cg.testModelEntity.origin[i] += cg.refdef.viewaxis[1][i] * cg_gun_y.value;
-			cg.testModelEntity.origin[i] += cg.refdef.viewaxis[2][i] * cg_gun_z.value;
-		}
-	}
-
-	trap_R_AddRefEntityToScene( &cg.testModelEntity );
-}
-
-
-
 //============================================================================
 
 
@@ -818,10 +704,6 @@ void CG_DrawActiveFrame( int serverTime, stereoFrame_t stereoView, qboolean demo
 	// add buffered sounds
 	CG_PlayBufferedSounds();
 
-	// finish up the rest of the refdef
-	if ( cg.testModelEntity.hModel ) {
-		CG_AddTestModel();
-	}
 	cg.refdef.time = cg.time;
 	memcpy( cg.refdef.areamask, cg.snap->areamask, sizeof( cg.refdef.areamask ) );
 
