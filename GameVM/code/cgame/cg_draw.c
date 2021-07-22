@@ -1898,11 +1898,6 @@ static void CG_DrawTeamVote(void) {
 	CG_DrawSmallString( 0, 90, s, 1.0F );
 }
 
-
-static qboolean CG_DrawScoreboard( void ) {
-	return CG_DrawOldScoreboard();
-}
-
 /*
 =================
 CG_DrawIntermission
@@ -1915,7 +1910,6 @@ static void CG_DrawIntermission( void ) {
 		return;
 	}
 	cg.scoreFadeTime = cg.time;
-	cg.scoreBoardShowing = CG_DrawScoreboard();
 }
 
 /*
@@ -2160,12 +2154,6 @@ static void CG_Draw2D(stereoFrame_t stereoFrame)
 	if ( !CG_DrawFollow() ) {
 		CG_DrawWarmup();
 	}
-
-	// don't draw center string if scoreboard is up
-	cg.scoreBoardShowing = CG_DrawScoreboard();
-	if ( !cg.scoreBoardShowing) {
-		CG_DrawCenterString();
-	}
 }
 
 
@@ -2180,13 +2168,6 @@ void CG_DrawActive( stereoFrame_t stereoView ) {
 	// optionally draw the info screen instead
 	if ( !cg.snap ) {
 		CG_DrawInformation();
-		return;
-	}
-
-	// optionally draw the tournement scoreboard instead
-	if ( cg.snap->ps.persistant[PERS_TEAM] == TEAM_SPECTATOR &&
-		( cg.snap->ps.pm_flags & PMF_SCOREBOARD ) ) {
-		CG_DrawTourneyScoreboard();
 		return;
 	}
 

@@ -523,7 +523,6 @@ typedef struct {
 	int			teamScores[2];
 	score_t		scores[MAX_CLIENTS];
 	qboolean	showScores;
-	qboolean	scoreBoardShowing;
 	int			scoreFadeTime;
 	char		killerName[MAX_NAME_LENGTH];
 	char			spectatorList[MAX_STRING_CHARS];		// list of names
@@ -1219,12 +1218,6 @@ void CG_LoadingString( const char *s );
 void CG_LoadingItem( int itemNum );
 void CG_LoadingClient( int clientNum );
 void CG_DrawInformation( void );
-
-//
-// cg_scoreboard.c
-//
-qboolean CG_DrawOldScoreboard( void );
-void CG_DrawTourneyScoreboard( void );
 
 //
 // cg_consolecmds.c
