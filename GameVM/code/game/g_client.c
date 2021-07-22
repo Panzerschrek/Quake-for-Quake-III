@@ -825,12 +825,9 @@ void ClientSpawn(gentity_t *ent) {
 
 	if (!level.intermissiontime) {
 		if (ent->client->sess.sessionTeam != TEAM_SPECTATOR) {
-			G_KillBox(ent);
 			// force the base weapon up
 			client->ps.weapon = WP_MACHINEGUN;
 			client->ps.weaponstate = WEAPON_READY;
-			// fire the targets of the spawn point
-			G_UseTargets(spawnPoint, ent);
 			// select the highest weapon number available, after any spawn given items have fired
 			client->ps.weapon = 1;
 

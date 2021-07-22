@@ -409,14 +409,7 @@ char *G_NewString( const char *string );
 //
 // g_utils.c
 //
-int G_ModelIndex( char *name );
-int		G_SoundIndex( char *name );
-void	G_TeamCommand( team_t team, char *cmd );
-void	G_KillBox (gentity_t *ent);
 gentity_t *G_Find (gentity_t *from, int fieldofs, const char *match);
-gentity_t *G_PickTarget (char *targetname);
-void	G_UseTargets (gentity_t *ent, gentity_t *activator);
-void	G_SetMovedir ( vec3_t angles, vec3_t movedir);
 
 void	G_InitGentity( gentity_t *e );
 gentity_t	*G_Spawn (void);
@@ -425,17 +418,7 @@ void	G_Sound( gentity_t *ent, int channel, int soundIndex );
 void	G_FreeEntity( gentity_t *e );
 qboolean	G_EntitiesFree( void );
 
-void	G_TouchTriggers (gentity_t *ent);
-
-float	*tv (float x, float y, float z);
-char	*vtos( const vec3_t v );
-
-float vectoyaw( const vec3_t vec );
-
-void G_AddPredictableEvent( gentity_t *ent, int event, int eventParm );
-void G_AddEvent( gentity_t *ent, int event, int eventParm );
 void G_SetOrigin( gentity_t *ent, vec3_t origin );
-void AddRemap(const char *oldShader, const char *newShader, float timeOffset);
 const char *BuildShaderStateConfig( void );
 
 // damage flags
