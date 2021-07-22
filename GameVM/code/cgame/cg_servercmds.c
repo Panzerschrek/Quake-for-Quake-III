@@ -392,7 +392,6 @@ static void CG_MapRestart( void ) {
 	}
 
 	CG_InitLocalEntities();
-	CG_ClearParticles ();
 
 	// make sure the "3 frags left" warnings play again
 	cg.fraglimitWarnings = 0;
