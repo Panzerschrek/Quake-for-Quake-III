@@ -84,54 +84,6 @@ void PM_AddTouchEnt( int entityNum ) {
 	pm->numtouch++;
 }
 
-/*
-===================
-PM_StartTorsoAnim
-===================
-*/
-static void PM_StartTorsoAnim( int anim ) {
-	if ( pm->ps->pm_type >= PM_DEAD ) {
-		return;
-	}
-	pm->ps->torsoAnim = ( ( pm->ps->torsoAnim & ANIM_TOGGLEBIT ) ^ ANIM_TOGGLEBIT )
-		| anim;
-}
-static void PM_StartLegsAnim( int anim ) {
-	if ( pm->ps->pm_type >= PM_DEAD ) {
-		return;
-	}
-	if ( pm->ps->legsTimer > 0 ) {
-		return;		// a high priority animation is running
-	}
-	pm->ps->legsAnim = ( ( pm->ps->legsAnim & ANIM_TOGGLEBIT ) ^ ANIM_TOGGLEBIT )
-		| anim;
-}
-
-static void PM_ContinueLegsAnim( int anim ) {
-	if ( ( pm->ps->legsAnim & ~ANIM_TOGGLEBIT ) == anim ) {
-		return;
-	}
-	if ( pm->ps->legsTimer > 0 ) {
-		return;		// a high priority animation is running
-	}
-	PM_StartLegsAnim( anim );
-}
-
-static void PM_ContinueTorsoAnim( int anim ) {
-	if ( ( pm->ps->torsoAnim & ~ANIM_TOGGLEBIT ) == anim ) {
-		return;
-	}
-	if ( pm->ps->torsoTimer > 0 ) {
-		return;		// a high priority animation is running
-	}
-	PM_StartTorsoAnim( anim );
-}
-
-static void PM_ForceLegsAnim( int anim ) {
-	pm->ps->legsTimer = 0;
-	PM_StartLegsAnim( anim );
-}
-
 
 /*
 ==================
@@ -380,199 +332,13 @@ static qboolean PM_CheckJump( void ) {
 	PM_AddEvent( EV_JUMP );
 
 	if ( pm->cmd.forwardmove >= 0 ) {
-		PM_ForceLegsAnim( LEGS_JUMP );
 		pm->ps->pm_flags &= ~PMF_BACKWARDS_JUMP;
 	} else {
-		PM_ForceLegsAnim( LEGS_JUMPB );
 		pm->ps->pm_flags |= PMF_BACKWARDS_JUMP;
 	}
 
 	return qtrue;
 }
-
-/*
-=============
-PM_CheckWaterJump
-=============
-*/
-static qboolean	PM_CheckWaterJump( void ) {
-	vec3_t	spot;
-	int		cont;
-	vec3_t	flatforward;
-
-	if (pm->ps->pm_time) {
-		return qfalse;
-	}
-
-	// check for water jump
-	if ( pm->waterlevel != 2 ) {
-		return qfalse;
-	}
-
-	flatforward[0] = pml.forward[0];
-	flatforward[1] = pml.forward[1];
-	flatforward[2] = 0;
-	VectorNormalize (flatforward);
-
-	VectorMA (pm->ps->origin, 30, flatforward, spot);
-	spot[2] += 4;
-	cont = pm->pointcontents (spot, pm->ps->clientNum );
-	if ( !(cont & CONTENTS_SOLID) ) {
-		return qfalse;
-	}
-
-	spot[2] += 16;
-	cont = pm->pointcontents (spot, pm->ps->clientNum );
-	if ( cont & (CONTENTS_SOLID|CONTENTS_PLAYERCLIP|CONTENTS_BODY) ) {
-		return qfalse;
-	}
-
-	// jump out of water
-	VectorScale (pml.forward, 200, pm->ps->velocity);
-	pm->ps->velocity[2] = 350;
-
-	pm->ps->pm_flags |= PMF_TIME_WATERJUMP;
-	pm->ps->pm_time = 2000;
-
-	return qtrue;
-}
-
-//============================================================================
-
-
-/*
-===================
-PM_WaterJumpMove
-
-Flying out of the water
-===================
-*/
-static void PM_WaterJumpMove( void ) {
-	// waterjump has no control, but falls
-
-	PM_StepSlideMove( qtrue );
-
-	pm->ps->velocity[2] -= pm->ps->gravity * pml.frametime;
-	if (pm->ps->velocity[2] < 0) {
-		// cancel as soon as we are falling down again
-		pm->ps->pm_flags &= ~PMF_ALL_TIMES;
-		pm->ps->pm_time = 0;
-	}
-}
-
-/*
-===================
-PM_WaterMove
-
-===================
-*/
-static void PM_WaterMove( void ) {
-	int		i;
-	vec3_t	wishvel;
-	float	wishspeed;
-	vec3_t	wishdir;
-	float	scale;
-	float	vel;
-
-	if ( PM_CheckWaterJump() ) {
-		PM_WaterJumpMove();
-		return;
-	}
-#if 0
-	// jump = head for surface
-	if ( pm->cmd.upmove >= 10 ) {
-		if (pm->ps->velocity[2] > -300) {
-			if ( pm->watertype & CONTENTS_WATER ) {
-				pm->ps->velocity[2] = 100;
-			} else if ( pm->watertype & CONTENTS_SLIME ) {
-				pm->ps->velocity[2] = 80;
-			} else {
-				pm->ps->velocity[2] = 50;
-			}
-		}
-	}
-#endif
-	PM_Friction ();
-
-	scale = PM_CmdScale( &pm->cmd );
-	//
-	// user intentions
-	//
-	if ( !scale ) {
-		wishvel[0] = 0;
-		wishvel[1] = 0;
-		wishvel[2] = -60;		// sink towards bottom
-	} else {
-		for (i=0 ; i<3 ; i++)
-			wishvel[i] = scale * pml.forward[i]*pm->cmd.forwardmove + scale * pml.right[i]*pm->cmd.rightmove;
-
-		wishvel[2] += scale * pm->cmd.upmove;
-	}
-
-	VectorCopy (wishvel, wishdir);
-	wishspeed = VectorNormalize(wishdir);
-
-	if ( wishspeed > pm->ps->speed * pm_swimScale ) {
-		wishspeed = pm->ps->speed * pm_swimScale;
-	}
-
-	PM_Accelerate (wishdir, wishspeed, pm_wateraccelerate);
-
-	// make sure we can go up slopes easily under water
-	if ( pml.groundPlane && DotProduct( pm->ps->velocity, pml.groundTrace.plane.normal ) < 0 ) {
-		vel = VectorLength(pm->ps->velocity);
-		// slide along the ground plane
-		PM_ClipVelocity (pm->ps->velocity, pml.groundTrace.plane.normal, 
-			pm->ps->velocity, OVERCLIP );
-
-		VectorNormalize(pm->ps->velocity);
-		VectorScale(pm->ps->velocity, vel, pm->ps->velocity);
-	}
-
-	PM_SlideMove( qfalse );
-}
-
-/*
-===================
-PM_FlyMove
-
-Only with the flight powerup
-===================
-*/
-static void PM_FlyMove( void ) {
-	int		i;
-	vec3_t	wishvel;
-	float	wishspeed;
-	vec3_t	wishdir;
-	float	scale;
-
-	// normal slowdown
-	PM_Friction ();
-
-	scale = PM_CmdScale( &pm->cmd );
-	//
-	// user intentions
-	//
-	if ( !scale ) {
-		wishvel[0] = 0;
-		wishvel[1] = 0;
-		wishvel[2] = 0;
-	} else {
-		for (i=0 ; i<3 ; i++) {
-			wishvel[i] = scale * pml.forward[i]*pm->cmd.forwardmove + scale * pml.right[i]*pm->cmd.rightmove;
-		}
-
-		wishvel[2] += scale * pm->cmd.upmove;
-	}
-
-	VectorCopy (wishvel, wishdir);
-	wishspeed = VectorNormalize(wishdir);
-
-	PM_Accelerate (wishdir, wishspeed, pm_flyaccelerate);
-
-	PM_StepSlideMove( qfalse );
-}
-
 
 /*
 ===================
@@ -641,32 +407,6 @@ static void PM_AirMove( void ) {
 
 /*
 ===================
-PM_GrappleMove
-
-===================
-*/
-static void PM_GrappleMove( void ) {
-	vec3_t vel, v;
-	float vlen;
-
-	VectorScale(pml.forward, -16, v);
-	VectorAdd(pm->ps->grapplePoint, v, v);
-	VectorSubtract(v, pm->ps->origin, vel);
-	vlen = VectorLength(vel);
-	VectorNormalize( vel );
-
-	if (vlen <= 100)
-		VectorScale(vel, 10 * vlen, vel);
-	else
-		VectorScale(vel, 800, vel);
-
-	VectorCopy(vel, pm->ps->velocity);
-
-	pml.groundPlane = qfalse;
-}
-
-/*
-===================
 PM_WalkMove
 
 ===================
@@ -684,18 +424,13 @@ static void PM_WalkMove( void ) {
 
 	if ( pm->waterlevel > 2 && DotProduct( pml.forward, pml.groundTrace.plane.normal ) > 0 ) {
 		// begin swimming
-		PM_WaterMove();
 		return;
 	}
 
 
 	if ( PM_CheckJump () ) {
 		// jumped away
-		if ( pm->waterlevel > 1 ) {
-			PM_WaterMove();
-		} else {
 			PM_AirMove();
-		}
 		return;
 	}
 
@@ -878,125 +613,6 @@ static void PM_NoclipMove( void ) {
 
 //============================================================================
 
-/*
-================
-PM_FootstepForSurface
-
-Returns an event number appropriate for the groundsurface
-================
-*/
-static int PM_FootstepForSurface( void ) {
-	if ( pml.groundTrace.surfaceFlags & SURF_NOSTEPS ) {
-		return 0;
-	}
-	if ( pml.groundTrace.surfaceFlags & SURF_METALSTEPS ) {
-		return EV_FOOTSTEP_METAL;
-	}
-	return EV_FOOTSTEP;
-}
-
-
-/*
-=================
-PM_CrashLand
-
-Check for hard landings that generate sound events
-=================
-*/
-static void PM_CrashLand( void ) {
-	float		delta;
-	float		dist;
-	float		vel, acc;
-	float		t;
-	float		a, b, c, den;
-
-	// decide which landing animation to use
-	if ( pm->ps->pm_flags & PMF_BACKWARDS_JUMP ) {
-		PM_ForceLegsAnim( LEGS_LANDB );
-	} else {
-		PM_ForceLegsAnim( LEGS_LAND );
-	}
-
-	pm->ps->legsTimer = TIMER_LAND;
-
-	// calculate the exact velocity on landing
-	dist = pm->ps->origin[2] - pml.previous_origin[2];
-	vel = pml.previous_velocity[2];
-	acc = -pm->ps->gravity;
-
-	a = acc / 2;
-	b = vel;
-	c = -dist;
-
-	den =  b * b - 4 * a * c;
-	if ( den < 0 ) {
-		return;
-	}
-	t = (-b - sqrt( den ) ) / ( 2 * a );
-
-	delta = vel + t * acc;
-	delta = delta*delta * 0.0001;
-
-	// ducking while falling doubles damage
-	if ( pm->ps->pm_flags & PMF_DUCKED ) {
-		delta *= 2;
-	}
-
-	// never take falling damage if completely underwater
-	if ( pm->waterlevel == 3 ) {
-		return;
-	}
-
-	// reduce falling damage if there is standing water
-	if ( pm->waterlevel == 2 ) {
-		delta *= 0.25;
-	}
-	if ( pm->waterlevel == 1 ) {
-		delta *= 0.5;
-	}
-
-	if ( delta < 1 ) {
-		return;
-	}
-
-	// create a local entity event to play the sound
-
-	// SURF_NODAMAGE is used for bounce pads where you don't ever
-	// want to take damage or play a crunch sound
-	if ( !(pml.groundTrace.surfaceFlags & SURF_NODAMAGE) )  {
-		if ( delta > 60 ) {
-			PM_AddEvent( EV_FALL_FAR );
-		} else if ( delta > 40 ) {
-			// this is a pain grunt, so don't play it if dead
-			if ( pm->ps->stats[STAT_HEALTH] > 0 ) {
-				PM_AddEvent( EV_FALL_MEDIUM );
-			}
-		} else if ( delta > 7 ) {
-			PM_AddEvent( EV_FALL_SHORT );
-		} else {
-			PM_AddEvent( PM_FootstepForSurface() );
-		}
-	}
-
-	// start footstep cycle over
-	pm->ps->bobCycle = 0;
-}
-
-/*
-=============
-PM_CheckStuck
-=============
-*/
-/*
-void PM_CheckStuck(void) {
-	trace_t trace;
-
-	pm->trace (&trace, pm->ps->origin, pm->mins, pm->maxs, pm->ps->origin, pm->ps->clientNum, pm->tracemask);
-	if (trace.allsolid) {
-		//int shit = qtrue;
-	}
-}
-*/
 
 /*
 =============
@@ -1066,10 +682,8 @@ static void PM_GroundTraceMissed( void ) {
 		pm->trace (&trace, pm->ps->origin, pm->mins, pm->maxs, point, pm->ps->clientNum, pm->tracemask);
 		if ( trace.fraction == 1.0 ) {
 			if ( pm->cmd.forwardmove >= 0 ) {
-				PM_ForceLegsAnim( LEGS_JUMP );
 				pm->ps->pm_flags &= ~PMF_BACKWARDS_JUMP;
 			} else {
-				PM_ForceLegsAnim( LEGS_JUMPB );
 				pm->ps->pm_flags |= PMF_BACKWARDS_JUMP;
 			}
 		}
@@ -1118,10 +732,8 @@ static void PM_GroundTrace( void ) {
 		}
 		// go into jump animation
 		if ( pm->cmd.forwardmove >= 0 ) {
-			PM_ForceLegsAnim( LEGS_JUMP );
 			pm->ps->pm_flags &= ~PMF_BACKWARDS_JUMP;
 		} else {
-			PM_ForceLegsAnim( LEGS_JUMPB );
 			pm->ps->pm_flags |= PMF_BACKWARDS_JUMP;
 		}
 
@@ -1160,7 +772,6 @@ static void PM_GroundTrace( void ) {
 			Com_Printf("%i:Land\n", c_pmove);
 		}
 		
-		PM_CrashLand();
 
 		// don't do landing time if we were just going down a slope
 		if ( pml.previous_velocity[2] < -200 ) {
@@ -1294,377 +905,6 @@ static void PM_CheckDuck (void)
 
 
 //===================================================================
-
-
-/*
-===============
-PM_Footsteps
-===============
-*/
-static void PM_Footsteps( void ) {
-	float		bobmove;
-	int			old;
-	qboolean	footstep;
-
-	//
-	// calculate speed and cycle to be used for
-	// all cyclic walking effects
-	//
-	pm->xyspeed = sqrt( pm->ps->velocity[0] * pm->ps->velocity[0]
-		+  pm->ps->velocity[1] * pm->ps->velocity[1] );
-
-	if ( pm->ps->groundEntityNum == ENTITYNUM_NONE ) {
-
-		if ( pm->ps->powerups[PW_INVULNERABILITY] ) {
-			PM_ContinueLegsAnim( LEGS_IDLECR );
-		}
-		// airborne leaves position in cycle intact, but doesn't advance
-		if ( pm->waterlevel > 1 ) {
-			PM_ContinueLegsAnim( LEGS_SWIM );
-		}
-		return;
-	}
-
-	// if not trying to move
-	if ( !pm->cmd.forwardmove && !pm->cmd.rightmove ) {
-		if (  pm->xyspeed < 5 ) {
-			pm->ps->bobCycle = 0;	// start at beginning of cycle again
-			if ( pm->ps->pm_flags & PMF_DUCKED ) {
-				PM_ContinueLegsAnim( LEGS_IDLECR );
-			} else {
-				PM_ContinueLegsAnim( LEGS_IDLE );
-			}
-		}
-		return;
-	}
-	
-
-	footstep = qfalse;
-
-	if ( pm->ps->pm_flags & PMF_DUCKED ) {
-		bobmove = 0.5;	// ducked characters bob much faster
-		if ( pm->ps->pm_flags & PMF_BACKWARDS_RUN ) {
-			PM_ContinueLegsAnim( LEGS_BACKCR );
-		}
-		else {
-			PM_ContinueLegsAnim( LEGS_WALKCR );
-		}
-		// ducked characters never play footsteps
-	/*
-	} else 	if ( pm->ps->pm_flags & PMF_BACKWARDS_RUN ) {
-		if ( !( pm->cmd.buttons & BUTTON_WALKING ) ) {
-			bobmove = 0.4;	// faster speeds bob faster
-			footstep = qtrue;
-		} else {
-			bobmove = 0.3;
-		}
-		PM_ContinueLegsAnim( LEGS_BACK );
-	*/
-	} else {
-		if ( !( pm->cmd.buttons & BUTTON_WALKING ) ) {
-			bobmove = 0.4f;	// faster speeds bob faster
-			if ( pm->ps->pm_flags & PMF_BACKWARDS_RUN ) {
-				PM_ContinueLegsAnim( LEGS_BACK );
-			}
-			else {
-				PM_ContinueLegsAnim( LEGS_RUN );
-			}
-			footstep = qtrue;
-		} else {
-			bobmove = 0.3f;	// walking bobs slow
-			if ( pm->ps->pm_flags & PMF_BACKWARDS_RUN ) {
-				PM_ContinueLegsAnim( LEGS_BACKWALK );
-			}
-			else {
-				PM_ContinueLegsAnim( LEGS_WALK );
-			}
-		}
-	}
-
-	// check for footstep / splash sounds
-	old = pm->ps->bobCycle;
-	pm->ps->bobCycle = (int)( old + bobmove * pml.msec ) & 255;
-
-	// if we just crossed a cycle boundary, play an appropriate footstep event
-	if ( ( ( old + 64 ) ^ ( pm->ps->bobCycle + 64 ) ) & 128 ) {
-		if ( pm->waterlevel == 0 ) {
-			// on ground will only play sounds if running
-			if ( footstep && !pm->noFootsteps ) {
-				PM_AddEvent( PM_FootstepForSurface() );
-			}
-		} else if ( pm->waterlevel == 1 ) {
-			// splashing
-			PM_AddEvent( EV_FOOTSPLASH );
-		} else if ( pm->waterlevel == 2 ) {
-			// wading / swimming at surface
-			PM_AddEvent( EV_SWIM );
-		} else if ( pm->waterlevel == 3 ) {
-			// no sound when completely underwater
-
-		}
-	}
-}
-
-/*
-==============
-PM_WaterEvents
-
-Generate sound events for entering and leaving water
-==============
-*/
-static void PM_WaterEvents( void ) {		// FIXME?
-	//
-	// if just entered a water volume, play a sound
-	//
-	if (!pml.previous_waterlevel && pm->waterlevel) {
-		PM_AddEvent( EV_WATER_TOUCH );
-	}
-
-	//
-	// if just completely exited a water volume, play a sound
-	//
-	if (pml.previous_waterlevel && !pm->waterlevel) {
-		PM_AddEvent( EV_WATER_LEAVE );
-	}
-
-	//
-	// check for head just going under water
-	//
-	if (pml.previous_waterlevel != 3 && pm->waterlevel == 3) {
-		PM_AddEvent( EV_WATER_UNDER );
-	}
-
-	//
-	// check for head just coming out of water
-	//
-	if (pml.previous_waterlevel == 3 && pm->waterlevel != 3) {
-		PM_AddEvent( EV_WATER_CLEAR );
-	}
-}
-
-
-/*
-===============
-PM_BeginWeaponChange
-===============
-*/
-static void PM_BeginWeaponChange( int weapon ) {
-	if ( weapon <= WP_NONE || weapon >= WP_NUM_WEAPONS ) {
-		return;
-	}
-
-	if ( !( pm->ps->stats[STAT_WEAPONS] & ( 1 << weapon ) ) ) {
-		return;
-	}
-	
-	if ( pm->ps->weaponstate == WEAPON_DROPPING ) {
-		return;
-	}
-
-	PM_AddEvent( EV_CHANGE_WEAPON );
-	pm->ps->weaponstate = WEAPON_DROPPING;
-	pm->ps->weaponTime += 200;
-	PM_StartTorsoAnim( TORSO_DROP );
-}
-
-
-/*
-===============
-PM_FinishWeaponChange
-===============
-*/
-static void PM_FinishWeaponChange( void ) {
-	int		weapon;
-
-	weapon = pm->cmd.weapon;
-	if ( weapon < WP_NONE || weapon >= WP_NUM_WEAPONS ) {
-		weapon = WP_NONE;
-	}
-
-	if ( !( pm->ps->stats[STAT_WEAPONS] & ( 1 << weapon ) ) ) {
-		weapon = WP_NONE;
-	}
-
-	pm->ps->weapon = weapon;
-	pm->ps->weaponstate = WEAPON_RAISING;
-	pm->ps->weaponTime += 250;
-	PM_StartTorsoAnim( TORSO_RAISE );
-}
-
-
-/*
-==============
-PM_TorsoAnimation
-
-==============
-*/
-static void PM_TorsoAnimation( void ) {
-	if ( pm->ps->weaponstate == WEAPON_READY ) {
-		if ( pm->ps->weapon == WP_GAUNTLET ) {
-			PM_ContinueTorsoAnim( TORSO_STAND2 );
-		} else {
-			PM_ContinueTorsoAnim( TORSO_STAND );
-		}
-		return;
-	}
-}
-
-
-/*
-==============
-PM_Weapon
-
-Generates weapon events and modifes the weapon counter
-==============
-*/
-static void PM_Weapon( void ) {
-	int		addTime;
-
-	// don't allow attack until all buttons are up
-	if ( pm->ps->pm_flags & PMF_RESPAWNED ) {
-		return;
-	}
-
-	// ignore if spectator
-	if ( pm->ps->persistant[PERS_TEAM] == TEAM_SPECTATOR ) {
-		return;
-	}
-
-	// check for dead player
-	if ( pm->ps->stats[STAT_HEALTH] <= 0 ) {
-		pm->ps->weapon = WP_NONE;
-		return;
-	}
-
-
-	// make weapon function
-	if ( pm->ps->weaponTime > 0 ) {
-		pm->ps->weaponTime -= pml.msec;
-	}
-
-	// check for weapon change
-	// can't change if weapon is firing, but can change
-	// again if lowering or raising
-	if ( pm->ps->weaponTime <= 0 || pm->ps->weaponstate != WEAPON_FIRING ) {
-		if ( pm->ps->weapon != pm->cmd.weapon ) {
-			PM_BeginWeaponChange( pm->cmd.weapon );
-		}
-	}
-
-	if ( pm->ps->weaponTime > 0 ) {
-		return;
-	}
-
-	// change weapon if time
-	if ( pm->ps->weaponstate == WEAPON_DROPPING ) {
-		PM_FinishWeaponChange();
-		return;
-	}
-
-	if ( pm->ps->weaponstate == WEAPON_RAISING ) {
-		pm->ps->weaponstate = WEAPON_READY;
-		if ( pm->ps->weapon == WP_GAUNTLET ) {
-			PM_StartTorsoAnim( TORSO_STAND2 );
-		} else {
-			PM_StartTorsoAnim( TORSO_STAND );
-		}
-		return;
-	}
-
-	// check for fire
-	if ( ! (pm->cmd.buttons & BUTTON_ATTACK) ) {
-		pm->ps->weaponTime = 0;
-		pm->ps->weaponstate = WEAPON_READY;
-		return;
-	}
-
-	// start the animation even if out of ammo
-	if ( pm->ps->weapon == WP_GAUNTLET ) {
-		// the guantlet only "fires" when it actually hits something
-		if ( !pm->gauntletHit ) {
-			pm->ps->weaponTime = 0;
-			pm->ps->weaponstate = WEAPON_READY;
-			return;
-		}
-		PM_StartTorsoAnim( TORSO_ATTACK2 );
-	} else {
-		PM_StartTorsoAnim( TORSO_ATTACK );
-	}
-
-	pm->ps->weaponstate = WEAPON_FIRING;
-
-	// check for out of ammo
-	if ( ! pm->ps->ammo[ pm->ps->weapon ] ) {
-		PM_AddEvent( EV_NOAMMO );
-		pm->ps->weaponTime += 500;
-		return;
-	}
-
-	// take an ammo away if not infinite
-	if ( pm->ps->ammo[ pm->ps->weapon ] != -1 ) {
-		pm->ps->ammo[ pm->ps->weapon ]--;
-	}
-
-	// fire weapon
-	PM_AddEvent( EV_FIRE_WEAPON );
-
-	switch( pm->ps->weapon ) {
-	default:
-	case WP_GAUNTLET:
-		addTime = 400;
-		break;
-	case WP_LIGHTNING:
-		addTime = 50;
-		break;
-	case WP_SHOTGUN:
-		addTime = 1000;
-		break;
-	case WP_MACHINEGUN:
-		addTime = 100;
-		break;
-	case WP_GRENADE_LAUNCHER:
-		addTime = 800;
-		break;
-	case WP_ROCKET_LAUNCHER:
-		addTime = 800;
-		break;
-	case WP_PLASMAGUN:
-		addTime = 100;
-		break;
-	case WP_RAILGUN:
-		addTime = 1500;
-		break;
-	case WP_BFG:
-		addTime = 200;
-		break;
-	case WP_GRAPPLING_HOOK:
-		addTime = 400;
-		break;
-	}
-
-	if ( pm->ps->powerups[PW_HASTE] ) {
-		addTime /= 1.3;
-	}
-
-	pm->ps->weaponTime += addTime;
-}
-
-/*
-================
-PM_Animate
-================
-*/
-
-static void PM_Animate( void ) {
-	if ( pm->cmd.buttons & BUTTON_GESTURE ) {
-		if ( pm->ps->torsoTimer == 0 ) {
-			PM_StartTorsoAnim( TORSO_GESTURE );
-			pm->ps->torsoTimer = TIMER_GESTURE;
-			PM_AddEvent( EV_TAUNT );
-		}
-	}
-}
-
 
 /*
 ================
@@ -1845,7 +1085,6 @@ void PmoveSingle (pmove_t *pmove) {
 
 	if ( pm->ps->pm_type == PM_SPECTATOR ) {
 		PM_CheckDuck ();
-		PM_FlyMove ();
 		PM_DropTimers ();
 		return;
 	}
@@ -1880,18 +1119,9 @@ void PmoveSingle (pmove_t *pmove) {
 
 	PM_DropTimers();
 
-	if ( pm->ps->powerups[PW_FLIGHT] ) {
-		// flight powerup doesn't allow jump and has different friction
-		PM_FlyMove();
-	} else if (pm->ps->pm_flags & PMF_GRAPPLE_PULL) {
-		PM_GrappleMove();
+	if (pm->ps->pm_flags & PMF_GRAPPLE_PULL) {
 		// We can wiggle a bit
 		PM_AirMove();
-	} else if (pm->ps->pm_flags & PMF_TIME_WATERJUMP) {
-		PM_WaterJumpMove();
-	} else if ( pm->waterlevel > 1 ) {
-		// swimming
-		PM_WaterMove();
 	} else if ( pml.walking ) {
 		// walking on ground
 		PM_WalkMove();
@@ -1900,23 +1130,8 @@ void PmoveSingle (pmove_t *pmove) {
 		PM_AirMove();
 	}
 
-	PM_Animate();
-
 	// set groundentity, watertype, and waterlevel
 	PM_GroundTrace();
-	PM_SetWaterLevel();
-
-	// weapons
-	PM_Weapon();
-
-	// torso animation
-	PM_TorsoAnimation();
-
-	// footstep events / legs animations
-	PM_Footsteps();
-
-	// entering / leaving water splashes
-	PM_WaterEvents();
 
 	// snap some parts of playerstate to save network bandwidth
 	trap_SnapVector( pm->ps->velocity );
