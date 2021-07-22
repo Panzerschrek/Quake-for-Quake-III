@@ -48,7 +48,6 @@ typedef struct {
 static consoleCommand_t	commands[] = {
 	{ "tcmd", CG_TargetCommand_f },
 	//{ "camera", CG_Camera_f },
-	{ "loaddeferred", CG_LoadDeferredPlayers }	
 };
 
 

@@ -317,7 +317,6 @@ static void CG_ForceModelChange( void ) {
 		if ( !clientInfo[0] ) {
 			continue;
 		}
-		CG_NewClientInfo( i );
 	}
 }
 
@@ -805,8 +804,6 @@ CG_RegisterClients
 static void CG_RegisterClients( void ) {
 	int		i;
 
-	CG_NewClientInfo(cg.clientNum);
-
 	for (i=0 ; i<MAX_CLIENTS ; i++) {
 		const char		*clientInfo;
 
@@ -818,7 +815,6 @@ static void CG_RegisterClients( void ) {
 		if ( !clientInfo[0]) {
 			continue;
 		}
-		CG_NewClientInfo( i );
 	}
 	CG_BuildSpectatorString();
 }

@@ -316,9 +316,6 @@ static void CG_Missile( centity_t *cent ) {
 			RotateAroundDirection( ent.axis, s1->time );
 		}
 	}
-
-	// add to refresh list, possibly with quad glow
-	CG_AddRefEntityWithPowerups( &ent, s1, TEAM_FREE );
 }
 
 /*
@@ -673,7 +670,6 @@ static void CG_AddCEntity( centity_t *cent ) {
 		CG_General( cent );
 		break;
 	case ET_PLAYER:
-		CG_Player( cent );
 		break;
 	case ET_ITEM:
 		CG_Item( cent );

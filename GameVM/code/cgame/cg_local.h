@@ -1086,15 +1086,6 @@ extern  char teamChat1[256];
 extern  char teamChat2[256];
 
 //
-// cg_player.c
-//
-void CG_Player( centity_t *cent );
-void CG_ResetPlayerEntity( centity_t *cent );
-void CG_AddRefEntityWithPowerups( refEntity_t *ent, entityState_t *state, int team );
-void CG_NewClientInfo( int clientNum );
-sfxHandle_t	CG_CustomSound( int clientNum, const char *soundName );
-
-//
 // cg_predict.c
 //
 void CG_BuildSolidList( void );
@@ -1102,7 +1093,6 @@ int	CG_PointContents( const vec3_t point, int passEntityNum );
 void CG_Trace( trace_t *result, const vec3_t start, const vec3_t mins, const vec3_t maxs, const vec3_t end, 
 					 int skipNumber, int mask );
 void CG_PredictPlayerState( void );
-void CG_LoadDeferredPlayers( void );
 
 const char	*CG_PlaceString( int rank );
 
