@@ -1823,7 +1823,6 @@ Returns the Z component of the surface being shadowed
 static qboolean CG_PlayerShadow( centity_t *cent, float *shadowPlane ) {
 	vec3_t		end, mins = {-15, -15, 0}, maxs = {15, 15, 2};
 	trace_t		trace;
-	float		alpha;
 
 	*shadowPlane = 0;
 
@@ -1852,17 +1851,6 @@ static qboolean CG_PlayerShadow( centity_t *cent, float *shadowPlane ) {
 	if ( cg_shadows.integer != 1 ) {	// no mark for stencil or projection shadows
 		return qtrue;
 	}
-
-	// fade the shadow out with height
-	alpha = 1.0 - trace.fraction;
-
-	// hack / FPE - bogus planes?
-	//assert( DotProduct( trace.plane.normal, trace.plane.normal ) != 0.0f ) 
-
-	// add the mark as a temporary, so it goes directly to the renderer
-	// without taking a spot in the cg_marks array
-	CG_ImpactMark( cgs.media.shadowMarkShader, trace.endpos, trace.plane.normal, 
-		cent->pe.legs.yawAngle, alpha,alpha,alpha,1, qfalse, 24, qtrue );
 
 	return qtrue;
 }
