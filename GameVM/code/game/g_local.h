@@ -407,15 +407,6 @@ void		G_SpawnEntitiesFromString( void );
 char *G_NewString( const char *string );
 
 //
-// g_cmds.c
-//
-void Cmd_Score_f (gentity_t *ent);
-void StopFollowing( gentity_t *ent );
-void BroadcastTeamChange( gclient_t *client, int oldTeam );
-void SetTeam( gentity_t *ent, const char *s );
-void Cmd_FollowCycle_f( gentity_t *ent, int dir );
-
-//
 // g_utils.c
 //
 int G_ModelIndex( char *name );
@@ -475,11 +466,6 @@ qboolean	ConsoleCommand( void );
 void G_ProcessIPBans(void);
 qboolean G_FilterPacket (char *from);
 
-
-//
-// g_cmds.c
-//
-void DeathmatchScoreboardMessage( gentity_t *ent );
 
 //
 // g_main.c
