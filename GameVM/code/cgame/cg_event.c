@@ -313,9 +313,6 @@ static void CG_UseItem( centity_t *cent ) {
 	if ( es->number == cg.snap->ps.clientNum ) {
 		if ( !itemNum ) {
 			CG_CenterPrint( "No item to use", SCREEN_HEIGHT * 0.30, BIGCHAR_WIDTH );
-		} else {
-			item = BG_FindItemForHoldable( itemNum );
-			CG_CenterPrint( va("Use %s", item->pickup_name), SCREEN_HEIGHT * 0.30, BIGCHAR_WIDTH );
 		}
 	}
 
@@ -348,18 +345,6 @@ A new item was picked up this frame
 ================
 */
 static void CG_ItemPickup( int itemNum ) {
-	cg.itemPickup = itemNum;
-	cg.itemPickupTime = cg.time;
-	cg.itemPickupBlendTime = cg.time;
-	// see if it should be the grabbed weapon
-	if ( bg_itemlist[itemNum].giType == IT_WEAPON ) {
-		// select it immediately
-		if ( cg_autoswitch.integer && bg_itemlist[itemNum].giTag != WP_MACHINEGUN ) {
-			cg.weaponSelectTime = cg.time;
-			cg.weaponSelect = bg_itemlist[itemNum].giTag;
-		}
-	}
-
 }
 
 /*
@@ -632,55 +617,9 @@ void CG_EntityEvent( centity_t *cent, vec3_t position ) {
 
 	case EV_ITEM_PICKUP:
 		DEBUGNAME("EV_ITEM_PICKUP");
-		{
-			gitem_t	*item;
-			int		index;
-
-			index = es->eventParm;		// player predicted
-
-			if ( index < 1 || index >= bg_numItems ) {
-				break;
-			}
-			item = &bg_itemlist[ index ];
-
-			// powerups and team items will have a separate global sound, this one
-			// will be played at prediction time
-			if ( item->giType == IT_POWERUP || item->giType == IT_TEAM) {
-				trap_S_StartSound (NULL, es->number, CHAN_AUTO,	cgs.media.n_healthSound );
-			} else if (item->giType == IT_PERSISTANT_POWERUP) {
-			} else {
-				trap_S_StartSound (NULL, es->number, CHAN_AUTO,	trap_S_RegisterSound( item->pickup_sound, qfalse ) );
-			}
-
-			// show icon and name on status bar
-			if ( es->number == cg.snap->ps.clientNum ) {
-				CG_ItemPickup( index );
-			}
-		}
 		break;
 
 	case EV_GLOBAL_ITEM_PICKUP:
-		DEBUGNAME("EV_GLOBAL_ITEM_PICKUP");
-		{
-			gitem_t	*item;
-			int		index;
-
-			index = es->eventParm;		// player predicted
-
-			if ( index < 1 || index >= bg_numItems ) {
-				break;
-			}
-			item = &bg_itemlist[ index ];
-			// powerup pickups are global
-			if( item->pickup_sound ) {
-				trap_S_StartSound (NULL, cg.snap->ps.clientNum, CHAN_AUTO, trap_S_RegisterSound( item->pickup_sound, qfalse ) );
-			}
-
-			// show icon and name on status bar
-			if ( es->number == cg.snap->ps.clientNum ) {
-				CG_ItemPickup( index );
-			}
-		}
 		break;
 
 	//
@@ -1066,7 +1005,6 @@ void CG_CheckEvents( centity_t *cent ) {
 	}
 
 	// calculate the position at exactly the frame time
-	BG_EvaluateTrajectory( &cent->currentState.pos, cg.snap->serverTime, cent->lerpOrigin );
 	CG_SetEntitySoundPosition( cent );
 
 	CG_EntityEvent( cent, cent->lerpOrigin );

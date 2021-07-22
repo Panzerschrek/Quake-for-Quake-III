@@ -305,13 +305,6 @@ void Cmd_Give_f (gentity_t *ent)
 		return;
 	}
 
-	// spawn a specific item right on the player
-	if ( !give_all ) {
-		it = BG_FindItem (name);
-		if (!it) {
-			return;
-		}
-	}
 }
 
 

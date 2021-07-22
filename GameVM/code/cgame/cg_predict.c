@@ -104,7 +104,6 @@ static void CG_ClipMoveToEntities ( const vec3_t start, const vec3_t mins, const
 			// special value for bmodel
 			cmodel = trap_CM_InlineModel( ent->modelindex );
 			VectorCopy( cent->lerpAngles, angles );
-			BG_EvaluateTrajectory( &cent->currentState.pos, cg.physicsTime, origin );
 		} else {
 			// encoded bbox
 			x = (ent->solid & 255);
@@ -264,20 +263,11 @@ static void CG_TouchItem( centity_t *cent ) {
 	if ( !cg_predictItems.integer ) {
 		return;
 	}
-	if ( !BG_PlayerTouchesItem( &cg.predictedPlayerState, &cent->currentState, cg.time ) ) {
-		return;
-	}
 
 	// never pick an item up twice in a prediction
 	if ( cent->miscTime == cg.time ) {
 		return;
 	}
-
-	if ( !BG_CanItemBeGrabbed( cgs.gametype, &cent->currentState, &cg.predictedPlayerState ) ) {
-		return;		// can't hold it
-	}
-
-	item = &bg_itemlist[ cent->currentState.modelindex ];
 
 	// Special case for flags.  
 	// We don't predict touching our own flag
@@ -289,9 +279,6 @@ static void CG_TouchItem( centity_t *cent ) {
 			item->giType == IT_TEAM && item->giTag == PW_BLUEFLAG)
 			return;
 	}
-
-	// grab it
-	BG_AddPredictableEventToPlayerstate( EV_ITEM_PICKUP, cent->currentState.modelindex , &cg.predictedPlayerState);
 
 	// remove it from the frame so it won't be drawn
 	cent->currentState.eFlags |= EF_NODRAW;
@@ -362,8 +349,6 @@ static void CG_TouchTriggerPrediction( void ) {
 
 		if ( ent->eType == ET_TELEPORT_TRIGGER ) {
 			cg.hyperspace = qtrue;
-		} else if ( ent->eType == ET_PUSH_TRIGGER ) {
-			BG_TouchJumpPad( &cg.predictedPlayerState, ent );
 		}
 	}
 

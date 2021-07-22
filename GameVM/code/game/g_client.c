@@ -1167,9 +1167,6 @@ void ClientSpawn(gentity_t *ent) {
 	if ( ent->client->sess.spectatorState != SPECTATOR_FOLLOW ) {
 		ClientEndFrame( ent );
 	}
-
-	// clear entity state values
-	BG_PlayerStateToEntityState( &client->ps, &ent->s, qtrue );
 }
 
 

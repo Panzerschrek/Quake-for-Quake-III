@@ -229,21 +229,6 @@ void CG_DrawFlagModel( float x, float y, float w, float h, int team, qboolean fo
 			return;
 		}
 		CG_Draw3DModel( x, y, w, h, handle, 0, origin, angles );
-	} else if ( cg_drawIcons.integer ) {
-		gitem_t *item;
-
-		if( team == TEAM_RED ) {
-			item = BG_FindItemForPowerup( PW_REDFLAG );
-		} else if( team == TEAM_BLUE ) {
-			item = BG_FindItemForPowerup( PW_BLUEFLAG );
-		} else if( team == TEAM_FREE ) {
-			item = BG_FindItemForPowerup( PW_NEUTRALFLAG );
-		} else {
-			return;
-		}
-		if (item) {
-		  CG_DrawPic( x, y, w, h, cg_items[ ITEM_INDEX(item) ].icon );
-		}
 	}
 }
 
@@ -777,8 +762,6 @@ static float CG_DrawTeamOverlay( float y, qboolean right, qboolean upper ) {
 			for (j = 0; j <= PW_NUM_POWERUPS; j++) {
 				if (ci->powerups & (1 << j)) {
 
-					item = BG_FindItemForPowerup( j );
-
 					if (item) {
 						CG_DrawPic( xx, y, TINYCHAR_WIDTH, TINYCHAR_HEIGHT, 
 						trap_R_RegisterShader( item->icon ) );
@@ -879,7 +862,6 @@ static float CG_DrawScores( float y ) {
 
 		if ( cgs.gametype == GT_CTF ) {
 			// Display flag status
-			item = BG_FindItemForPowerup( PW_BLUEFLAG );
 
 			if (item) {
 				y1 = y - BIGCHAR_HEIGHT - 8;
@@ -903,7 +885,6 @@ static float CG_DrawScores( float y ) {
 
 		if ( cgs.gametype == GT_CTF ) {
 			// Display flag status
-			item = BG_FindItemForPowerup( PW_REDFLAG );
 
 			if (item) {
 				y1 = y - BIGCHAR_HEIGHT - 8;
@@ -1054,8 +1035,6 @@ static float CG_DrawPowerups( float y ) {
 
 	// draw the icons and timers
 	x = 640 - ICON_SIZE - CHAR_WIDTH * 2;
-	for ( i = 0 ; i < active ; i++ ) {
-		item = BG_FindItemForPowerup( sorted[i] );
 
     if (item) {
 
@@ -1088,7 +1067,6 @@ static float CG_DrawPowerups( float y ) {
 
 		  CG_DrawPic( 640 - size, y + ICON_SIZE / 2 - size / 2, 
 			  size, size, trap_R_RegisterShader( item->icon ) );
-    }
 	}
 	trap_R_SetColor( NULL );
 
@@ -1134,8 +1112,6 @@ static int CG_DrawPickupItem( int y ) {
 		fadeColor = CG_FadeColor( cg.itemPickupTime, 3000 );
 		if ( fadeColor ) {
 			trap_R_SetColor( fadeColor );
-			CG_DrawPic( 8, y, ICON_SIZE, ICON_SIZE, cg_items[ value ].icon );
-			CG_DrawBigString( ICON_SIZE + 16, y + (ICON_SIZE/2 - BIGCHAR_HEIGHT/2), bg_itemlist[ value ].pickup_name, fadeColor[0] );
 			trap_R_SetColor( NULL );
 		}
 	}

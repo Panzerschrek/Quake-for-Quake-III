@@ -77,15 +77,6 @@ CG_LoadingItem
 ===================
 */
 void CG_LoadingItem( int itemNum ) {
-	gitem_t		*item;
-
-	item = &bg_itemlist[itemNum];
-	
-	if ( item->icon && loadingItemIconCount < MAX_LOADING_ITEM_ICONS ) {
-		loadingItemIcons[loadingItemIconCount++] = trap_R_RegisterShaderNoMip( item->icon );
-	}
-
-	CG_LoadingString( item->pickup_name );
 }
 
 /*
