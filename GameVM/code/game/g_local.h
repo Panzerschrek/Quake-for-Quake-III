@@ -462,16 +462,11 @@ void TeleportPlayer( gentity_t *player, vec3_t origin, vec3_t angles );
 //
 // g_client.c
 //
-int TeamCount( int ignoreClientNum, team_t team );
-int TeamLeader( int team );
-team_t PickTeam( int ignoreClientNum );
 void SetClientViewAngle( gentity_t *ent, vec3_t angle );
-gentity_t *SelectSpawnPoint (vec3_t avoidPoint, vec3_t origin, vec3_t angles, qboolean isbot);
 void CopyToBodyQue( gentity_t *ent );
 void ClientRespawn(gentity_t *ent);
 void InitBodyQue (void);
 void ClientSpawn( gentity_t *ent );
-qboolean SpotWouldTelefrag( gentity_t *spot );
 
 //
 // g_svcmds.c
