@@ -1137,13 +1137,6 @@ void CG_PositionRotatedEntityOnTag( refEntity_t *entity, const refEntity_t *pare
 							qhandle_t parentModel, char *tagName );
 
 //
-// cg_localents.c
-//
-void	CG_InitLocalEntities( void );
-localEntity_t	*CG_AllocLocalEntity( void );
-void	CG_AddLocalEntities( void );
-
-//
 // cg_snapshot.c
 //
 void CG_ProcessSnapshots( void );
