@@ -150,24 +150,6 @@ static void CG_OffsetThirdPersonView( void ) {
 	VectorMA( view, -cg_thirdPersonRange.value * forwardScale, forward, view );
 	VectorMA( view, -cg_thirdPersonRange.value * sideScale, right, view );
 
-	// trace a ray from the origin to the viewpoint to make sure the view isn't
-	// in a solid block.  Use an 8 by 8 block to prevent the view from near clipping anything
-
-	if (!cg_cameraMode.integer) {
-		CG_Trace( &trace, cg.refdef.vieworg, mins, maxs, view, cg.predictedPlayerState.clientNum, MASK_SOLID );
-
-		if ( trace.fraction != 1.0 ) {
-			VectorCopy( trace.endpos, view );
-			view[2] += (1.0 - trace.fraction) * 32;
-			// try another trace to this position, because a tunnel may have the ceiling
-			// close enough that this is poking out
-
-			CG_Trace( &trace, cg.refdef.vieworg, mins, maxs, view, cg.predictedPlayerState.clientNum, MASK_SOLID );
-			VectorCopy( trace.endpos, view );
-		}
-	}
-
-
 	VectorCopy( view, cg.refdef.vieworg );
 
 	// select pitch to look at focus point from vieword
@@ -332,14 +314,9 @@ CG_CalcFov
 Fixed fov at intermissions, otherwise account for fov variable and zooms.
 ====================
 */
-#define	WAVE_AMPLITUDE	1
-#define	WAVE_FREQUENCY	0.4
 
 static int CG_CalcFov( void ) {
 	float	x;
-	float	phase;
-	float	v;
-	int		contents;
 	float	fov_x, fov_y;
 	float	zoomFov;
 	float	f;
@@ -388,20 +365,6 @@ static int CG_CalcFov( void ) {
 	x = cg.refdef.width / tan( fov_x / 360 * M_PI );
 	fov_y = atan2( cg.refdef.height, x );
 	fov_y = fov_y * 360 / M_PI;
-
-	// warp if underwater
-	contents = CG_PointContents( cg.refdef.vieworg, -1 );
-	if ( contents & ( CONTENTS_WATER | CONTENTS_SLIME | CONTENTS_LAVA ) ){
-		phase = cg.time / 1000.0 * WAVE_FREQUENCY * M_PI * 2;
-		v = WAVE_AMPLITUDE * sin( phase );
-		fov_x += v;
-		fov_y -= v;
-		inwater = qtrue;
-	}
-	else {
-		inwater = qfalse;
-	}
-
 
 	// set it
 	cg.refdef.fov_x = fov_x;

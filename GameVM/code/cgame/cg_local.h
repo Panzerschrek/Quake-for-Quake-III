@@ -1104,14 +1104,7 @@ void CG_Trace( trace_t *result, const vec3_t start, const vec3_t mins, const vec
 void CG_PredictPlayerState( void );
 void CG_LoadDeferredPlayers( void );
 
-
-//
-// cg_events.c
-//
-void CG_CheckEvents( centity_t *cent );
 const char	*CG_PlaceString( int rank );
-void CG_EntityEvent( centity_t *cent, vec3_t position );
-void CG_PainEvent( centity_t *cent, int health );
 
 
 //
