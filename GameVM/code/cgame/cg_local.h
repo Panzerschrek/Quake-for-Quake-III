@@ -1246,31 +1246,6 @@ localEntity_t	*CG_AllocLocalEntity( void );
 void	CG_AddLocalEntities( void );
 
 //
-// cg_effects.c
-//
-localEntity_t *CG_SmokePuff( const vec3_t p, 
-				   const vec3_t vel, 
-				   float radius,
-				   float r, float g, float b, float a,
-				   float duration,
-				   int startTime,
-				   int fadeInTime,
-				   int leFlags,
-				   qhandle_t hShader );
-void CG_BubbleTrail( vec3_t start, vec3_t end, float spacing );
-void CG_SpawnEffect( vec3_t org );
-void CG_ScorePlum( int client, vec3_t org, int score );
-
-void CG_GibPlayer( vec3_t playerOrigin );
-void CG_BigExplode( vec3_t playerOrigin );
-
-void CG_Bleed( vec3_t origin, int entityNum );
-
-localEntity_t *CG_MakeExplosion( vec3_t origin, vec3_t dir,
-								qhandle_t hModel, qhandle_t shader, int msec,
-								qboolean isSprite );
-
-//
 // cg_snapshot.c
 //
 void CG_ProcessSnapshots( void );

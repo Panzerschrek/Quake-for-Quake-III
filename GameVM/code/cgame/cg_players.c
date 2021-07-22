@@ -1487,7 +1487,6 @@ CG_HasteTrail
 ===============
 */
 static void CG_HasteTrail( centity_t *cent ) {
-	localEntity_t	*smoke;
 	vec3_t			origin;
 	int				anim;
 
@@ -1506,18 +1505,6 @@ static void CG_HasteTrail( centity_t *cent ) {
 
 	VectorCopy( cent->lerpOrigin, origin );
 	origin[2] -= 16;
-
-	smoke = CG_SmokePuff( origin, vec3_origin, 
-				  8, 
-				  1, 1, 1, 1,
-				  500, 
-				  cg.time,
-				  0,
-				  0,
-				  cgs.media.hastePuffShader );
-
-	// use the optimized local entity add
-	smoke->leType = LE_SCALE_FADE;
 }
 
 
