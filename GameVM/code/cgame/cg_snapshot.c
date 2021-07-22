@@ -81,9 +81,6 @@ void CG_SetInitialSnapshot( snapshot_t *snap ) {
 
 	cg.snap = snap;
 
-	// sort out solid entities
-	CG_BuildSolidList();
-
 	CG_ExecuteNewServerCommands( snap->serverCommandSequence );
 
 
@@ -220,9 +217,6 @@ static void CG_SetNextSnap( snapshot_t *snap ) {
 	if ( ( cg.nextSnap->snapFlags ^ cg.snap->snapFlags ) & SNAPFLAG_SERVERCOUNT ) {
 		cg.nextFrameTeleport = qtrue;
 	}
-
-	// sort out solid entities
-	CG_BuildSolidList();
 }
 
 
