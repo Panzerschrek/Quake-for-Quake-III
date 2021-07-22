@@ -463,8 +463,6 @@ void ClientSpawn( gentity_t *ent );
 // g_svcmds.c
 //
 qboolean	ConsoleCommand( void );
-void G_ProcessIPBans(void);
-qboolean G_FilterPacket (char *from);
 
 
 //
