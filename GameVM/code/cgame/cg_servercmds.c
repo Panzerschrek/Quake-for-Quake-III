@@ -151,14 +151,6 @@ static void CG_ParseWarmup( void ) {
 	warmup = atoi( info );
 	cg.warmupCount = -1;
 
-	if ( warmup == 0 && cg.warmup ) {
-
-	} else if ( warmup > 0 && cg.warmup <= 0 ) {
-		{
-			trap_S_StartLocalSound( cgs.media.countPrepareSound, CHAN_ANNOUNCER );
-		}
-	}
-
 	cg.warmup = warmup;
 }
 
@@ -282,9 +274,6 @@ static void CG_ConfigStringModified( void ) {
 	} else if ( num >= CS_MODELS && num < CS_MODELS+MAX_MODELS ) {
 		cgs.gameModels[ num-CS_MODELS ] = trap_R_RegisterModel( str );
 	} else if ( num >= CS_SOUNDS && num < CS_SOUNDS+MAX_SOUNDS ) {
-		if ( str[0] != '*' ) {	// player specific sounds don't register here
-			cgs.gameSounds[ num-CS_SOUNDS] = trap_S_RegisterSound( str, qfalse );
-		}
 	} else if ( num >= CS_PLAYERS && num < CS_PLAYERS+MAX_CLIENTS ) {
 		CG_BuildSpectatorString();
 	} else if ( num == CS_FLAGSTATUS ) {
@@ -408,11 +397,6 @@ static void CG_MapRestart( void ) {
 	trap_S_ClearLoopingSounds(qtrue);
 
 	// we really should clear more parts of cg here and stop sounds
-
-	// play the "fight" sound if this is a restart without warmup
-	if ( cg.warmup == 0 /* && cgs.gametype == GT_TOURNAMENT */) {
-		trap_S_StartLocalSound( cgs.media.countFightSound, CHAN_ANNOUNCER );
-	}
 	trap_Cvar_Set("cg_thirdPerson", "0");
 }
 
@@ -471,7 +455,6 @@ static void CG_ServerCommand( void ) {
 			return;
 		}
 
-		trap_S_StartLocalSound( cgs.media.talkSound, CHAN_LOCAL_SOUND );
 		Q_strncpyz( text, CG_Argv(1), MAX_SAY_TEXT );
 		CG_RemoveChatEscapeChar( text );
 		CG_Printf( "%s\n", text );
@@ -479,7 +462,6 @@ static void CG_ServerCommand( void ) {
 	}
 
 	if ( !strcmp( cmd, "tchat" ) ) {
-		trap_S_StartLocalSound( cgs.media.talkSound, CHAN_LOCAL_SOUND );
 		Q_strncpyz( text, CG_Argv(1), MAX_SAY_TEXT );
 		CG_RemoveChatEscapeChar( text );
 		CG_AddToTeamChat( text );
