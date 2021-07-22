@@ -139,20 +139,6 @@ void SP_trigger_push (gentity_t *ent);
 void SP_trigger_teleport (gentity_t *ent);
 void SP_trigger_hurt (gentity_t *ent);
 
-void SP_target_remove_powerups( gentity_t *ent );
-void SP_target_give (gentity_t *ent);
-void SP_target_delay (gentity_t *ent);
-void SP_target_speaker (gentity_t *ent);
-void SP_target_print (gentity_t *ent);
-void SP_target_laser (gentity_t *self);
-void SP_target_score( gentity_t *ent );
-void SP_target_teleporter( gentity_t *ent );
-void SP_target_relay (gentity_t *ent);
-void SP_target_kill (gentity_t *ent);
-void SP_target_position (gentity_t *ent);
-void SP_target_location (gentity_t *ent);
-void SP_target_push (gentity_t *ent);
-
 void SP_light (gentity_t *self);
 void SP_info_null (gentity_t *self);
 void SP_info_notnull (gentity_t *self);
@@ -201,22 +187,6 @@ spawn_t	spawns[] = {
 	{"trigger_push", SP_trigger_push},
 	{"trigger_teleport", SP_trigger_teleport},
 	{"trigger_hurt", SP_trigger_hurt},
-
-	// targets perform no action by themselves, but must be triggered
-	// by another entity
-	{"target_give", SP_target_give},
-	{"target_remove_powerups", SP_target_remove_powerups},
-	{"target_delay", SP_target_delay},
-	{"target_speaker", SP_target_speaker},
-	{"target_print", SP_target_print},
-	{"target_laser", SP_target_laser},
-	{"target_score", SP_target_score},
-	{"target_teleporter", SP_target_teleporter},
-	{"target_relay", SP_target_relay},
-	{"target_kill", SP_target_kill},
-	{"target_position", SP_target_position},
-	{"target_location", SP_target_location},
-	{"target_push", SP_target_push},
 
 	{"light", SP_light},
 	{"path_corner", SP_path_corner},
