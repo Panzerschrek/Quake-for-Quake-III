@@ -311,17 +311,6 @@ void Cmd_Give_f (gentity_t *ent)
 		if (!it) {
 			return;
 		}
-
-		it_ent = G_Spawn();
-		VectorCopy( ent->r.currentOrigin, it_ent->s.origin );
-		it_ent->classname = it->classname;
-		G_SpawnItem (it_ent, it);
-		FinishSpawningItem(it_ent );
-		memset( &trace, 0, sizeof( trace ) );
-		Touch_Item (it_ent, ent, &trace);
-		if (it_ent->inuse) {
-			G_FreeEntity( it_ent );
-		}
 	}
 }
 

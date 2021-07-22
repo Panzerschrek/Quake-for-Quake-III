@@ -78,7 +78,6 @@ void TossClientItems( gentity_t *self ) {
 	int			weapon;
 	float		angle;
 	int			i;
-	gentity_t	*drop;
 
 	// drop the weapon if not a gauntlet or machinegun
 	weapon = self->s.weapon;
@@ -100,9 +99,6 @@ void TossClientItems( gentity_t *self ) {
 		self->client->ps.ammo[ weapon ] ) {
 		// find the item type for this weapon
 		item = BG_FindItemForWeapon( weapon );
-
-		// spawn the item
-		Drop_Item( self, item, 0 );
 	}
 
 	// drop all the powerups if not in teamplay
@@ -113,12 +109,6 @@ void TossClientItems( gentity_t *self ) {
 				item = BG_FindItemForPowerup( i );
 				if ( !item ) {
 					continue;
-				}
-				drop = Drop_Item( self, item, angle );
-				// decide how many seconds it has left
-				drop->count = ( self->client->ps.powerups[ i ] - level.time ) / 1000;
-				if ( drop->count < 1 ) {
-					drop->count = 1;
 				}
 				angle += 45;
 			}

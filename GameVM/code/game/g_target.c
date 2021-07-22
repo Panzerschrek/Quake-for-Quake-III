@@ -45,7 +45,6 @@ void Use_Target_Give( gentity_t *ent, gentity_t *other, gentity_t *activator ) {
 		if ( !t->item ) {
 			continue;
 		}
-		Touch_Item( t, activator, &trace );
 
 		// make sure it isn't going to respawn or show any events
 		t->nextthink = 0;

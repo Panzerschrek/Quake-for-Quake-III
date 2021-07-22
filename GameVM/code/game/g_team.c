@@ -484,7 +484,6 @@ gentity_t *Team_ResetFlag( int team ) {
 			G_FreeEntity(ent);
 		else {
 			rent = ent;
-			RespawnItem(ent);
 		}
 	}
 

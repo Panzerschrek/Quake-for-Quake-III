@@ -440,20 +440,11 @@ void G_InitGame( int levelTime, int randomSeed, int restart ) {
 	// reserve some spots for dead player bodies
 	InitBodyQue();
 
-	ClearRegisteredItems();
-
 	// parse the key/value pairs and spawn gentities
 	G_SpawnEntitiesFromString();
 
 	// general initialization
 	G_FindTeams();
-
-	// make sure we have flags for CTF, etc
-	if( g_gametype.integer >= GT_TEAM ) {
-		G_CheckTeamItems();
-	}
-
-	SaveRegisteredItems();
 
 	G_Printf ("-----------------------------------\n");
 
@@ -1747,7 +1738,6 @@ void G_RunFrame( int levelTime ) {
 		}
 
 		if ( ent->s.eType == ET_ITEM || ent->physicsObject ) {
-			G_RunItem( ent );
 			continue;
 		}
 

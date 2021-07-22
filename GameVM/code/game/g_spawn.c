@@ -257,19 +257,10 @@ returning qfalse if not found
 */
 qboolean G_CallSpawn( gentity_t *ent ) {
 	spawn_t	*s;
-	gitem_t	*item;
 
 	if ( !ent->classname ) {
 		G_Printf ("G_CallSpawn: NULL classname\n");
 		return qfalse;
-	}
-
-	// check item spawn functions
-	for ( item=bg_itemlist+1 ; item->classname ; item++ ) {
-		if ( !strcmp(item->classname, ent->classname) ) {
-			G_SpawnItem( ent, item );
-			return qtrue;
-		}
 	}
 
 	// check normal spawn functions
