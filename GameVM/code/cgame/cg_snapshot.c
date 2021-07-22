@@ -39,8 +39,6 @@ static void CG_ResetEntity( centity_t *cent ) {
 		cent->previousEvent = 0;
 	}
 
-	cent->trailTime = cg.snap->serverTime;
-
 	VectorCopy (cent->currentState.origin, cent->lerpOrigin);
 	VectorCopy (cent->currentState.angles, cent->lerpAngles);
 }

@@ -28,16 +28,6 @@ Foundation, Inc., 51 Franklin St, Fifth Floor, Boston, MA  02110-1301  USA
 
 
 void CG_TargetCommand_f( void ) {
-	int		targetNum;
-	char	test[4];
-
-	targetNum = CG_CrosshairPlayer();
-	if ( targetNum == -1 ) {
-		return;
-	}
-
-	trap_Argv( 1, test, 4 );
-	trap_SendClientCommand( va( "gc %i %i", targetNum, atoi( test ) ) );
 }
 
 typedef struct {

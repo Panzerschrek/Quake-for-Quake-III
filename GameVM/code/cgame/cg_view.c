@@ -162,19 +162,6 @@ static void CG_OffsetThirdPersonView( void ) {
 	cg.refdefViewAngles[YAW] -= cg_thirdPersonAngle.value;
 }
 
-
-// this causes a compiler bug on mac MrC compiler
-static void CG_StepOffset( void ) {
-	int		timeDelta;
-	
-	// smooth out stair climbing
-	timeDelta = cg.time - cg.stepTime;
-	if ( timeDelta < STEP_TIME ) {
-		cg.refdef.vieworg[2] -= cg.stepChange 
-			* (STEP_TIME - timeDelta) / STEP_TIME;
-	}
-}
-
 /*
 ===============
 CG_OffsetFirstPersonView
@@ -206,22 +193,6 @@ static void CG_OffsetFirstPersonView( void ) {
 		angles[YAW] = cg.snap->ps.stats[STAT_DEAD_YAW];
 		origin[2] += cg.predictedPlayerState.viewheight;
 		return;
-	}
-
-	// add angles based on damage kick
-	if ( cg.damageTime ) {
-		ratio = cg.time - cg.damageTime;
-		if ( ratio < DAMAGE_DEFLECT_TIME ) {
-			ratio /= DAMAGE_DEFLECT_TIME;
-			angles[PITCH] += ratio * cg.v_dmg_pitch;
-			angles[ROLL] += ratio * cg.v_dmg_roll;
-		} else {
-			ratio = 1.0 - ( ratio - DAMAGE_DEFLECT_TIME ) / DAMAGE_RETURN_TIME;
-			if ( ratio > 0 ) {
-				angles[PITCH] += ratio * cg.v_dmg_pitch;
-				angles[ROLL] += ratio * cg.v_dmg_roll;
-			}
-		}
 	}
 
 	// add pitch based on fall kick
@@ -264,10 +235,6 @@ static void CG_OffsetFirstPersonView( void ) {
 
 	// smooth out duck height changes
 	timeDelta = cg.time - cg.duckTime;
-	if ( timeDelta < DUCK_TIME) {
-		cg.refdef.vieworg[2] -= cg.duckChange 
-			* (DUCK_TIME - timeDelta) / DUCK_TIME;
-	}
 
 	// add bob height
 	bob = cg.bobfracsin * cg.xyspeed * cg_bobup.value;
@@ -288,9 +255,6 @@ static void CG_OffsetFirstPersonView( void ) {
 		f = 1.0 - ( delta / LAND_RETURN_TIME );
 		cg.refdef.vieworg[2] += cg.landChange * f;
 	}
-
-	// add step offset
-	CG_StepOffset();
 
 	// pivot the eye based on a neck length
 #if 0
