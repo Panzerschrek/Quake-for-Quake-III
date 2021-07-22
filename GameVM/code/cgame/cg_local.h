@@ -1071,8 +1071,6 @@ void CG_BuildSpectatorString( void );
 //
 // cg_view.c
 //
-void CG_ZoomDown_f( void );
-void CG_ZoomUp_f( void );
 
 void CG_DrawActiveFrame( int serverTime, stereoFrame_t stereoView, qboolean demoPlayback );
 
