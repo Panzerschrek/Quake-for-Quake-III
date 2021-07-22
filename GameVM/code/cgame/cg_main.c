@@ -23,6 +23,15 @@ Foundation, Inc., 51 Franklin St, Fifth Floor, Boston, MA  02110-1301  USA
 // cg_main.c -- initialization and primary entry point for cgame
 #include "cg_local.h"
 
+int drawTeamOverlayModificationCount = -1;
+
+int sortedTeamPlayers[TEAM_MAXOVERLAY];
+int	numSortedTeamPlayers;
+
+char systemChat[256];
+char teamChat1[256];
+char teamChat2[256];
+
 int forceModelModificationCount = -1;
 
 void CG_Init( int serverMessageNum, int serverCommandSequence, int clientNum );

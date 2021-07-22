@@ -839,7 +839,6 @@ void CG_DrawActiveFrame( int serverTime, stereoFrame_t stereoView, qboolean demo
 			cg.frametime = 0;
 		}
 		cg.oldTime = cg.time;
-		CG_AddLagometerFrameInfo();
 	}
 	if (cg_timescale.value != cg_timescaleFadeEnd.value) {
 		if (cg_timescale.value < cg_timescaleFadeEnd.value) {

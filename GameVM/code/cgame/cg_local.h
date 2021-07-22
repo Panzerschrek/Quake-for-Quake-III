@@ -1085,37 +1085,6 @@ void CG_DrawActiveFrame( int serverTime, stereoFrame_t stereoView, qboolean demo
 
 
 //
-// cg_drawtools.c
-//
-void CG_AdjustFrom640( float *x, float *y, float *w, float *h );
-void CG_FillRect( float x, float y, float width, float height, const float *color );
-void CG_DrawPic( float x, float y, float width, float height, qhandle_t hShader );
-void CG_DrawString( float x, float y, const char *string, 
-				   float charWidth, float charHeight, const float *modulate );
-
-
-void CG_DrawStringExt( int x, int y, const char *string, const float *setColor, 
-		qboolean forceColor, qboolean shadow, int charWidth, int charHeight, int maxChars );
-void CG_DrawBigString( int x, int y, const char *s, float alpha );
-void CG_DrawBigStringColor( int x, int y, const char *s, vec4_t color );
-void CG_DrawSmallString( int x, int y, const char *s, float alpha );
-void CG_DrawSmallStringColor( int x, int y, const char *s, vec4_t color );
-
-int CG_DrawStrlen( const char *str );
-
-float	*CG_FadeColor( int startMsec, int totalMsec );
-float *CG_TeamColor( int team );
-void CG_TileClear( void );
-void CG_ColorForHealth( vec4_t hcolor );
-void CG_GetColorForHealth( int health, int armor, vec4_t hcolor );
-
-void UI_DrawProportionalString( int x, int y, const char* str, int style, vec4_t color );
-void CG_DrawRect( float x, float y, float width, float height, float size, const float *color );
-void CG_DrawSides(float x, float y, float w, float h, float size);
-void CG_DrawTopBottom(float x, float y, float w, float h, float size);
-
-
-//
 // cg_draw.c, cg_newDraw.c
 //
 extern	int sortedTeamPlayers[TEAM_MAXOVERLAY];
@@ -1124,37 +1093,6 @@ extern	int drawTeamOverlayModificationCount;
 extern  char systemChat[256];
 extern  char teamChat1[256];
 extern  char teamChat2[256];
-
-void CG_AddLagometerFrameInfo( void );
-void CG_AddLagometerSnapshotInfo( snapshot_t *snap );
-void CG_DrawHead( float x, float y, float w, float h, int clientNum, vec3_t headAngles );
-void CG_DrawActive( stereoFrame_t stereoView );
-void CG_DrawFlagModel( float x, float y, float w, float h, int team, qboolean force2D );
-void CG_DrawTeamBackground( int x, int y, int w, int h, float alpha, int team );
-void CG_OwnerDraw(float x, float y, float w, float h, float text_x, float text_y, int ownerDraw, int ownerDrawFlags, int align, float special, float scale, vec4_t color, qhandle_t shader, int textStyle);
-void CG_Text_Paint(float x, float y, float scale, vec4_t color, const char *text, float adjust, int limit, int style);
-int CG_Text_Width(const char *text, float scale, int limit);
-int CG_Text_Height(const char *text, float scale, int limit);
-void CG_SelectPrevPlayer( void );
-void CG_SelectNextPlayer( void );
-float CG_GetValue(int ownerDraw);
-qboolean CG_OwnerDrawVisible(int flags);
-void CG_RunMenuScript(char **args);
-void CG_ShowResponseHead( void );
-void CG_SetPrintString(int type, const char *p);
-void CG_InitTeamChat( void );
-void CG_GetTeamColor(vec4_t *color);
-const char *CG_GetGameStatusText( void );
-const char *CG_GetKillerText( void );
-void CG_Draw3DModel(float x, float y, float w, float h, qhandle_t model, qhandle_t skin, vec3_t origin, vec3_t angles);
-void CG_Text_PaintChar(float x, float y, float width, float height, float scale, float s, float t, float s2, float t2, qhandle_t hShader);
-void CG_CheckOrderPending( void );
-const char *CG_GameTypeString( void );
-qboolean CG_YourTeamHasFlag( void );
-qboolean CG_OtherTeamHasFlag( void );
-qhandle_t CG_StatusHandle(int task);
-
-
 
 //
 // cg_player.c
