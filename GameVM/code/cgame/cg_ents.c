@@ -516,9 +516,6 @@ static void CG_Grapple( centity_t *cent ) {
 	}
 #endif
 
-	// Will draw cable if needed
-	CG_GrappleTrail ( cent, weapon );
-
 	// create the render entity
 	memset (&ent, 0, sizeof(ent));
 	VectorCopy( cent->lerpOrigin, ent.origin);

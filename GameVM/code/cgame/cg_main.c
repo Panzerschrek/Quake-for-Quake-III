@@ -767,7 +767,6 @@ static void CG_RegisterGraphics( void ) {
 	for ( i = 1 ; i < bg_numItems ; i++ ) {
 		if ( items[ i ] == '1' || cg_buildScript.integer ) {
 			CG_LoadingItem( i );
-			CG_RegisterItemVisuals( i );
 		}
 	}
 
