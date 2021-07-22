@@ -1127,7 +1127,6 @@ extern  char teamChat2[256];
 
 void CG_AddLagometerFrameInfo( void );
 void CG_AddLagometerSnapshotInfo( snapshot_t *snap );
-void CG_CenterPrint( const char *str, int y, int charWidth );
 void CG_DrawHead( float x, float y, float w, float h, int clientNum, vec3_t headAngles );
 void CG_DrawActive( stereoFrame_t stereoView );
 void CG_DrawFlagModel( float x, float y, float w, float h, int team, qboolean force2D );
@@ -1217,7 +1216,6 @@ void CG_ProcessSnapshots( void );
 void CG_LoadingString( const char *s );
 void CG_LoadingItem( int itemNum );
 void CG_LoadingClient( int clientNum );
-void CG_DrawInformation( void );
 
 //
 // cg_consolecmds.c

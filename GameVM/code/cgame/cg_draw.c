@@ -1511,33 +1511,6 @@ CENTER PRINTING
 */
 
 
-/*
-==============
-CG_CenterPrint
-
-Called for important messages that should stay in the center of the screen
-for a few moments
-==============
-*/
-void CG_CenterPrint( const char *str, int y, int charWidth ) {
-	char	*s;
-
-	Q_strncpyz( cg.centerPrint, str, sizeof(cg.centerPrint) );
-
-	cg.centerPrintTime = cg.time;
-	cg.centerPrintY = y;
-	cg.centerPrintCharWidth = charWidth;
-
-	// count the number of lines for centering
-	cg.centerPrintLines = 1;
-	s = cg.centerPrint;
-	while( *s ) {
-		if (*s == '\n')
-			cg.centerPrintLines++;
-		s++;
-	}
-}
-
 
 /*
 ===================

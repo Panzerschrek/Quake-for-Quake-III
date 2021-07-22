@@ -202,8 +202,6 @@ static void CG_Obituary( entityState_t *ent ) {
 		} else {
 			s = va("You fragged %s", targetName );
 		}
-		CG_CenterPrint( s, SCREEN_HEIGHT * 0.30, BIGCHAR_WIDTH );
-
 		// print the text message as well
 	}
 
@@ -307,13 +305,6 @@ static void CG_UseItem( centity_t *cent ) {
 	itemNum = (es->event & ~EV_EVENT_BITS) - EV_USE_ITEM0;
 	if ( itemNum < 0 || itemNum > HI_NUM_HOLDABLE ) {
 		itemNum = 0;
-	}
-
-	// print a message if the local player
-	if ( es->number == cg.snap->ps.clientNum ) {
-		if ( !itemNum ) {
-			CG_CenterPrint( "No item to use", SCREEN_HEIGHT * 0.30, BIGCHAR_WIDTH );
-		}
 	}
 
 	switch ( itemNum ) {
