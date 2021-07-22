@@ -113,7 +113,6 @@ void SP_target_delay( gentity_t *ent ) {
 The activator is given this many points.
 */
 void Use_Target_Score (gentity_t *ent, gentity_t *other, gentity_t *activator) {
-	AddScore( activator, ent->r.currentOrigin, ent->count );
 }
 
 void SP_target_score( gentity_t *ent ) {
@@ -260,12 +259,6 @@ void target_laser_think (gentity_t *self) {
 
 	trap_Trace( &tr, self->s.origin, NULL, NULL, end, self->s.number, CONTENTS_SOLID|CONTENTS_BODY|CONTENTS_CORPSE);
 
-	if ( tr.entityNum ) {
-		// hurt it if we can
-		G_Damage ( &g_entities[tr.entityNum], self, self->activator, self->movedir, 
-			tr.endpos, self->damage, DAMAGE_NO_KNOCKBACK, MOD_TARGET_LASER);
-	}
-
 	VectorCopy (tr.endpos, self->s.origin2);
 
 	trap_LinkEntity( self );
@@ -397,7 +390,6 @@ void SP_target_relay (gentity_t *self) {
 Kills the activator.
 */
 void target_kill_use( gentity_t *self, gentity_t *other, gentity_t *activator ) {
-	G_Damage ( activator, NULL, NULL, NULL, NULL, 100000, DAMAGE_NO_PROTECTION, MOD_TELEFRAG);
 }
 
 void SP_target_kill( gentity_t *self ) {

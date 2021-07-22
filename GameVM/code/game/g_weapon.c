@@ -110,10 +110,6 @@ qboolean CheckGauntletAttack( gentity_t *ent ) {
 		s_quadFactor = 1;
 	}
 
-	damage = 50 * s_quadFactor;
-	G_Damage( traceEnt, ent, ent, forward, tr.endpos,
-		damage, 0, MOD_GAUNTLET );
-
 	return qtrue;
 }
 
@@ -196,10 +192,6 @@ void Bullet_Fire (gentity_t *ent, float spread, int damage, int mod ) {
 		}
 		tent->s.otherEntityNum = ent->s.number;
 
-		if ( traceEnt->takedamage) {
-			G_Damage( traceEnt, ent, ent, forward, tr.endpos,
-				damage, 0, mod);
-		}
 		break;
 	}
 }
@@ -260,7 +252,6 @@ qboolean ShotgunPellet( vec3_t start, vec3_t end, gentity_t *ent ) {
 			if( LogAccuracyHit( traceEnt, ent ) ) {
 				hitClient = qtrue;
 			}
-			G_Damage( traceEnt, ent, ent, forward, tr.endpos, damage, 0, MOD_SHOTGUN);
 			return hitClient;
 		}
 		return qfalse;
@@ -415,7 +406,6 @@ void weapon_railgun_fire (gentity_t *ent) {
 				if( LogAccuracyHit( traceEnt, ent ) ) {
 					hits++;
 				}
-				G_Damage (traceEnt, ent, ent, forward, trace.endpos, damage, 0, MOD_RAILGUN);
 		}
 		if ( trace.contents & CONTENTS_SOLID ) {
 			break;		// we hit something solid enough to stop the beam
@@ -548,7 +538,6 @@ void Weapon_LightningFire( gentity_t *ent ) {
 			if( LogAccuracyHit( traceEnt, ent ) ) {
 				ent->client->accuracy_hits++;
 			}
-			G_Damage( traceEnt, ent, ent, forward, tr.endpos, damage, 0, MOD_LIGHTNING);
 		}
 
 		if ( traceEnt->takedamage && traceEnt->client ) {

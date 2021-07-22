@@ -130,9 +130,6 @@ void P_WorldEffects( gentity_t *ent ) {
 
 				// don't play a normal pain sound
 				ent->pain_debounce_time = level.time + 200;
-
-				G_Damage (ent, NULL, NULL, NULL, NULL, 
-					ent->damage, DAMAGE_NO_ARMOR, MOD_WATER);
 			}
 		}
 	} else {
@@ -150,16 +147,6 @@ void P_WorldEffects( gentity_t *ent ) {
 
 			if ( envirosuit ) {
 				G_AddEvent( ent, EV_POWERUP_BATTLESUIT, 0 );
-			} else {
-				if (ent->watertype & CONTENTS_LAVA) {
-					G_Damage (ent, NULL, NULL, NULL, NULL, 
-						30*waterlevel, 0, MOD_LAVA);
-				}
-
-				if (ent->watertype & CONTENTS_SLIME) {
-					G_Damage (ent, NULL, NULL, NULL, NULL, 
-						10*waterlevel, 0, MOD_SLIME);
-				}
 			}
 		}
 	}
@@ -494,7 +481,6 @@ void ClientEvents( gentity_t *ent, int oldEventSequence ) {
 				damage = 5;
 			}
 			ent->pain_debounce_time = level.time + 200;	// no normal pain sound
-			G_Damage (ent, NULL, NULL, NULL, NULL, damage, 0, MOD_FALLING);
 			break;
 
 		case EV_FIRE_WEAPON:

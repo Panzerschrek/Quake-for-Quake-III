@@ -463,8 +463,6 @@ void CopyToBodyQue( gentity_t *ent ) {
 	body->nextthink = level.time + 5000;
 	body->think = BodySink;
 
-	body->die = body_die;
-
 	// don't take more damage if already gibbed
 	if ( ent->health <= GIB_HEALTH ) {
 		body->takedamage = qfalse;
@@ -1092,7 +1090,6 @@ void ClientSpawn(gentity_t *ent) {
 	ent->classname = "player";
 	ent->r.contents = CONTENTS_BODY;
 	ent->clipmask = MASK_PLAYERSOLID;
-	ent->die = player_die;
 	ent->waterlevel = 0;
 	ent->watertype = 0;
 	ent->flags = 0;
@@ -1220,8 +1217,6 @@ void ClientDisconnect( int clientNum ) {
 
 		// They don't get to take powerups with them!
 		// Especially important for stuff like CTF flags
-		TossClientItems( ent );
-
 	}
 
 	G_LogPrintf( "ClientDisconnect: %i\n", clientNum );
