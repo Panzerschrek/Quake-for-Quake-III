@@ -525,16 +525,6 @@ void *G_Alloc( int size );
 void G_InitMemory( void );
 void Svcmd_GameMem_f( void );
 
-//
-// g_session.c
-//
-void G_ReadSessionData( gclient_t *client );
-void G_InitSessionData( gclient_t *client, char *userinfo );
-
-void G_InitWorldSession( void );
-void G_WriteSessionData( void );
-
-
 extern	level_locals_t	level;
 extern	gentity_t		g_entities[MAX_GENTITIES];
 
