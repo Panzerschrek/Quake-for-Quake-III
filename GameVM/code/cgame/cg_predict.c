@@ -565,9 +565,6 @@ void CG_PredictPlayerState( void ) {
 
 		// add push trigger movement effects
 		CG_TouchTriggerPrediction();
-
-		// check for predictable events that changed from previous predictions
-		//CG_CheckChangedPredictableEvents(&cg.predictedPlayerState);
 	}
 
 	if ( cg_showmiss.integer > 1 ) {
@@ -591,9 +588,6 @@ void CG_PredictPlayerState( void ) {
 			CG_Printf("WARNING: dropped event\n");
 		}
 	}
-
-	// fire events and other transition triggered things
-	CG_TransitionPlayerState( &cg.predictedPlayerState, &oldPlayerState );
 
 	if ( cg_showmiss.integer ) {
 		if (cg.eventSequence > cg.predictedPlayerState.eventSequence) {

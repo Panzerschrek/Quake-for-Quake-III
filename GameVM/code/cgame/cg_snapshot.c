@@ -92,9 +92,6 @@ void CG_SetInitialSnapshot( snapshot_t *snap ) {
 
 	CG_ExecuteNewServerCommands( snap->serverCommandSequence );
 
-	// set our local weapon selection pointer to
-	// what the server has indicated the current weapon is
-	CG_Respawn();
 
 	for ( i = 0 ; i < cg.snap->numEntities ; i++ ) {
 		state = &cg.snap->entities[ i ];
@@ -176,7 +173,6 @@ static void CG_TransitionSnapshot( void ) {
 		// reason, then the client events and view changes will be issued now
 		if ( cg.demoPlayback || (cg.snap->ps.pm_flags & PMF_FOLLOW)
 			|| cg_nopredict.integer || cg_synchronousClients.integer ) {
-			CG_TransitionPlayerState( ps, ops );
 		}
 	}
 
