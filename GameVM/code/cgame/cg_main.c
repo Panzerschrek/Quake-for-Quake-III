@@ -615,12 +615,7 @@ static void CG_RegisterGraphics( void ) {
 	memset( &cg.refdef, 0, sizeof( cg.refdef ) );
 	trap_R_ClearScene();
 
-	CG_LoadingString( cgs.mapname );
-
 	trap_R_LoadWorldMap( cgs.mapname );
-
-	// precache status bar pics
-	CG_LoadingString( "game media" );
 
 	for ( i=0 ; i<11 ; i++) {
 		cgs.media.numberShaders[i] = trap_R_RegisterShader( sb_nums[i] );
@@ -810,7 +805,6 @@ CG_RegisterClients
 static void CG_RegisterClients( void ) {
 	int		i;
 
-	CG_LoadingClient(cg.clientNum);
 	CG_NewClientInfo(cg.clientNum);
 
 	for (i=0 ; i<MAX_CLIENTS ; i++) {
@@ -824,7 +818,6 @@ static void CG_RegisterClients( void ) {
 		if ( !clientInfo[0]) {
 			continue;
 		}
-		CG_LoadingClient( i );
 		CG_NewClientInfo( i );
 	}
 	CG_BuildSpectatorString();
@@ -923,22 +916,13 @@ void CG_Init( int serverMessageNum, int serverCommandSequence, int clientNum ) {
 
 	CG_ParseServerinfo();
 
-	// load the new map
-	CG_LoadingString( "collision map" );
-
 	trap_CM_LoadMap( cgs.mapname );
 
 	cg.loading = qtrue;		// force players to load instead of defer
 
-	CG_LoadingString( "sounds" );
-
 	CG_RegisterSounds();
 
-	CG_LoadingString( "graphics" );
-
 	CG_RegisterGraphics();
-
-	CG_LoadingString( "clients" );
 
 	CG_RegisterClients();		// if low on memory, some clients will be deferred
 
@@ -951,8 +935,6 @@ void CG_Init( int serverMessageNum, int serverCommandSequence, int clientNum ) {
 	CG_SetConfigValues();
 
 	CG_StartMusic();
-
-	CG_LoadingString( "" );
 
 	CG_ShaderStateChanged();
 

@@ -1142,13 +1142,6 @@ void CG_PositionRotatedEntityOnTag( refEntity_t *entity, const refEntity_t *pare
 void CG_ProcessSnapshots( void );
 
 //
-// cg_info.c
-//
-void CG_LoadingString( const char *s );
-void CG_LoadingItem( int itemNum );
-void CG_LoadingClient( int clientNum );
-
-//
 // cg_consolecmds.c
 //
 qboolean CG_ConsoleCommand( void );
