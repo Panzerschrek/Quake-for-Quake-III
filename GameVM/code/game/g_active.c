@@ -127,7 +127,7 @@ void ClientThink_real( gentity_t *ent ) {
 		client->ps.eFlags &= ~(EF_AWARD_IMPRESSIVE | EF_AWARD_EXCELLENT | EF_AWARD_GAUNTLET | EF_AWARD_ASSIST | EF_AWARD_DEFEND | EF_AWARD_CAP );
 	}
 
-	client->ps.gravity = g_gravity.value;
+	client->ps.gravity = 0;
 
 	// set speed
 	client->ps.speed = g_speed.value;
@@ -186,13 +186,7 @@ void ClientThink_real( gentity_t *ent ) {
 	if ( client->ps.stats[STAT_HEALTH] <= 0 ) {
 		// wait for the attack button to be pressed
 		if ( level.time > client->respawnTime ) {
-			// forcerespawn is to prevent users from waiting out powerups
-			if ( g_forcerespawn.integer > 0 && 
-				( level.time - client->respawnTime ) > g_forcerespawn.integer * 1000 ) {
-				ClientRespawn( ent );
-				return;
-			}
-		
+
 			// pressing attack or use is the normal respawn method
 			if ( ucmd->buttons & ( BUTTON_ATTACK | BUTTON_USE_HOLDABLE ) ) {
 				ClientRespawn( ent );
@@ -219,18 +213,11 @@ void ClientThink( int clientNum ) {
 	// phone jack if they don't get any for a while
 	ent->client->lastCmdTime = level.time;
 
-	if ( !(ent->r.svFlags & SVF_BOT) && !g_synchronousClients.integer ) {
-		ClientThink_real( ent );
-	}
+	ClientThink_real( ent );
 }
 
 
 void G_RunClient( gentity_t *ent ) {
-	if ( !(ent->r.svFlags & SVF_BOT) && !g_synchronousClients.integer ) {
-		return;
-	}
-	ent->client->pers.cmd.serverTime = level.time;
-	ClientThink_real( ent );
 }
 
 
@@ -291,14 +278,6 @@ void ClientEndFrame( gentity_t *ent ) {
 			ent->client->ps.powerups[ i ] = 0;
 		}
 	}
-
-	// save network bandwidth
-#if 0
-	if ( !g_synchronousClients->integer && ent->client->ps.pm_type == PM_NORMAL ) {
-		// FIXME: this must change eventually for non-sync demo recording
-		VectorClear( ent->client->ps.viewangles );
-	}
-#endif
 
 	//
 	// If the end of unit layout is displayed, don't give

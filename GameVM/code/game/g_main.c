@@ -38,24 +38,9 @@ typedef struct {
 gentity_t		g_entities[MAX_GENTITIES];
 gclient_t		g_clients[MAX_CLIENTS];
 
-vmCvar_t	g_gametype;
-vmCvar_t	g_password;
-vmCvar_t	g_needpass;
 vmCvar_t	g_maxclients;
-vmCvar_t	g_dedicated;
 vmCvar_t	g_speed;
-vmCvar_t	g_gravity;
-vmCvar_t	g_forcerespawn;
-vmCvar_t	g_inactivity;
-vmCvar_t	g_debugMove;
 vmCvar_t	g_debugAlloc;
-vmCvar_t	g_motd;
-vmCvar_t	g_synchronousClients;
-vmCvar_t	g_warmup;
-vmCvar_t	g_doWarmup;
-vmCvar_t	g_restarted;
-vmCvar_t	g_logfile;
-vmCvar_t	g_logfileSync;
 vmCvar_t	pmove_fixed;
 vmCvar_t	pmove_msec;
 vmCvar_t	g_listEntity;
@@ -64,30 +49,13 @@ static cvarTable_t		gameCvarTable[] = {
 	// noset vars
 	{ NULL, "gamename", GAMEVERSION , CVAR_SERVERINFO | CVAR_ROM, 0, qfalse  },
 	{ NULL, "gamedate", PRODUCT_DATE , CVAR_ROM, 0, qfalse  },
-	{ &g_restarted, "g_restarted", "0", CVAR_ROM, 0, qfalse  },
 
 	// latched vars
-	{ &g_gametype, "g_gametype", "0", CVAR_SERVERINFO | CVAR_USERINFO | CVAR_LATCH, 0, qfalse  },
-
 	{ &g_maxclients, "sv_maxclients", "8", CVAR_SERVERINFO | CVAR_LATCH | CVAR_ARCHIVE, 0, qfalse  },
 
-	// change anytime vars
-	{ &g_synchronousClients, "g_synchronousClients", "0", CVAR_SYSTEMINFO, 0, qfalse  },
-
-	{ &g_warmup, "g_warmup", "20", CVAR_ARCHIVE, 0, qtrue  },
-	{ &g_doWarmup, "g_doWarmup", "0", CVAR_ARCHIVE, 0, qtrue  },
-	{ &g_logfile, "g_log", "games.log", CVAR_ARCHIVE, 0, qfalse  },
-	{ &g_logfileSync, "g_logsync", "0", CVAR_ARCHIVE, 0, qfalse  },
-
-	{ &g_dedicated, "dedicated", "0", 0, 0, qfalse  },
 
 	{ &g_speed, "g_speed", "320", 0, 0, qtrue  },
-	{ &g_gravity, "g_gravity", "800", 0, 0, qtrue  },
-	{ &g_forcerespawn, "g_forcerespawn", "20", 0, 0, qtrue },
-	{ &g_inactivity, "g_inactivity", "0", 0, 0, qtrue },
-	{ &g_debugMove, "g_debugMove", "0", 0, 0, qfalse },
 	{ &g_debugAlloc, "g_debugAlloc", "0", 0, 0, qfalse },
-	{ &g_motd, "g_motd", "", 0, 0, qfalse },
 
 	{ &g_listEntity, "g_listEntity", "0", 0, 0, qfalse },
 
@@ -192,16 +160,6 @@ void G_RegisterCvars( void ) {
 			remapped = qtrue;
 		}
 	}
-
-
-	// check some things
-	if ( g_gametype.integer < 0 || g_gametype.integer >= GT_MAX_GAME_TYPE ) {
-		G_Printf( "g_gametype %i is out of range, defaulting to 0\n", g_gametype.integer );
-		trap_Cvar_Set( "g_gametype", "0" );
-		trap_Cvar_Update( &g_gametype );
-	}
-
-	level.warmupModificationCount = g_warmup.modificationCount;
 }
 
 /*
@@ -257,26 +215,6 @@ void G_InitGame( int levelTime, int randomSeed, int restart ) {
 	memset( &level, 0, sizeof( level ) );
 	level.time = levelTime;
 	level.startTime = levelTime;
-
-	if ( g_gametype.integer != GT_SINGLE_PLAYER && g_logfile.string[0] ) {
-		if ( g_logfileSync.integer ) {
-			trap_FS_FOpenFile( g_logfile.string, &level.logFile, FS_APPEND_SYNC );
-		} else {
-			trap_FS_FOpenFile( g_logfile.string, &level.logFile, FS_APPEND );
-		}
-		if ( !level.logFile ) {
-			G_Printf( "WARNING: Couldn't open logfile: %s\n", g_logfile.string );
-		} else {
-			char	serverinfo[MAX_INFO_STRING];
-
-			trap_GetServerinfo( serverinfo, sizeof( serverinfo ) );
-
-			G_LogPrintf("------------------------------------------------------------\n" );
-			G_LogPrintf("InitGame: %s\n", serverinfo );
-		}
-	} else {
-		G_Printf( "Not logging to disk.\n" );
-	}
 
 	// initialize all entities for this game
 	memset( g_entities, 0, MAX_GENTITIES * sizeof(g_entities[0]) );
@@ -382,10 +320,6 @@ void QDECL G_LogPrintf( const char *fmt, ... ) {
 	Q_vsnprintf(string + 7, sizeof(string) - 7, fmt, argptr);
 	va_end( argptr );
 
-	if ( g_dedicated.integer ) {
-		G_Printf( "%s", string + 7 );
-	}
-
 	if ( !level.logFile ) {
 		return;
 	}
@@ -411,11 +345,6 @@ void LogExit( const char *string ) {
 	numSorted = level.numConnectedClients;
 	if ( numSorted > 32 ) {
 		numSorted = 32;
-	}
-
-	if ( g_gametype.integer >= GT_TEAM ) {
-		G_LogPrintf( "red:%i  blue:%i\n",
-			level.teamScores[TEAM_RED], level.teamScores[TEAM_BLUE] );
 	}
 
 	for (i=0 ; i < numSorted ; i++) {
@@ -457,24 +386,6 @@ void PrintTeam(int team, char *message) {
 		if (level.clients[i].sess.sessionTeam != team)
 			continue;
 		trap_SendServerCommand( i, message );
-	}
-}
-
-/*
-==================
-CheckCvars
-==================
-*/
-void CheckCvars( void ) {
-	static int lastMod = -1;
-
-	if ( g_password.modificationCount != lastMod ) {
-		lastMod = g_password.modificationCount;
-		if ( *g_password.string && Q_stricmp( g_password.string, "none" ) ) {
-			trap_Cvar_Set( "g_needpass", "1" );
-		} else {
-			trap_Cvar_Set( "g_needpass", "0" );
-		}
 	}
 }
 
@@ -585,9 +496,6 @@ void G_RunFrame( int levelTime ) {
 			ClientEndFrame( ent );
 		}
 	}
-
-	// for tracking changes
-	CheckCvars();
 
 	if (g_listEntity.integer) {
 		for (i = 0; i < MAX_GENTITIES; i++) {

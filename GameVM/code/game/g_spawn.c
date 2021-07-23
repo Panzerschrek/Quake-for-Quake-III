@@ -243,8 +243,6 @@ level.spawnVars[], then call the class specific spawn function
 void G_SpawnGEntityFromSpawnVars( void ) {
 	int			i;
 	gentity_t	*ent;
-	char		*s, *value, *gametypeName;
-	static char *gametypeNames[] = {"ffa", "tournament", "single", "team", "ctf", "oneflag", "obelisk", "harvester"};
 
 	// get the next free entity
 	ent = G_Spawn();
@@ -254,7 +252,7 @@ void G_SpawnGEntityFromSpawnVars( void ) {
 	}
 
 	// check for "notsingle" flag
-	if ( g_gametype.integer == GT_SINGLE_PLAYER ) {
+	{
 		G_SpawnInt( "notsingle", "0", &i );
 		if ( i ) {
 			ADJUST_AREAPORTAL();
@@ -262,15 +260,7 @@ void G_SpawnGEntityFromSpawnVars( void ) {
 			return;
 		}
 	}
-	// check for "notteam" flag (GT_FFA, GT_TOURNAMENT, GT_SINGLE_PLAYER)
-	if ( g_gametype.integer >= GT_TEAM ) {
-		G_SpawnInt( "notteam", "0", &i );
-		if ( i ) {
-			ADJUST_AREAPORTAL();
-			G_FreeEntity( ent );
-			return;
-		}
-	} else {
+	{
 		G_SpawnInt( "notfree", "0", &i );
 		if ( i ) {
 			ADJUST_AREAPORTAL();
@@ -284,19 +274,6 @@ void G_SpawnGEntityFromSpawnVars( void ) {
 		ADJUST_AREAPORTAL();
 		G_FreeEntity( ent );
 		return;
-	}
-
-	if( G_SpawnString( "gametype", NULL, &value ) ) {
-		if( g_gametype.integer >= GT_FFA && g_gametype.integer < GT_MAX_GAME_TYPE ) {
-			gametypeName = gametypeNames[g_gametype.integer];
-
-			s = strstr( value, gametypeName );
-			if( !s ) {
-				ADJUST_AREAPORTAL();
-				G_FreeEntity( ent );
-				return;
-			}
-		}
 	}
 
 	// move editor origin to pos
@@ -412,17 +389,6 @@ void SP_worldspawn( void ) {
 	G_SpawnString( "message", "", &s );
 	trap_SetConfigstring( CS_MESSAGE, s );				// map specific message
 
-	trap_SetConfigstring( CS_MOTD, g_motd.string );		// message of the day
-
-	G_SpawnString( "gravity", "800", &s );
-	trap_Cvar_Set( "g_gravity", s );
-
-	G_SpawnString( "enableDust", "0", &s );
-	trap_Cvar_Set( "g_enableDust", s );
-
-	G_SpawnString( "enableBreath", "0", &s );
-	trap_Cvar_Set( "g_enableBreath", s );
-
 	g_entities[ENTITYNUM_WORLD].s.number = ENTITYNUM_WORLD;
 	g_entities[ENTITYNUM_WORLD].r.ownerNum = ENTITYNUM_NONE;
 	g_entities[ENTITYNUM_WORLD].classname = "worldspawn";
@@ -430,18 +396,6 @@ void SP_worldspawn( void ) {
 	g_entities[ENTITYNUM_NONE].s.number = ENTITYNUM_NONE;
 	g_entities[ENTITYNUM_NONE].r.ownerNum = ENTITYNUM_NONE;
 	g_entities[ENTITYNUM_NONE].classname = "nothing";
-
-	// see if we want a warmup time
-	trap_SetConfigstring( CS_WARMUP, "" );
-	if ( g_restarted.integer ) {
-		trap_Cvar_Set( "g_restarted", "0" );
-		level.warmupTime = 0;
-	} else if ( g_doWarmup.integer ) { // Turn it on
-		level.warmupTime = -1;
-		trap_SetConfigstring( CS_WARMUP, va("%i", level.warmupTime) );
-		G_LogPrintf( "Warmup:\n" );
-	}
-
 }
 
 

@@ -215,8 +215,6 @@ typedef struct {
 	struct gentity_s	*gentities;
 	int			num_entities;		// MAX_CLIENTS <= num_entities <= ENTITYNUM_MAX_NORMAL
 
-	int			warmupTime;			// restart match at this time
-
 	fileHandle_t	logFile;
 
 	// store latched cvars here that we want to get at often
@@ -242,7 +240,6 @@ typedef struct {
 	int			sortedClients[MAX_CLIENTS];		// sorted by score
 	int			follow1, follow2;		// clientNums for auto-follow spectators
 
-	int			warmupModificationCount;	// for detecting if g_warmup is changed
 
 	// spawn variables
 	qboolean	spawning;				// the G_Spawn*() functions are valid
@@ -335,28 +332,12 @@ extern	gentity_t		g_entities[MAX_GENTITIES];
 
 #define	FOFS(x) ((size_t)&(((gentity_t *)0)->x))
 
-extern	vmCvar_t	g_gametype;
-extern	vmCvar_t	g_dedicated;
 extern	vmCvar_t	g_maxclients;			// allow this many total, including spectators
-extern	vmCvar_t	g_restarted;
 
-extern	vmCvar_t	g_gravity;
 extern	vmCvar_t	g_speed;
-extern	vmCvar_t	g_forcerespawn;
-extern	vmCvar_t	g_inactivity;
-extern	vmCvar_t	g_debugMove;
 extern	vmCvar_t	g_debugAlloc;
-extern	vmCvar_t	g_synchronousClients;
-extern	vmCvar_t	g_motd;
-extern	vmCvar_t	g_warmup;
-extern	vmCvar_t	g_doWarmup;
-extern	vmCvar_t	g_cubeTimeout;
-extern	vmCvar_t	g_redteam;
-extern	vmCvar_t	g_blueteam;
 extern	vmCvar_t	pmove_fixed;
 extern	vmCvar_t	pmove_msec;
-extern	vmCvar_t	g_enableDust;
-extern	vmCvar_t	g_enableBreath;
 
 void	trap_Print( const char *text );
 void	trap_Error( const char *text ) __attribute__((noreturn));
