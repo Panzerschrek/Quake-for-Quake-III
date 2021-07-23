@@ -35,16 +35,6 @@ Targets will be fired when someone spawns in on them.
 "nohumans" will prevent non-bots from using this spot.
 */
 void SP_info_player_deathmatch( gentity_t *ent ) {
-	int		i;
-
-	G_SpawnInt( "nobots", "0", &i);
-	if ( i ) {
-		ent->flags |= FL_NO_BOTS;
-	}
-	G_SpawnInt( "nohumans", "0", &i );
-	if ( i ) {
-		ent->flags |= FL_NO_HUMANS;
-	}
 }
 
 /*QUAKED info_player_start (1 0 0) (-16 -16 -24) (16 16 32)
@@ -77,13 +67,6 @@ gentity_t *SelectRandomFurthestSpawnPoint ( vec3_t avoidPoint, vec3_t origin, ve
 
 	while((spot = G_Find (spot, FOFS(classname), "info_player_deathmatch")) != NULL)
 	{
-		if(((spot->flags & FL_NO_BOTS) && isbot) ||
-		   ((spot->flags & FL_NO_HUMANS) && !isbot))
-		{
-			// spot is not for this human/bot player
-			continue;
-		}
-
 		VectorSubtract( spot->s.origin, avoidPoint, delta );
 		dist = VectorLength( delta );
 
@@ -339,14 +322,11 @@ void ClientSpawn(gentity_t *ent) {
 	gclient_t	*client;
 	int		i;
 	clientPersistant_t	saved;
-	clientSession_t		savedSess;
 	int		persistant[MAX_PERSISTANT];
 	gentity_t	*spawnPoint;
-	gentity_t *tent;
 	int		flags;
 	int		savedPing;
 //	char	*savedAreaBits;
-	int		accuracy_hits, accuracy_shots;
 	int		eventSequence;
 	char	userinfo[MAX_INFO_STRING];
 
@@ -362,22 +342,12 @@ void ClientSpawn(gentity_t *ent) {
 		client->ps.origin,
 		spawn_origin, spawn_angles, !!(ent->r.svFlags & SVF_BOT));
 
-	// always clear the kamikaze flag
-	ent->s.eFlags &= ~EF_KAMIKAZE;
-
-	// toggle the teleport bit so the client knows to not lerp
-	// and never clear the voted flag
-	flags = ent->client->ps.eFlags & (EF_TELEPORT_BIT | EF_VOTED | EF_TEAMVOTED);
-	flags ^= EF_TELEPORT_BIT;
 
 	// clear everything but the persistant data
 
 	saved = client->pers;
-	savedSess = client->sess;
 	savedPing = client->ps.ping;
 //	savedAreaBits = client->areabits;
-	accuracy_hits = client->accuracy_hits;
-	accuracy_shots = client->accuracy_shots;
 	for ( i = 0 ; i < MAX_PERSISTANT ; i++ ) {
 		persistant[i] = client->ps.persistant[i];
 	}
@@ -386,26 +356,16 @@ void ClientSpawn(gentity_t *ent) {
 	Com_Memset (client, 0, sizeof(*client));
 
 	client->pers = saved;
-	client->sess = savedSess;
 	client->ps.ping = savedPing;
 //	client->areabits = savedAreaBits;
-	client->accuracy_hits = accuracy_hits;
-	client->accuracy_shots = accuracy_shots;
-	client->lastkilled_client = -1;
 
 	for ( i = 0 ; i < MAX_PERSISTANT ; i++ ) {
 		client->ps.persistant[i] = persistant[i];
 	}
 	client->ps.eventSequence = eventSequence;
-	// increment the spawncount so the client will detect the respawn
-	client->ps.persistant[PERS_SPAWN_COUNT]++;
-	client->ps.persistant[PERS_TEAM] = client->sess.sessionTeam;
-
-	client->airOutTime = level.time + 12000;
 
 	trap_GetUserinfo( index, userinfo, sizeof(userinfo) );
 	// clear entity values
-	client->ps.stats[STAT_MAX_HEALTH] = 100;
 	client->ps.eFlags = flags;
 
 	ent->s.groundEntityNum = ENTITYNUM_NONE;
@@ -413,9 +373,6 @@ void ClientSpawn(gentity_t *ent) {
 	ent->inuse = qtrue;
 	ent->classname = "player";
 	ent->r.contents = CONTENTS_BODY;
-	ent->clipmask = 0;
-	ent->waterlevel = 0;
-	ent->watertype = 0;
 	ent->flags = 0;
 	
 	VectorCopy (playerMins, ent->r.mins);
@@ -423,45 +380,24 @@ void ClientSpawn(gentity_t *ent) {
 
 	client->ps.clientNum = index;
 
-	client->ps.stats[STAT_WEAPONS] = 0;
-
 	// health will count down towards max_health
-	ent->health = client->ps.stats[STAT_HEALTH] = client->ps.stats[STAT_MAX_HEALTH] + 25;
+	ent->health = client->ps.stats[STAT_HEALTH] = 125;
 
 	G_SetOrigin( ent, spawn_origin );
 	VectorCopy( spawn_origin, client->ps.origin );
 
-	// the respawned flag will be cleared after the attack and jump keys come up
-	client->ps.pm_flags |= PMF_RESPAWNED;
 
 	trap_GetUsercmd( client - level.clients, &ent->client->pers.cmd );
 	SetClientViewAngle( ent, spawn_angles );
 	// don't allow full run speed for a bit
-	client->ps.pm_flags |= PMF_TIME_KNOCKBACK;
 	client->ps.pm_time = 100;
 
 	client->respawnTime = level.time;
-	client->inactivityTime = 0;
-	client->latched_buttons = 0;
 
 	// set default animations
 	client->ps.torsoAnim = 0;
 	client->ps.legsAnim = 0;
 
-	if (!level.intermissiontime) {
-		if (ent->client->sess.sessionTeam != TEAM_SPECTATOR) {
-			// force the base weapon up
-			client->ps.weapon = 0;
-			client->ps.weaponstate = 0;
-			// select the highest weapon number available, after any spawn given items have fired
-			client->ps.weapon = 1;
-
-			// positively link the client, even if the command times are weird
-			VectorCopy(ent->client->ps.origin, ent->r.currentOrigin);
-
-			trap_LinkEntity (ent);
-		}
-	}
 	// run a client frame to drop exactly to the floor,
 	// initialize animations and other things
 	client->ps.commandTime = level.time - 100;
@@ -469,9 +405,7 @@ void ClientSpawn(gentity_t *ent) {
 	ClientThink( ent-g_entities );
 	// run the presend to set anything else, follow spectators wait
 	// until all clients have been reconnected after map_restart
-	if ( ent->client->sess.spectatorState != SPECTATOR_FOLLOW ) {
-		ClientEndFrame( ent );
-	}
+	ClientEndFrame( ent );
 }
 
 
@@ -490,10 +424,6 @@ void ClientDisconnect( int clientNum ) {
 	ent->inuse = qfalse;
 	ent->classname = "disconnected";
 	ent->client->pers.connected = CON_DISCONNECTED;
-	ent->client->ps.persistant[PERS_TEAM] = TEAM_FREE;
-	ent->client->sess.sessionTeam = TEAM_FREE;
-
-	trap_SetConfigstring( CS_PLAYERS + clientNum, "");
 }
 
 

@@ -140,7 +140,7 @@ static void PM_NoclipMove( void ) {
 	float		wishspeed;
 	float		scale;
 
-	pm->ps->viewheight = DEFAULT_VIEWHEIGHT;
+	pm->ps->viewheight = 26;
 
 	// friction
 
@@ -186,37 +186,6 @@ static void PM_NoclipMove( void ) {
 	VectorMA (pm->ps->origin, pml.frametime, pm->ps->velocity, pm->ps->origin);
 }
 
-/*
-================
-PM_DropTimers
-================
-*/
-static void PM_DropTimers( void ) {
-	// drop misc timing counter
-	if ( pm->ps->pm_time ) {
-		if ( pml.msec >= pm->ps->pm_time ) {
-			pm->ps->pm_flags &= ~PMF_ALL_TIMES;
-			pm->ps->pm_time = 0;
-		} else {
-			pm->ps->pm_time -= pml.msec;
-		}
-	}
-
-	// drop animation counter
-	if ( pm->ps->legsTimer > 0 ) {
-		pm->ps->legsTimer -= pml.msec;
-		if ( pm->ps->legsTimer < 0 ) {
-			pm->ps->legsTimer = 0;
-		}
-	}
-
-	if ( pm->ps->torsoTimer > 0 ) {
-		pm->ps->torsoTimer -= pml.msec;
-		if ( pm->ps->torsoTimer < 0 ) {
-			pm->ps->torsoTimer = 0;
-		}
-	}
-}
 
 /*
 ================
@@ -274,11 +243,6 @@ void PmoveSingle (pmove_t *pmove) {
 		pm->cmd.buttons &= ~BUTTON_WALKING;
 	}
 
-	// clear the respawned flag if attack and use are cleared
-	if ( pm->ps->stats[STAT_HEALTH] > 0 && 
-		!( pm->cmd.buttons & (BUTTON_ATTACK | BUTTON_USE_HOLDABLE) ) ) {
-		pm->ps->pm_flags &= ~PMF_RESPAWNED;
-	}
 
 	// clear all pmove local vars
 	memset (&pml, 0, sizeof(pml));
@@ -299,20 +263,7 @@ void PmoveSingle (pmove_t *pmove) {
 
 	AngleVectors (pm->ps->viewangles, pml.forward, pml.right, pml.up);
 
-	if ( pm->cmd.upmove < 10 ) {
-		// not holding jump
-		pm->ps->pm_flags &= ~PMF_JUMP_HELD;
-	}
-
-	// decide if backpedaling animations should be used
-	if ( pm->cmd.forwardmove < 0 ) {
-		pm->ps->pm_flags |= PMF_BACKWARDS_RUN;
-	} else if ( pm->cmd.forwardmove > 0 || ( pm->cmd.forwardmove == 0 && pm->cmd.rightmove ) ) {
-		pm->ps->pm_flags &= ~PMF_BACKWARDS_RUN;
-	}
-
 	PM_NoclipMove ();
-	PM_DropTimers ();
 }
 
 
@@ -357,10 +308,6 @@ void Pmove (pmove_t *pmove) {
 		}
 		pmove->cmd.serverTime = pmove->ps->commandTime + msec;
 		PmoveSingle( pmove );
-
-		if ( pmove->ps->pm_flags & PMF_JUMP_HELD ) {
-			pmove->cmd.upmove = 20;
-		}
 	}
 }
 

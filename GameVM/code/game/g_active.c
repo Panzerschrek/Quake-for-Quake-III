@@ -49,8 +49,6 @@ void SendPendingPredictableEvents( playerState_t *ps ) {
 		t = G_TempEntity( ps->origin, event );
 		number = t->s.number;
 		t->s.number = number;
-		t->s.eType = ET_EVENTS + event;
-		t->s.eFlags |= EF_PLAYER_EVENT;
 		t->s.otherEntityNum = ps->clientNum;
 		// send to everyone except the client who generated the event
 		t->r.svFlags |= SVF_NOTSINGLECLIENT;
@@ -100,7 +98,7 @@ void ClientThink_real( gentity_t *ent ) {
 	msec = ucmd->serverTime - client->ps.commandTime;
 	// following others may result in bad times, but we still want
 	// to check for follow toggles
-	if ( msec < 1 && client->sess.spectatorState != SPECTATOR_FOLLOW ) {
+	if ( msec < 1 ) {
 		return;
 	}
 	if ( msec > 200 ) {
@@ -116,15 +114,10 @@ void ClientThink_real( gentity_t *ent ) {
 		trap_Cvar_Update(&pmove_msec);
 	}
 
-	if ( pmove_fixed.integer || client->pers.pmoveFixed ) {
+	if ( pmove_fixed.integer ) {
 		ucmd->serverTime = ((ucmd->serverTime + pmove_msec.integer-1) / pmove_msec.integer) * pmove_msec.integer;
 		//if (ucmd->serverTime - client->ps.commandTime <= 0)
 		//	return;
-	}
-
-	// clear the rewards if time
-	if ( level.time > client->rewardTime ) {
-		client->ps.eFlags &= ~(EF_AWARD_IMPRESSIVE | EF_AWARD_EXCELLENT | EF_AWARD_GAUNTLET | EF_AWARD_ASSIST | EF_AWARD_DEFEND | EF_AWARD_CAP );
 	}
 
 	client->ps.gravity = 0;
@@ -137,18 +130,10 @@ void ClientThink_real( gentity_t *ent ) {
 
 	memset (&pm, 0, sizeof(pm));
 
-
-	if ( ent->flags & FL_FORCE_GESTURE ) {
-		ent->flags &= ~FL_FORCE_GESTURE;
-		ent->client->pers.cmd.buttons |= BUTTON_GESTURE;
-	}
-
 	pm.ps = &client->ps;
 	pm.cmd = *ucmd;
-	pm.pmove_fixed = pmove_fixed.integer | client->pers.pmoveFixed;
+	pm.pmove_fixed = pmove_fixed.integer;
 	pm.pmove_msec = pmove_msec.integer;
-
-	VectorCopy( client->ps.origin, client->oldOrigin );
 
 	Pmove (&pm);
 
@@ -157,10 +142,6 @@ void ClientThink_real( gentity_t *ent ) {
 		ent->eventTime = level.time;
 	}
 	SendPendingPredictableEvents( &ent->client->ps );
-
-	if ( !( ent->client->ps.eFlags & EF_FIRING ) ) {
-		client->fireHeld = qfalse;		// for grapple
-	}
 
 	// use the snapped origin for linking so it matches client predicted versions
 	VectorCopy( ent->s.pos.trBase, ent->r.currentOrigin );
@@ -178,9 +159,7 @@ void ClientThink_real( gentity_t *ent ) {
 	}
 
 	// swap and latch button actions
-	client->oldbuttons = client->buttons;
 	client->buttons = ucmd->buttons;
-	client->latched_buttons |= client->buttons & ~client->oldbuttons;
 
 	// check for respawning
 	if ( client->ps.stats[STAT_HEALTH] <= 0 ) {
@@ -222,40 +201,6 @@ void G_RunClient( gentity_t *ent ) {
 
 
 /*
-==================
-SpectatorClientEndFrame
-
-==================
-*/
-void SpectatorClientEndFrame( gentity_t *ent ) {
-	gclient_t	*cl;
-
-	// if we are doing a chase cam or a remote view, grab the latest info
-	if ( ent->client->sess.spectatorState == SPECTATOR_FOLLOW ) {
-		int		clientNum, flags;
-
-		clientNum = ent->client->sess.spectatorClient;
-
-		// team follow1 and team follow2 go to whatever clients are playing
-		if ( clientNum == -1 ) {
-			clientNum = level.follow1;
-		} else if ( clientNum == -2 ) {
-			clientNum = level.follow2;
-		}
-		if ( clientNum >= 0 ) {
-			cl = &level.clients[ clientNum ];
-			if ( cl->pers.connected == CON_CONNECTED && cl->sess.sessionTeam != TEAM_SPECTATOR ) {
-				flags = (cl->ps.eFlags & ~(EF_VOTED | EF_TEAMVOTED)) | (ent->client->ps.eFlags & (EF_VOTED | EF_TEAMVOTED));
-				ent->client->ps = cl->ps;
-				ent->client->ps.eFlags = flags;
-				return;
-			}
-		}
-
-	}
-}
-
-/*
 ==============
 ClientEndFrame
 
@@ -267,32 +212,11 @@ while a slow client may have multiple ClientEndFrame between ClientThink.
 void ClientEndFrame( gentity_t *ent ) {
 	int			i;
 
-	if ( ent->client->sess.sessionTeam == TEAM_SPECTATOR ) {
-		SpectatorClientEndFrame( ent );
-		return;
-	}
-
 	// turn off any expired powerups
 	for ( i = 0 ; i < MAX_POWERUPS ; i++ ) {
 		if ( ent->client->ps.powerups[ i ] < level.time ) {
 			ent->client->ps.powerups[ i ] = 0;
 		}
-	}
-
-	//
-	// If the end of unit layout is displayed, don't give
-	// the player any normal movement attributes
-	//
-	if ( level.intermissiontime ) {
-		return;
-	}
-
-
-	// add the EF_CONNECTION flag if we haven't gotten commands recently
-	if ( level.time - ent->client->lastCmdTime > 1000 ) {
-		ent->client->ps.eFlags |= EF_CONNECTION;
-	} else {
-		ent->client->ps.eFlags &= ~EF_CONNECTION;
 	}
 
 	ent->client->ps.stats[STAT_HEALTH] = ent->health;	// FIXME: get rid of ent->health...

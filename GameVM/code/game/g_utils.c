@@ -157,7 +157,6 @@ gentity_t *G_TempEntity( vec3_t origin, int event ) {
 	vec3_t		snapped;
 
 	e = G_Spawn();
-	e->s.eType = ET_EVENTS + event;
 
 	e->classname = "tempEntity";
 	e->eventTime = level.time;

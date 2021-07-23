@@ -197,29 +197,6 @@ static void CG_RegisterGraphics( void ) {
 	trap_R_LoadWorldMap( cgs.mapname );
 }
 
-
-/*																																			
-===================
-CG_RegisterClients
-===================
-*/
-static void CG_RegisterClients( void ) {
-	int		i;
-
-	for (i=0 ; i<MAX_CLIENTS ; i++) {
-		const char		*clientInfo;
-
-		if (cg.clientNum == i) {
-			continue;
-		}
-
-		clientInfo = CG_ConfigString( CS_PLAYERS+i );
-		if ( !clientInfo[0]) {
-			continue;
-		}
-	}
-}
-
 //===========================================================================
 
 /*
@@ -274,8 +251,6 @@ void CG_Init( int serverMessageNum, int serverCommandSequence, int clientNum ) {
 	cg.loading = qtrue;		// force players to load instead of defer
 
 	CG_RegisterGraphics();
-
-	CG_RegisterClients();		// if low on memory, some clients will be deferred
 
 	cg.loading = qfalse;	// future players will be deferred
 

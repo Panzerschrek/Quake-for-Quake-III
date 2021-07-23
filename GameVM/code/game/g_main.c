@@ -260,13 +260,6 @@ G_ShutdownGame
 */
 void G_ShutdownGame( int restart ) {
 	G_Printf ("==== ShutdownGame ====\n");
-
-	if ( level.logFile ) {
-		G_LogPrintf("ShutdownGame:\n" );
-		G_LogPrintf("------------------------------------------------------------\n" );
-		trap_FS_FCloseFile( level.logFile );
-		level.logFile = 0;
-	}
 }
 
 
@@ -319,50 +312,6 @@ void QDECL G_LogPrintf( const char *fmt, ... ) {
 	va_start( argptr, fmt );
 	Q_vsnprintf(string + 7, sizeof(string) - 7, fmt, argptr);
 	va_end( argptr );
-
-	if ( !level.logFile ) {
-		return;
-	}
-
-	trap_FS_Write( string, strlen( string ), level.logFile );
-}
-
-/*
-================
-LogExit
-
-Append information about this game to the log file
-================
-*/
-void LogExit( const char *string ) {
-	int				i, numSorted;
-	gclient_t		*cl;
-	G_LogPrintf( "Exit: %s\n", string );
-
-	level.intermissionQueued = level.time;
-
-	// don't send more than 32 scores (FIXME?)
-	numSorted = level.numConnectedClients;
-	if ( numSorted > 32 ) {
-		numSorted = 32;
-	}
-
-	for (i=0 ; i < numSorted ; i++) {
-		int		ping;
-
-		cl = &level.clients[level.sortedClients[i]];
-
-		if ( cl->sess.sessionTeam == TEAM_SPECTATOR ) {
-			continue;
-		}
-		if ( cl->pers.connected == CON_CONNECTING ) {
-			continue;
-		}
-
-		ping = cl->ps.ping < 999 ? cl->ps.ping : 999;
-
-		G_LogPrintf( "score: %i  ping: %i  client: %i\n", cl->ps.persistant[PERS_SCORE], ping, level.sortedClients[i] );
-	}
 }
 
 /*
@@ -373,21 +322,6 @@ FUNCTIONS CALLED EVERY FRAME
 ========================================================================
 */
 
-
-/*
-==================
-PrintTeam
-==================
-*/
-void PrintTeam(int team, char *message) {
-	int i;
-
-	for ( i = 0 ; i < level.maxclients ; i++ ) {
-		if (level.clients[i].sess.sessionTeam != team)
-			continue;
-		trap_SendServerCommand( i, message );
-	}
-}
 
 /*
 =============
@@ -424,11 +358,6 @@ Advances the non-player objects in the world
 void G_RunFrame( int levelTime ) {
 	int			i;
 	gentity_t	*ent;
-
-	// if we are waiting for the level to restart, do nothing
-	if ( level.restarted ) {
-		return;
-	}
 
 	level.framenum++;
 	level.previousTime = level.time;
@@ -470,14 +399,6 @@ void G_RunFrame( int levelTime ) {
 
 		// temporary entities don't think
 		if ( ent->freeAfterEvent ) {
-			continue;
-		}
-
-		if ( ent->s.eType == ET_MISSILE ) {
-			continue;
-		}
-
-		if ( ent->s.eType == ET_ITEM || ent->physicsObject ) {
 			continue;
 		}
 

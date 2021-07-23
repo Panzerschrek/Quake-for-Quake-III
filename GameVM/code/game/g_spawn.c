@@ -75,20 +75,9 @@ field_t fields[] = {
 	{"model", FOFS(model), F_STRING},
 	{"model2", FOFS(model2), F_STRING},
 	{"spawnflags", FOFS(spawnflags), F_INT},
-	{"speed", FOFS(speed), F_FLOAT},
-	{"target", FOFS(target), F_STRING},
-	{"targetname", FOFS(targetname), F_STRING},
-	{"message", FOFS(message), F_STRING},
-	{"team", FOFS(team), F_STRING},
-	{"wait", FOFS(wait), F_FLOAT},
-	{"random", FOFS(random), F_FLOAT},
-	{"count", FOFS(count), F_INT},
 	{"health", FOFS(health), F_INT},
-	{"dmg", FOFS(damage), F_INT},
 	{"angles", FOFS(s.angles), F_VECTOR},
 	{"angle", FOFS(s.angles), F_ANGLEHACK},
-	{"targetShaderName", FOFS(targetShaderName), F_STRING},
-	{"targetShaderNewName", FOFS(targetShaderNewName), F_STRING},
 
 	{NULL}
 };
@@ -225,13 +214,6 @@ void G_ParseField( const char *key, const char *value, gentity_t *ent ) {
 	}
 }
 
-#define ADJUST_AREAPORTAL() \
-	if(ent->s.eType == ET_MOVER) \
-	{ \
-		trap_LinkEntity(ent); \
-		trap_AdjustAreaPortalState(ent, qtrue); \
-	}
-
 /*
 ===================
 G_SpawnGEntityFromSpawnVars
@@ -255,7 +237,6 @@ void G_SpawnGEntityFromSpawnVars( void ) {
 	{
 		G_SpawnInt( "notsingle", "0", &i );
 		if ( i ) {
-			ADJUST_AREAPORTAL();
 			G_FreeEntity( ent );
 			return;
 		}
@@ -263,7 +244,6 @@ void G_SpawnGEntityFromSpawnVars( void ) {
 	{
 		G_SpawnInt( "notfree", "0", &i );
 		if ( i ) {
-			ADJUST_AREAPORTAL();
 			G_FreeEntity( ent );
 			return;
 		}
@@ -271,7 +251,6 @@ void G_SpawnGEntityFromSpawnVars( void ) {
 
 	G_SpawnInt( "notq3a", "0", &i );
 	if ( i ) {
-		ADJUST_AREAPORTAL();
 		G_FreeEntity( ent );
 		return;
 	}
@@ -382,12 +361,6 @@ void SP_worldspawn( void ) {
 	if ( Q_stricmp( s, "worldspawn" ) ) {
 		G_Error( "SP_worldspawn: The first entity isn't 'worldspawn'" );
 	}
-
-	G_SpawnString( "music", "", &s );
-	trap_SetConfigstring( CS_MUSIC, s );
-
-	G_SpawnString( "message", "", &s );
-	trap_SetConfigstring( CS_MESSAGE, s );				// map specific message
 
 	g_entities[ENTITYNUM_WORLD].s.number = ENTITYNUM_WORLD;
 	g_entities[ENTITYNUM_WORLD].r.ownerNum = ENTITYNUM_NONE;

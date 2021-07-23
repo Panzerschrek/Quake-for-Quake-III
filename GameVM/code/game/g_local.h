@@ -31,19 +31,6 @@ Foundation, Inc., 51 Franklin St, Fifth Floor, Boston, MA  02110-1301  USA
 // the "gameversion" client command will print this plus compile date
 #define	GAMEVERSION	BASEGAME
 
-#define	FRAMETIME			100					// msec
-
-// gentity->flags
-#define	FL_GODMODE				0x00000010
-#define	FL_NOTARGET				0x00000020
-#define	FL_TEAMSLAVE			0x00000400	// not the first on the team
-#define FL_NO_BOTS				0x00002000	// spawn point not for bot use
-#define FL_NO_HUMANS			0x00004000	// spawn point just for bots
-#define FL_FORCE_GESTURE		0x00008000	// force gesture on client
-
-
-#define SP_PODIUM_MODEL		"models/mapobjects/podium/podium4.md3"
-
 //============================================================================
 
 typedef struct gentity_s gentity_t;
@@ -74,43 +61,11 @@ struct gentity_s {
 	qboolean	freeAfterEvent;
 	qboolean	unlinkAfterEvent;
 
-	qboolean	physicsObject;		// if true, it can be pushed by movers and fall off edges
-									// all game items are physicsObjects, 
-	float		physicsBounce;		// 1.0 = continuous bounce, 0.0 = no bounce
-	int			clipmask;			// brushes with this content value will be collided against
-									// when moving.  items and corpses do not collide against
-									// players, for instance
-
-	// movers
-	char		*message;
-
-	char		*target;
-	char		*targetname;
-	char		*team;
-	char		*targetShaderName;
-	char		*targetShaderNewName;
-	gentity_t	*target_ent;
-
-	float		speed;
-	vec3_t		movedir;
-
 	int			nextthink;
 	void		(*think)(gentity_t *self);
 
 	int			health;
-
-	int			damage;
-
-	int			count;
-
-	int			watertype;
-	int			waterlevel;
-
-	// timing variables
-	float		wait;
-	float		random;
 };
-
 
 typedef enum {
 	CON_DISCONNECTED,
@@ -118,44 +73,11 @@ typedef enum {
 	CON_CONNECTED
 } clientConnected_t;
 
-typedef enum {
-	SPECTATOR_NOT,
-	SPECTATOR_FREE,
-	SPECTATOR_FOLLOW,
-	SPECTATOR_SCOREBOARD
-} spectatorState_t;
-
-typedef enum {
-	TEAM_BEGIN,		// Beginning a team game, spawn at base
-	TEAM_ACTIVE		// Now actively playing
-} playerTeamStateState_t;
-
-typedef struct {
-	playerTeamStateState_t	state;
-} playerTeamState_t;
-
-// client data that stays across multiple levels or tournament restarts
-// this is achieved by writing all the data to cvar strings at game shutdown
-// time and reading them back at connection time.  Anything added here
-// MUST be dealt with in G_InitSessionData() / G_ReadSessionData() / G_WriteSessionData()
-typedef struct {
-	team_t		sessionTeam;
-	int			spectatorNum;		// for determining next-in-line to play
-	spectatorState_t	spectatorState;
-	int			spectatorClient;	// for chasecam and follow mode
-	int			wins, losses;		// tournament stats
-	qboolean	teamLeader;			// true when this client is a team leader
-} clientSession_t;
-
-//
-#define MAX_NETNAME			36
-
 // client data that stays across multiple respawns, but is cleared
 // on each level change or team change at ClientBegin()
 typedef struct {
 	clientConnected_t	connected;
 	usercmd_t	cmd;				// we would lose angles if not persistant
-	qboolean	pmoveFixed;			//
 } clientPersistant_t;
 
 
@@ -167,41 +89,17 @@ struct gclient_s {
 
 	// the rest of the structure is private to game
 	clientPersistant_t	pers;
-	clientSession_t		sess;
 
 	int			lastCmdTime;		// level.time of last usercmd_t, for EF_CONNECTION
 									// we can't just use pers.lastCommand.time, because
 									// of the g_sycronousclients case
 	int			buttons;
-	int			oldbuttons;
-	int			latched_buttons;
-
-	vec3_t		oldOrigin;
-
-	// sum up damage over an entire frame, so
-	// shotgun blasts give a single big kick
-
-	int			accuracy_shots;		// total number of shots
-	int			accuracy_hits;		// total number of hits
-
-	//
-	int			lastkilled_client;	// last client that this client killed
 
 	// timers
 	int			respawnTime;		// can respawn when time > this, force after g_forcerespwan
-	int			inactivityTime;		// kick players when time > this
-	int			rewardTime;			// clear the EF_AWARD_IMPRESSIVE, etc when time > this
-
-	int			airOutTime;
-
-	int			lastKillTime;		// for multiple kill rewards
-
-	qboolean	fireHeld;			// used for hook
-	gentity_t	*hook;				// grapple hook if out
 
 	char		*areabits;
 };
-
 
 //
 // this structure is cleared as each map is entered
@@ -215,8 +113,6 @@ typedef struct {
 	struct gentity_s	*gentities;
 	int			num_entities;		// MAX_CLIENTS <= num_entities <= ENTITYNUM_MAX_NORMAL
 
-	fileHandle_t	logFile;
-
 	// store latched cvars here that we want to get at often
 	int			maxclients;
 
@@ -226,21 +122,6 @@ typedef struct {
 
 	int			startTime;				// level.time the map was started
 
-	int			teamScores[TEAM_NUM_TEAMS];
-	int			lastTeamLocationTime;		// last time of client team location update
-
-	qboolean	newSession;				// don't use any old session data, because
-										// we changed gametype
-
-	qboolean	restarted;				// waiting for a map_restart to fire
-
-	int			numConnectedClients;
-	int			numNonSpectatorClients;	// includes connecting clients
-	int			numPlayingClients;		// connected, non-spectators
-	int			sortedClients[MAX_CLIENTS];		// sorted by score
-	int			follow1, follow2;		// clientNums for auto-follow spectators
-
-
 	// spawn variables
 	qboolean	spawning;				// the G_Spawn*() functions are valid
 	int			numSpawnVars;
@@ -248,13 +129,6 @@ typedef struct {
 	int			numSpawnVarChars;
 	char		spawnVarChars[MAX_SPAWN_VARS_CHARS];
 
-	// intermission state
-	int			intermissionQueued;		// intermission was qualified, but
-										// wait INTERMISSION_DELAY_TIME before
-										// actually going there so the last
-										// frag can be watched.  Disable future
-										// kills during this delay
-	int			intermissiontime;		// time the intermission was started
 	char		*changemap;
 
 } level_locals_t;
