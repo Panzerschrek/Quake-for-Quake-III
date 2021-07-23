@@ -179,61 +179,6 @@ void QDECL G_Error( const char *fmt, ... ) {
 	trap_Error( text );
 }
 
-/*
-================
-G_FindTeams
-
-Chain together all entities with a matching team field.
-Entity teams are used for item groups and multi-entity mover groups.
-
-All but the first will have the FL_TEAMSLAVE flag set and teammaster field set
-All but the last will have the teamchain field set to the next one
-================
-*/
-void G_FindTeams( void ) {
-	gentity_t	*e, *e2;
-	int		i, j;
-	int		c, c2;
-
-	c = 0;
-	c2 = 0;
-	for ( i=MAX_CLIENTS, e=g_entities+i ; i < level.num_entities ; i++,e++ ) {
-		if (!e->inuse)
-			continue;
-		if (!e->team)
-			continue;
-		if (e->flags & FL_TEAMSLAVE)
-			continue;
-		e->teammaster = e;
-		c++;
-		c2++;
-		for (j=i+1, e2=e+1 ; j < level.num_entities ; j++,e2++)
-		{
-			if (!e2->inuse)
-				continue;
-			if (!e2->team)
-				continue;
-			if (e2->flags & FL_TEAMSLAVE)
-				continue;
-			if (!strcmp(e->team, e2->team))
-			{
-				c2++;
-				e2->teamchain = e->teamchain;
-				e->teamchain = e2;
-				e2->teammaster = e;
-				e2->flags |= FL_TEAMSLAVE;
-
-				// make sure that targets only point at the master
-				if ( e2->targetname ) {
-					e->targetname = e2->targetname;
-					e2->targetname = NULL;
-				}
-			}
-		}
-	}
-
-	G_Printf ("%i teams with %i entities\n", c, c2);
-}
 
 void G_RemapTeamShaders( void ) {
 }
@@ -385,8 +330,6 @@ void G_InitGame( int levelTime, int randomSeed, int restart ) {
 	// parse the key/value pairs and spawn gentities
 	G_SpawnEntitiesFromString();
 
-	// general initialization
-	G_FindTeams();
 
 	G_Printf ("-----------------------------------\n");
 

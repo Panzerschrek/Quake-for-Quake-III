@@ -121,7 +121,6 @@ typedef struct {
 
 void SP_info_player_start (gentity_t *ent);
 void SP_info_player_deathmatch (gentity_t *ent);
-void SP_info_player_intermission (gentity_t *ent);
 
 
 spawn_t	spawns[] = {
@@ -129,7 +128,6 @@ spawn_t	spawns[] = {
 	// information for things controlled by other processes
 	{"info_player_start", SP_info_player_start},
 	{"info_player_deathmatch", SP_info_player_deathmatch},
-	{"info_player_intermission", SP_info_player_intermission},
 
 	{NULL, 0}
 };

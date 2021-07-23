@@ -55,13 +55,6 @@ void SP_info_player_start(gentity_t *ent) {
 	SP_info_player_deathmatch( ent );
 }
 
-/*QUAKED info_player_intermission (1 0 1) (-16 -16 -24) (16 16 32)
-The intermission will be viewed from this point.  Target an info_notnull for the view direction.
-*/
-void SP_info_player_intermission( gentity_t *ent ) {
-
-}
-
 
 /*
 ===========
@@ -262,14 +255,6 @@ void CopyToBodyQue( gentity_t *ent ) {
 
 	body->nextthink = level.time + 5000;
 	body->think = BodySink;
-
-	// don't take more damage if already gibbed
-	if ( ent->health <= GIB_HEALTH ) {
-		body->takedamage = qfalse;
-	} else {
-		body->takedamage = qtrue;
-	}
-
 
 	VectorCopy ( body->s.pos.trBase, body->r.currentOrigin );
 	trap_LinkEntity (body);
@@ -655,8 +640,6 @@ void ClientBegin( int clientNum ) {
 		trap_UnlinkEntity( ent );
 	}
 	G_InitGentity( ent );
-	ent->touch = 0;
-	ent->pain = 0;
 	ent->client = client;
 
 	client->pers.connected = CON_CONNECTED;
@@ -775,7 +758,6 @@ void ClientSpawn(gentity_t *ent) {
 
 	ent->s.groundEntityNum = ENTITYNUM_NONE;
 	ent->client = &level.clients[index];
-	ent->takedamage = qtrue;
 	ent->inuse = qtrue;
 	ent->classname = "player";
 	ent->r.contents = CONTENTS_BODY;
