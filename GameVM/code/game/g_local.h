@@ -33,32 +33,16 @@ Foundation, Inc., 51 Franklin St, Fifth Floor, Boston, MA  02110-1301  USA
 
 #define BODY_QUEUE_SIZE		8
 
-#define INFINITE			1000000
-
 #define	FRAMETIME			100					// msec
-#define	CARNAGE_REWARD_TIME	3000
-#define REWARD_SPRITE_TIME	2000
-
-#define	INTERMISSION_DELAY_TIME	1000
-#define	SP_INTERMISSION_DELAY_TIME	5000
 
 // gentity->flags
 #define	FL_GODMODE				0x00000010
 #define	FL_NOTARGET				0x00000020
 #define	FL_TEAMSLAVE			0x00000400	// not the first on the team
-#define FL_NO_KNOCKBACK			0x00000800
-#define FL_DROPPED_ITEM			0x00001000
 #define FL_NO_BOTS				0x00002000	// spawn point not for bot use
 #define FL_NO_HUMANS			0x00004000	// spawn point just for bots
 #define FL_FORCE_GESTURE		0x00008000	// force gesture on client
 
-// movers are things like doors, plats, buttons, etc
-typedef enum {
-	MOVER_POS1,
-	MOVER_POS2,
-	MOVER_1TO2,
-	MOVER_2TO1
-} moverState_t;
 
 #define SP_PODIUM_MODEL		"models/mapobjects/podium/podium4.md3"
 
@@ -103,17 +87,6 @@ struct gentity_s {
 									// players, for instance
 
 	// movers
-	moverState_t moverState;
-	int			soundPos1;
-	int			sound1to2;
-	int			sound2to1;
-	int			soundPos2;
-	int			soundLoop;
-	gentity_t	*parent;
-	gentity_t	*nextTrain;
-	gentity_t	*prevTrain;
-	vec3_t		pos1, pos2;
-
 	char		*message;
 
 	int			timestamp;		// body queue sinking, etc
@@ -137,19 +110,11 @@ struct gentity_s {
 	void		(*pain)(gentity_t *self, gentity_t *attacker, int damage);
 	void		(*die)(gentity_t *self, gentity_t *inflictor, gentity_t *attacker, int damage, int mod);
 
-	int			pain_debounce_time;
-	int			fly_sound_debounce_time;	// wind tunnel
-	int			last_move_time;
-
 	int			health;
 
 	qboolean	takedamage;
 
 	int			damage;
-	int			splashDamage;	// quad will increase this without increasing radius
-	int			splashRadius;
-	int			methodOfDeath;
-	int			splashMethodOfDeath;
 
 	int			count;
 
@@ -192,20 +157,6 @@ typedef enum {
 
 typedef struct {
 	playerTeamStateState_t	state;
-
-	int			location;
-
-	int			captures;
-	int			basedefense;
-	int			carrierdefense;
-	int			flagrecovery;
-	int			fragcarrier;
-	int			assists;
-
-	float		lasthurtcarrier;
-	float		lastreturnedflag;
-	float		flagsince;
-	float		lastfraggedcarrier;
 } playerTeamState_t;
 
 // client data that stays across multiple levels or tournament restarts
@@ -223,12 +174,11 @@ typedef struct {
 
 //
 #define MAX_NETNAME			36
-#define	MAX_VOTE_COUNT		3
 
 // client data that stays across multiple respawns, but is cleared
 // on each level change or team change at ClientBegin()
 typedef struct {
-	clientConnected_t	connected;	
+	clientConnected_t	connected;
 	usercmd_t	cmd;				// we would lose angles if not persistant
 	qboolean	localClient;		// true if "ip" info key is "localhost"
 	qboolean	initialSpawn;		// the first spawn should be at a cool location
@@ -238,8 +188,6 @@ typedef struct {
 	int			maxHealth;			// for handicapping
 	int			enterTime;			// level.time the client entered the game
 	playerTeamState_t teamState;	// status in teamplay games
-	int			voteCount;			// to prevent people from constantly calling votes
-	int			teamVoteCount;		// to prevent people from constantly calling votes
 	qboolean	teamInfo;			// send team overlay updates?
 } clientPersistant_t;
 
@@ -254,8 +202,6 @@ struct gclient_s {
 	clientPersistant_t	pers;
 	clientSession_t		sess;
 
-	qboolean	readyToExit;		// wishes to leave the intermission
-
 	qboolean	noclip;
 
 	int			lastCmdTime;		// level.time of last usercmd_t, for EF_CONNECTION
@@ -269,26 +215,16 @@ struct gclient_s {
 
 	// sum up damage over an entire frame, so
 	// shotgun blasts give a single big kick
-	int			damage_armor;		// damage absorbed by armor
-	int			damage_blood;		// damage taken out of health
-	int			damage_knockback;	// impact damage
-	vec3_t		damage_from;		// origin for vector calculation
-	qboolean	damage_fromWorld;	// if true, don't use the damage_from vector
-
-	int			accurateCount;		// for "impressive" reward sound
 
 	int			accuracy_shots;		// total number of shots
 	int			accuracy_hits;		// total number of hits
 
 	//
 	int			lastkilled_client;	// last client that this client killed
-	int			lasthurt_client;	// last client that damaged this client
-	int			lasthurt_mod;		// type of damage the client did
 
 	// timers
 	int			respawnTime;		// can respawn when time > this, force after g_forcerespwan
 	int			inactivityTime;		// kick players when time > this
-	qboolean	inactivityWarning;	// qtrue if the five seoond warning has been given
 	int			rewardTime;			// clear the EF_AWARD_IMPRESSIVE, etc when time > this
 
 	int			airOutTime;
@@ -297,12 +233,6 @@ struct gclient_s {
 
 	qboolean	fireHeld;			// used for hook
 	gentity_t	*hook;				// grapple hook if out
-
-	int			switchTeamTime;		// time the player switched teams
-
-	// timeResidual is used to handle events that happen every second
-	// like health / armor countdowns and regeneration
-	int			timeResidual;
 
 	char		*areabits;
 };
@@ -318,7 +248,6 @@ typedef struct {
 	struct gclient_s	*clients;		// [maxclients]
 
 	struct gentity_s	*gentities;
-	int			gentitySize;
 	int			num_entities;		// MAX_CLIENTS <= num_entities <= ENTITYNUM_MAX_NORMAL
 
 	int			warmupTime;			// restart match at this time
@@ -348,25 +277,7 @@ typedef struct {
 	int			sortedClients[MAX_CLIENTS];		// sorted by score
 	int			follow1, follow2;		// clientNums for auto-follow spectators
 
-	int			snd_fry;				// sound index for standing in lava
-
 	int			warmupModificationCount;	// for detecting if g_warmup is changed
-
-	// voting state
-	char		voteString[MAX_STRING_CHARS];
-	char		voteDisplayString[MAX_STRING_CHARS];
-	int			voteTime;				// level.time vote was called
-	int			voteExecuteTime;		// time the vote is executed
-	int			voteYes;
-	int			voteNo;
-	int			numVotingClients;		// set by CalculateRanks
-
-	// team voting state
-	char		teamVoteString[2][MAX_STRING_CHARS];
-	int			teamVoteTime[2];		// level.time vote was called
-	int			teamVoteYes[2];
-	int			teamVoteNo[2];
-	int			numteamVotingClients[2];// set by CalculateRanks
 
 	// spawn variables
 	qboolean	spawning;				// the G_Spawn*() functions are valid
@@ -383,13 +294,7 @@ typedef struct {
 										// kills during this delay
 	int			intermissiontime;		// time the intermission was started
 	char		*changemap;
-	qboolean	readyToExit;			// at least one client wants to exit
-	int			exitTime;
-	vec3_t		intermission_origin;	// also used for spectator spawns
-	vec3_t		intermission_angle;
 
-	qboolean	locationLinked;			// target_locations get linked
-	gentity_t	*locationHead;			// head of the location list
 	int			bodyQueIndex;			// dead bodies
 	gentity_t	*bodyQue[BODY_QUEUE_SIZE];
 } level_locals_t;
@@ -414,19 +319,11 @@ gentity_t *G_Find (gentity_t *from, int fieldofs, const char *match);
 void	G_InitGentity( gentity_t *e );
 gentity_t	*G_Spawn (void);
 gentity_t *G_TempEntity( vec3_t origin, int event );
-void	G_Sound( gentity_t *ent, int channel, int soundIndex );
 void	G_FreeEntity( gentity_t *e );
 qboolean	G_EntitiesFree( void );
 
 void G_SetOrigin( gentity_t *ent, vec3_t origin );
 const char *BuildShaderStateConfig( void );
-
-// damage flags
-#define DAMAGE_RADIUS				0x00000001	// damage was indirect
-#define DAMAGE_NO_ARMOR				0x00000002	// armour does not protect from this damage
-#define DAMAGE_NO_KNOCKBACK			0x00000004	// do not affect velocity, just view angles
-#define DAMAGE_NO_PROTECTION		0x00000008  // armor, shields, invulnerability, and godmode have no effect
-
 
 //
 // g_misc.c
