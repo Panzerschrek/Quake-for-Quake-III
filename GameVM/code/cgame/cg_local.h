@@ -31,12 +31,6 @@ Foundation, Inc., 51 Franklin St, Fifth Floor, Boston, MA  02110-1301  USA
 // If you absolutely need something stored, it can either be kept
 // by the server in the server stored userinfos, or stashed in a cvar.
 
-#define	POWERUP_BLINKS		5
-
-#define	LAND_DEFLECT_TIME	150
-#define	LAND_RETURN_TIME	300
-#define	ZOOM_TIME			150
-
 #define	DEFAULT_MODEL			"sarge"
 #define	DEFAULT_TEAM_MODEL		"sarge"
 #define	DEFAULT_TEAM_HEAD		"sarge"
@@ -127,9 +121,6 @@ typedef struct {
 
 	float		duckChange;				// for duck viewheight smoothing
 	int			duckTime;
-
-	float		landChange;				// for landing hard
-	int			landTime;
 
 	// input state sent to server
 	int			weaponSelect;
