@@ -38,9 +38,6 @@ static void CG_ResetEntity( centity_t *cent ) {
 	if ( cent->snapShotTime < cg.time - EVENT_VALID_MSEC ) {
 		cent->previousEvent = 0;
 	}
-
-	VectorCopy (cent->currentState.origin, cent->lerpOrigin);
-	VectorCopy (cent->currentState.angles, cent->lerpAngles);
 }
 
 /*

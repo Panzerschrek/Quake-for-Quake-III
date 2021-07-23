@@ -343,9 +343,6 @@ void CG_Init( int serverMessageNum, int serverCommandSequence, int clientNum ) {
 
 	cg.loading = qfalse;	// future players will be deferred
 
-	// remove the last loading update
-	cg.infoScreenText[0] = 0;
-
 	// Make sure we have update values (scores)
 	CG_SetConfigValues();
 

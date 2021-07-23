@@ -49,20 +49,7 @@ typedef struct centity_s {
 	int				previousEvent;
 
 	int				snapShotTime;	// last time this entity was found in a snapshot
-
-	qboolean		extrapolated;	// false if origin / angles is an interpolation
-	vec3_t			rawOrigin;
-	vec3_t			rawAngles;
-
-	// exact interpolated position of entity on this frame
-	vec3_t			lerpOrigin;
-	vec3_t			lerpAngles;
 } centity_t;
-
-//======================================================================
-
-// all cg.stepTime, cg.duckTime, cg.landTime, etc are set to cg.time when the action
-// occurs, and they will have visible effects for #define STEP_TIME or whatever msec after
 
 #define MAX_PREDICTED_EVENTS	16
  
@@ -106,7 +93,6 @@ typedef struct {
 	qboolean	renderingThirdPerson;		// during deaths, chasecams, etc
 
 	// prediction state
-	qboolean	hyperspace;				// true if prediction has hit a trigger_teleport
 	playerState_t	predictedPlayerState;
 	centity_t		predictedPlayerEntity;
 	qboolean	validPPS;				// clear until the first call to CG_PredictPlayerState
@@ -116,32 +102,15 @@ typedef struct {
 	int			eventSequence;
 	int			predictableEvents[MAX_PREDICTED_EVENTS];
 
-	float		stepChange;				// for stair up smoothing
-	int			stepTime;
-
-	float		duckChange;				// for duck viewheight smoothing
-	int			duckTime;
-
 	// input state sent to server
 	int			weaponSelect;
-
-	// auto rotating items
-	vec3_t		autoAngles;
-	vec3_t		autoAxis[3];
-	vec3_t		autoAnglesFast;
-	vec3_t		autoAxisFast[3];
 
 	// view rendering
 	refdef_t	refdef;
 	vec3_t		refdefViewAngles;		// will be converted to refdef.viewaxis
 
 	// zoom key
-	qboolean	zoomed;
-	int			zoomTime;
 	float		zoomSensitivity;
-
-	// information screen text during loading
-	char		infoScreenText[MAX_STRING_CHARS];
 
 	// warmup countdown
 	int			warmup;
@@ -152,15 +121,6 @@ typedef struct {
 	int			bobcycle;
 	float		xyspeed;
 	int     nextOrbitTime;
-
-	//qboolean cameraMode;		// if rendering from a loaded camera
-
-
-	// development tool
-	refEntity_t		testModelEntity;
-	char			testModelName[MAX_QPATH];
-	qboolean		testGun;
-
 } cg_t;
 
 
@@ -233,14 +193,9 @@ void QDECL CG_Error( const char *msg, ... ) __attribute__ ((noreturn, format (pr
 
 void CG_UpdateCvars( void );
 
-void CG_LoadMenus(const char *menuFile);
 void CG_KeyEvent(int key, qboolean down);
 void CG_MouseEvent(int x, int y);
 void CG_EventHandling(int type);
-void CG_RankRunFrame( void );
-void CG_SetScoreSelection(void *menu);
-void CG_BuildSpectatorString( void );
-
 
 //
 // cg_view.c
