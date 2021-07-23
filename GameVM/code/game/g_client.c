@@ -141,129 +141,6 @@ gentity_t *SelectRandomFurthestSpawnPoint ( vec3_t avoidPoint, vec3_t origin, ve
 
 
 /*
-=======================================================================
-
-BODYQUE
-
-=======================================================================
-*/
-
-/*
-===============
-InitBodyQue
-===============
-*/
-void InitBodyQue (void) {
-	int		i;
-	gentity_t	*ent;
-
-	level.bodyQueIndex = 0;
-	for (i=0; i<BODY_QUEUE_SIZE ; i++) {
-		ent = G_Spawn();
-		ent->classname = "bodyque";
-		ent->neverFree = qtrue;
-		level.bodyQue[i] = ent;
-	}
-}
-
-/*
-=============
-BodySink
-
-After sitting around for five seconds, fall into the ground and disappear
-=============
-*/
-void BodySink( gentity_t *ent ) {
-	if ( level.time - ent->timestamp > 6500 ) {
-		// the body ques are never actually freed, they are just unlinked
-		trap_UnlinkEntity( ent );
-		ent->physicsObject = qfalse;
-		return;	
-	}
-	ent->nextthink = level.time + 100;
-	ent->s.pos.trBase[2] -= 1;
-}
-
-/*
-=============
-CopyToBodyQue
-
-A player is respawning, so make an entity that looks
-just like the existing corpse to leave behind.
-=============
-*/
-void CopyToBodyQue( gentity_t *ent ) {
-	gentity_t		*body;
-	int			contents;
-
-	trap_UnlinkEntity (ent);
-
-	// if client is in a nodrop area, don't leave the body
-	contents = trap_PointContents( ent->s.origin, -1 );
-	if ( contents & CONTENTS_NODROP ) {
-		return;
-	}
-
-	// grab a body que and cycle to the next one
-	body = level.bodyQue[ level.bodyQueIndex ];
-	level.bodyQueIndex = (level.bodyQueIndex + 1) % BODY_QUEUE_SIZE;
-
-	body->s = ent->s;
-	body->s.eFlags = EF_DEAD;		// clear EF_TALK, etc
-	body->s.powerups = 0;	// clear powerups
-	body->s.loopSound = 0;	// clear lava burning
-	body->s.number = body - g_entities;
-	body->timestamp = level.time;
-	body->physicsObject = qtrue;
-	body->physicsBounce = 0;		// don't bounce
-	if ( body->s.groundEntityNum == ENTITYNUM_NONE ) {
-		body->s.pos.trType = TR_GRAVITY;
-		body->s.pos.trTime = level.time;
-		VectorCopy( ent->client->ps.velocity, body->s.pos.trDelta );
-	} else {
-		body->s.pos.trType = TR_STATIONARY;
-	}
-	body->s.event = 0;
-
-	// change the animation to the last-frame only, so the sequence
-	// doesn't repeat anew for the body
-	switch ( body->s.legsAnim & ~ANIM_TOGGLEBIT ) {
-	case BOTH_DEATH1:
-	case BOTH_DEAD1:
-		body->s.torsoAnim = body->s.legsAnim = BOTH_DEAD1;
-		break;
-	case BOTH_DEATH2:
-	case BOTH_DEAD2:
-		body->s.torsoAnim = body->s.legsAnim = BOTH_DEAD2;
-		break;
-	case BOTH_DEATH3:
-	case BOTH_DEAD3:
-	default:
-		body->s.torsoAnim = body->s.legsAnim = BOTH_DEAD3;
-		break;
-	}
-
-	body->r.svFlags = ent->r.svFlags;
-	VectorCopy (ent->r.mins, body->r.mins);
-	VectorCopy (ent->r.maxs, body->r.maxs);
-	VectorCopy (ent->r.absmin, body->r.absmin);
-	VectorCopy (ent->r.absmax, body->r.absmax);
-
-	body->clipmask = CONTENTS_SOLID | CONTENTS_PLAYERCLIP;
-	body->r.contents = CONTENTS_CORPSE;
-	body->r.ownerNum = ent->s.number;
-
-	body->nextthink = level.time + 5000;
-	body->think = BodySink;
-
-	VectorCopy ( body->s.pos.trBase, body->r.currentOrigin );
-	trap_LinkEntity (body);
-}
-
-//======================================================================
-
-
-/*
 ==================
 SetClientViewAngle
 
@@ -290,7 +167,6 @@ ClientRespawn
 */
 void ClientRespawn( gentity_t *ent ) {
 
-	CopyToBodyQue (ent);
 	ClientSpawn(ent);
 }
 

@@ -324,8 +324,6 @@ void G_InitGame( int levelTime, int randomSeed, int restart ) {
 	trap_LocateGameData( level.gentities, level.num_entities, sizeof( gentity_t ), 
 		&level.clients[0].ps, sizeof( level.clients[0] ) );
 
-	// reserve some spots for dead player bodies
-	InitBodyQue();
 
 	// parse the key/value pairs and spawn gentities
 	G_SpawnEntitiesFromString();
@@ -588,10 +586,6 @@ void G_RunFrame( int levelTime ) {
 
 		// temporary entities don't think
 		if ( ent->freeAfterEvent ) {
-			continue;
-		}
-
-		if ( !ent->r.linked && ent->neverFree ) {
 			continue;
 		}
 

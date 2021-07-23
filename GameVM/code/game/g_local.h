@@ -31,8 +31,6 @@ Foundation, Inc., 51 Franklin St, Fifth Floor, Boston, MA  02110-1301  USA
 // the "gameversion" client command will print this plus compile date
 #define	GAMEVERSION	BASEGAME
 
-#define BODY_QUEUE_SIZE		8
-
 #define	FRAMETIME			100					// msec
 
 // gentity->flags
@@ -66,9 +64,6 @@ struct gentity_s {
 	char		*classname;			// set in QuakeEd
 	int			spawnflags;			// set in QuakeEd
 
-	qboolean	neverFree;			// if true, FreeEntity will only unlink
-									// bodyque uses this
-
 	int			flags;				// FL_* variables
 
 	char		*model;
@@ -88,8 +83,6 @@ struct gentity_s {
 
 	// movers
 	char		*message;
-
-	int			timestamp;		// body queue sinking, etc
 
 	char		*target;
 	char		*targetname;
@@ -279,8 +272,6 @@ typedef struct {
 	int			intermissiontime;		// time the intermission was started
 	char		*changemap;
 
-	int			bodyQueIndex;			// dead bodies
-	gentity_t	*bodyQue[BODY_QUEUE_SIZE];
 } level_locals_t;
 
 
@@ -318,9 +309,7 @@ void TeleportPlayer( gentity_t *player, vec3_t origin, vec3_t angles );
 // g_client.c
 //
 void SetClientViewAngle( gentity_t *ent, vec3_t angle );
-void CopyToBodyQue( gentity_t *ent );
 void ClientRespawn(gentity_t *ent);
-void InitBodyQue (void);
 void ClientSpawn( gentity_t *ent );
 
 //
@@ -333,7 +322,6 @@ qboolean	ConsoleCommand( void );
 // g_main.c
 //
 void G_RunThink (gentity_t *ent);
-void AddTournamentQueue(gclient_t *client);
 void QDECL G_LogPrintf( const char *fmt, ... ) __attribute__ ((format (printf, 1, 2)));
 void SendScoreboardMessageToAllClients( void );
 void QDECL G_Printf( const char *fmt, ... ) __attribute__ ((format (printf, 1, 2)));
