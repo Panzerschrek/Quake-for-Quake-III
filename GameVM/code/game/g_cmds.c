@@ -23,26 +23,6 @@ Foundation, Inc., 51 Franklin St, Fifth Floor, Boston, MA  02110-1301  USA
 #include "g_local.h"
 
 /*
-==================
-Cmd_Noclip_f
-
-argv(0) noclip
-==================
-*/
-void Cmd_Noclip_f( gentity_t *ent ) {
-	char	*msg;
-
-	if ( ent->client->noclip ) {
-		msg = "noclip OFF\n";
-	} else {
-		msg = "noclip ON\n";
-	}
-	ent->client->noclip = !ent->client->noclip;
-
-	trap_SendServerCommand( ent-g_entities, va("print \"%s\"", msg));
-}
-
-/*
 =================
 Cmd_Kill_f
 =================
@@ -79,9 +59,7 @@ void ClientCommand( int clientNum ) {
 
 	trap_Argv( 0, cmd, sizeof( cmd ) );
 
-	if (Q_stricmp (cmd, "noclip") == 0)
-		Cmd_Noclip_f (ent);
-	else if (Q_stricmp (cmd, "kill") == 0)
+	if (Q_stricmp (cmd, "kill") == 0)
 		Cmd_Kill_f (ent);
 	else
 		trap_SendServerCommand( clientNum, va("print \"unknown cmd %s\n\"", cmd ) );

@@ -24,52 +24,7 @@ Foundation, Inc., 51 Franklin St, Fifth Floor, Boston, MA  02110-1301  USA
 #include "g_local.h"
 
 
-
 //==============================================================
-
-/*
-=================
-SpectatorThink
-=================
-*/
-void SpectatorThink( gentity_t *ent, usercmd_t *ucmd ) {
-	pmove_t	pm;
-	gclient_t	*client;
-
-	client = ent->client;
-
-	if ( client->sess.spectatorState != SPECTATOR_FOLLOW || !( client->ps.pm_flags & PMF_FOLLOW ) ) {
-		if ( client->sess.spectatorState == SPECTATOR_FREE ) {
-			if ( client->noclip ) {
-				client->ps.pm_type = PM_NOCLIP;
-			} else {
-				client->ps.pm_type = PM_SPECTATOR;
-			}
-		} else {
-			client->ps.pm_type = PM_FREEZE;
-		}
-
-		client->ps.speed = 400;	// faster than normal
-
-		// set up for pmove
-		memset (&pm, 0, sizeof(pm));
-		pm.ps = &client->ps;
-		pm.cmd = *ucmd;
-		pm.tracemask = MASK_PLAYERSOLID & ~CONTENTS_BODY;	// spectators can fly through bodies
-		pm.trace = trap_Trace;
-		pm.pointcontents = trap_PointContents;
-
-		// perform a pmove
-		Pmove (&pm);
-		// save results of pmove
-		VectorCopy( client->ps.origin, ent->s.origin );
-
-		trap_UnlinkEntity( ent );
-	}
-
-	client->oldbuttons = client->buttons;
-	client->buttons = ucmd->buttons;
-}
 
 /*
 ==============
@@ -167,28 +122,12 @@ void ClientThink_real( gentity_t *ent ) {
 		//	return;
 	}
 
-	// spectators don't do much
-	if ( client->sess.sessionTeam == TEAM_SPECTATOR ) {
-		if ( client->sess.spectatorState == SPECTATOR_SCOREBOARD ) {
-			return;
-		}
-		SpectatorThink( ent, ucmd );
-		return;
-	}
-
 	// clear the rewards if time
 	if ( level.time > client->rewardTime ) {
 		client->ps.eFlags &= ~(EF_AWARD_IMPRESSIVE | EF_AWARD_EXCELLENT | EF_AWARD_GAUNTLET | EF_AWARD_ASSIST | EF_AWARD_DEFEND | EF_AWARD_CAP );
 	}
 
-	if ( client->noclip ) {
-		client->ps.pm_type = PM_NOCLIP;
-	} else if ( client->ps.stats[STAT_HEALTH] <= 0 ) {
-		client->ps.pm_type = PM_DEAD;
-	} else {
-		client->ps.pm_type = PM_NORMAL;
-	}
-
+	client->ps.pm_type = PM_NOCLIP;
 	client->ps.gravity = g_gravity.value;
 
 	// set speed

@@ -71,12 +71,3 @@ extern	float	pm_waterfriction;
 extern	float	pm_flightfriction;
 
 extern	int		c_pmove;
-
-void PM_ClipVelocity( vec3_t in, vec3_t normal, vec3_t out, float overbounce );
-void PM_AddTouchEnt( int entityNum );
-void PM_AddEvent( int newEvent );
-
-qboolean	PM_SlideMove( qboolean gravity );
-void		PM_StepSlideMove( qboolean gravity );
-
-

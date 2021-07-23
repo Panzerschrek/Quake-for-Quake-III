@@ -86,5 +86,4 @@ void CG_InitConsoleCommands( void ) {
 	// forwarded to the server after they are not recognized locally
 	//
 	trap_AddCommand ("kill");
-	trap_AddCommand ("noclip");
 }
