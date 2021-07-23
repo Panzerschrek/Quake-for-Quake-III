@@ -23,11 +23,6 @@ Foundation, Inc., 51 Franklin St, Fifth Floor, Boston, MA  02110-1301  USA
 // cg_main.c -- initialization and primary entry point for cgame
 #include "cg_local.h"
 
-int drawTeamOverlayModificationCount = -1;
-
-
-int forceModelModificationCount = -1;
-
 void CG_Init( int serverMessageNum, int serverCommandSequence, int clientNum );
 void CG_Shutdown( void );
 
@@ -77,21 +72,7 @@ Q_EXPORT intptr_t vmMain( int command, int arg0, int arg1, int arg2, int arg3, i
 
 cg_t				cg;
 cgs_t				cgs;
-centity_t			cg_entities[MAX_GENTITIES];
 
-
-vmCvar_t	cg_errorDecay;
-vmCvar_t	cg_synchronousClients;
-vmCvar_t 	cg_forceModel;
-vmCvar_t	cg_predictItems;
-vmCvar_t	cg_deferPlayers;
-vmCvar_t	cg_hudFiles;
-vmCvar_t	pmove_fixed;
-//vmCvar_t	cg_pmove_fixed;
-vmCvar_t	pmove_msec;
-vmCvar_t	cg_pmove_msec;
-vmCvar_t	cg_cameraOrbit;
-vmCvar_t	cg_cameraOrbitDelay;
 vmCvar_t	cg_timescaleFadeEnd;
 vmCvar_t	cg_timescaleFadeSpeed;
 vmCvar_t	cg_timescale;
@@ -104,21 +85,11 @@ typedef struct {
 } cvarTable_t;
 
 static cvarTable_t cvarTable[] = {
-	{ &cg_errorDecay, "cg_errordecay", "100", 0 },
-	{ &cg_forceModel, "cg_forceModel", "0", CVAR_ARCHIVE  },
-	{ &cg_predictItems, "cg_predictItems", "1", CVAR_ARCHIVE },
-	{ &cg_deferPlayers, "cg_deferPlayers", "1", CVAR_ARCHIVE },
 	// the following variables are created in other parts of the system,
 	// but we also reference them here
-	{ &cg_synchronousClients, "g_synchronousClients", "0", CVAR_SYSTEMINFO },
-	{ &cg_cameraOrbit, "cg_cameraOrbit", "0", CVAR_CHEAT},
-	{ &cg_cameraOrbitDelay, "cg_cameraOrbitDelay", "50", CVAR_ARCHIVE},
 	{ &cg_timescaleFadeEnd, "cg_timescaleFadeEnd", "1", 0},
 	{ &cg_timescaleFadeSpeed, "cg_timescaleFadeSpeed", "0", 0},
 	{ &cg_timescale, "timescale", "1", 0},
-
-	{ &pmove_fixed, "pmove_fixed", "0", CVAR_SYSTEMINFO},
-	{ &pmove_msec, "pmove_msec", "8", CVAR_SYSTEMINFO},
 };
 
 static int  cvarTableSize = ARRAY_LEN( cvarTable );
@@ -131,23 +102,11 @@ CG_RegisterCvars
 void CG_RegisterCvars( void ) {
 	int			i;
 	cvarTable_t	*cv;
-	char		var[MAX_TOKEN_CHARS];
 
 	for ( i = 0, cv = cvarTable ; i < cvarTableSize ; i++, cv++ ) {
 		trap_Cvar_Register( cv->vmCvar, cv->cvarName,
 			cv->defaultString, cv->cvarFlags );
 	}
-
-	// see if we are also running the server on this machine
-	trap_Cvar_VariableStringBuffer( "sv_running", var, sizeof( var ) );
-	cgs.localServer = atoi( var );
-
-	forceModelModificationCount = cg_forceModel.modificationCount;
-
-	trap_Cvar_Register(NULL, "model", DEFAULT_MODEL, CVAR_USERINFO | CVAR_ARCHIVE );
-	trap_Cvar_Register(NULL, "headmodel", DEFAULT_MODEL, CVAR_USERINFO | CVAR_ARCHIVE );
-	trap_Cvar_Register(NULL, "team_model", DEFAULT_TEAM_MODEL, CVAR_USERINFO | CVAR_ARCHIVE );
-	trap_Cvar_Register(NULL, "team_headmodel", DEFAULT_TEAM_HEAD, CVAR_USERINFO | CVAR_ARCHIVE );
 }
 
 /*
@@ -291,25 +250,19 @@ void CG_Init( int serverMessageNum, int serverCommandSequence, int clientNum ) {
 	// clear everything
 	memset( &cgs, 0, sizeof( cgs ) );
 	memset( &cg, 0, sizeof( cg ) );
-	memset( cg_entities, 0, sizeof(cg_entities) );
 
 	cg.clientNum = clientNum;
 
-	cgs.processedSnapshotNum = serverMessageNum;
 	cgs.serverCommandSequence = serverCommandSequence;
 
 	CG_RegisterCvars();
 
 	CG_InitConsoleCommands();
 
-	cg.weaponSelect = 0;
-
 	// old servers
 
 	// get the rendering configuration from the client system
 	trap_GetGlconfig( &cgs.glconfig );
-	cgs.screenXScale = cgs.glconfig.vidWidth / 640.0;
-	cgs.screenYScale = cgs.glconfig.vidHeight / 480.0;
 
 	// get the gamestate from the client system
 	trap_GetGameState( &cgs.gameState );
@@ -325,9 +278,6 @@ void CG_Init( int serverMessageNum, int serverCommandSequence, int clientNum ) {
 	CG_RegisterClients();		// if low on memory, some clients will be deferred
 
 	cg.loading = qfalse;	// future players will be deferred
-
-	// Make sure we have update values (scores)
-	CG_SetConfigValues();
 
 	trap_S_ClearLoopingSounds( qtrue );
 }

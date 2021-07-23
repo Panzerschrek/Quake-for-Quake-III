@@ -43,33 +43,6 @@ void CG_ParseServerinfo( void ) {
 	Com_sprintf( cgs.mapname, sizeof( cgs.mapname ), "maps/%s.bsp", mapname );
 }
 
-/*
-==================
-CG_ParseWarmup
-==================
-*/
-static void CG_ParseWarmup( void ) {
-	const char	*info;
-	int			warmup;
-
-	info = CG_ConfigString( CS_WARMUP );
-
-	warmup = atoi( info );
-	cg.warmupCount = -1;
-
-	cg.warmup = warmup;
-}
-
-/*
-================
-CG_SetConfigValues
-
-Called on load to set the initial values from configure strings
-================
-*/
-void CG_SetConfigValues( void ) {
-	cg.warmup = atoi( CG_ConfigString( CS_WARMUP ) );
-}
 
 /*
 =================
@@ -119,13 +92,6 @@ static void CG_ServerCommand( void ) {
 
 	// loaddeferred can be both a servercmd and a consolecmd
 	if ( !strcmp( cmd, "loaddefered" ) ) {	// FIXME: spelled wrong, but not changing for demo
-		return;
-	}
-
-	// clientLevelShot is sent before taking a special screenshot for
-	// the menu system during development
-	if ( !strcmp( cmd, "clientLevelShot" ) ) {
-		cg.levelShot = qtrue;
 		return;
 	}
 

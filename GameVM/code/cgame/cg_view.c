@@ -94,7 +94,6 @@ static void CG_CalcViewValues( void ) {
 
 void CG_DrawActiveFrame( int serverTime, stereoFrame_t stereoView, qboolean demoPlayback ) {
 	cg.time = serverTime;
-	cg.demoPlayback = demoPlayback;
 
 	// update cvars
 	CG_UpdateCvars();
@@ -115,16 +114,7 @@ void CG_DrawActiveFrame( int serverTime, stereoFrame_t stereoView, qboolean demo
 		return;
 	}
 
-	// let the client system know what our weapon and zoom settings are
-	trap_SetUserCmdValue( cg.weaponSelect, cg.zoomSensitivity );
-
-	// this counter will be bumped for every valid scene we generate
-	cg.clientFrame++;
-
 	cg.predictedPlayerState = cg.snap.ps;
-
-	// decide on third person view
-	cg.renderingThirdPerson = 0;
 
 	// build cg.refdef
 	CG_CalcViewValues();

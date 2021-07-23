@@ -30,36 +30,10 @@ Foundation, Inc., 51 Franklin St, Fifth Floor, Boston, MA  02110-1301  USA
 // so there is NO persistant data between levels on the client side.
 // If you absolutely need something stored, it can either be kept
 // by the server in the server stored userinfos, or stashed in a cvar.
-
-#define	DEFAULT_MODEL			"sarge"
-#define	DEFAULT_TEAM_MODEL		"sarge"
-#define	DEFAULT_TEAM_HEAD		"sarge"
-
-//=================================================
-
-
-// centity_t have a direct corespondence with gentity_t in the game, but
-// only the entityState_t is directly communicated to the cgame
-typedef struct centity_s {
-	entityState_t	currentState;	// from cg.frame
-	entityState_t	nextState;		// from cg.nextFrame, if available
-	qboolean		interpolate;	// true if next is valid to interpolate to
-	qboolean		currentValid;	// true if cg.frame holds this entity
-
-	int				previousEvent;
-
-	int				snapShotTime;	// last time this entity was found in a snapshot
-} centity_t;
-
-#define MAX_PREDICTED_EVENTS	16
  
 typedef struct {
-	int			clientFrame;		// incremented each frame
-
 	int			clientNum;
 	
-	qboolean	demoPlayback;
-	qboolean	levelShot;			// taking a level menu screenshot
 	int			deferredPlayerLoading;
 	qboolean	loading;			// don't defer players at initial startup
 	qboolean	intermissionStarted;	// don't play voice rewards, because game will end shortly
@@ -71,35 +45,12 @@ typedef struct {
 	int			time;			// this is the time value that the client
 								// is rendering at.
 
-	qboolean	mapRestart;			// set on a map restart to set back the weapon
-
-	qboolean	renderingThirdPerson;		// during deaths, chasecams, etc
-
 	// prediction state
 	playerState_t	predictedPlayerState;
-
-	int			eventSequence;
-	int			predictableEvents[MAX_PREDICTED_EVENTS];
-
-	// input state sent to server
-	int			weaponSelect;
 
 	// view rendering
 	refdef_t	refdef;
 	vec3_t		refdefViewAngles;		// will be converted to refdef.viewaxis
-
-	// zoom key
-	float		zoomSensitivity;
-
-	// warmup countdown
-	int			warmup;
-	int			warmupCount;
-
-	// temp working variables for player view
-	float		bobfracsin;
-	int			bobcycle;
-	float		xyspeed;
-	int     nextOrbitTime;
 } cg_t;
 
 
@@ -110,14 +61,8 @@ typedef struct {
 typedef struct {
 	gameState_t		gameState;			// gamestate from server
 	glconfig_t		glconfig;			// rendering configuration
-	float			screenXScale;		// derived from glconfig
-	float			screenYScale;
-	float			screenXBias;
 
 	int				serverCommandSequence;	// reliable command stream counter
-	int				processedSnapshotNum;// the number of snapshots cgame has requested
-
-	qboolean		localServer;		// detected on startup by checking sv_running
 
 	// parsed from serverinfo
 	char			mapname[MAX_QPATH];
@@ -127,16 +72,7 @@ typedef struct {
 
 extern	cgs_t			cgs;
 extern	cg_t			cg;
-extern	centity_t		cg_entities[MAX_GENTITIES];
 
-extern	vmCvar_t		cg_errorDecay;
-extern	vmCvar_t		cg_synchronousClients;
-extern	vmCvar_t 		cg_forceModel;
-extern	vmCvar_t		cg_predictItems;
-extern	vmCvar_t		cg_deferPlayers;
-extern	vmCvar_t		pmove_fixed;
-extern	vmCvar_t		pmove_msec;
-//extern	vmCvar_t		cg_pmove_fixed;
 extern	vmCvar_t		cg_timescaleFadeEnd;
 extern	vmCvar_t		cg_timescaleFadeSpeed;
 extern	vmCvar_t		cg_timescale;
@@ -178,7 +114,6 @@ void CG_InitConsoleCommands( void );
 //
 void CG_ExecuteNewServerCommands( int latestSequence );
 void CG_ParseServerinfo( void );
-void CG_SetConfigValues( void );
 
 //===============================================
 
