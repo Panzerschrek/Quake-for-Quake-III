@@ -49,7 +49,7 @@ void ClientCommand( int clientNum ) {
 
 	ent = g_entities + clientNum;
 	if (!ent->client || ent->client->pers.connected != CON_CONNECTED) {
-		if (ent->client && ent->client->pers.localClient) {
+		if (ent->client) {
 			// Handle early team command sent by UI when starting a local
 			// team play game.
 			trap_Argv( 0, cmd, sizeof( cmd ) );
