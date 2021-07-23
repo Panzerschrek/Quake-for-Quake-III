@@ -356,7 +356,6 @@ extern	vmCvar_t	g_dedicated;
 extern	vmCvar_t	g_maxclients;			// allow this many total, including spectators
 extern	vmCvar_t	g_restarted;
 
-extern	vmCvar_t	g_dmflags;
 extern	vmCvar_t	g_password;
 extern	vmCvar_t	g_needpass;
 extern	vmCvar_t	g_gravity;

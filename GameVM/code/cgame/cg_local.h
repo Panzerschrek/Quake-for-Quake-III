@@ -142,12 +142,6 @@ typedef struct {
 
 	// parsed from serverinfo
 	gametype_t		gametype;
-	int				dmflags;
-	int				teamflags;
-	int				fraglimit;
-	int				capturelimit;
-	int				timelimit;
-	int				maxclients;
 	char			mapname[MAX_QPATH];
 	char			redTeam[MAX_QPATH];
 	char			blueTeam[MAX_QPATH];

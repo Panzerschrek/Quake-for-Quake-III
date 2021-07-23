@@ -39,7 +39,6 @@ gentity_t		g_entities[MAX_GENTITIES];
 gclient_t		g_clients[MAX_CLIENTS];
 
 vmCvar_t	g_gametype;
-vmCvar_t	g_dmflags;
 vmCvar_t	g_password;
 vmCvar_t	g_needpass;
 vmCvar_t	g_maxclients;
@@ -73,8 +72,6 @@ static cvarTable_t		gameCvarTable[] = {
 	{ &g_maxclients, "sv_maxclients", "8", CVAR_SERVERINFO | CVAR_LATCH | CVAR_ARCHIVE, 0, qfalse  },
 
 	// change anytime vars
-	{ &g_dmflags, "dmflags", "0", CVAR_SERVERINFO | CVAR_ARCHIVE, 0, qtrue  },
-
 	{ &g_synchronousClients, "g_synchronousClients", "0", CVAR_SYSTEMINFO, 0, qfalse  },
 
 	{ &g_warmup, "g_warmup", "20", CVAR_ARCHIVE, 0, qtrue  },
