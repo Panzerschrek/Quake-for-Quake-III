@@ -45,81 +45,25 @@ void SP_info_player_start(gentity_t *ent) {
 	SP_info_player_deathmatch( ent );
 }
 
-
 /*
 ===========
-SelectRandomFurthestSpawnPoint
+SelectFirstSpawnPoint
 
 Chooses a player start, deathmatch start, etc
 ============
 */
 #define	MAX_SPAWN_POINTS	128
-gentity_t *SelectRandomFurthestSpawnPoint ( vec3_t avoidPoint, vec3_t origin, vec3_t angles, qboolean isbot ) {
+gentity_t *SelectFirstSpawnPoint ( vec3_t origin, vec3_t angles ) {
 	gentity_t	*spot;
-	vec3_t		delta;
-	float		dist;
-	float		list_dist[MAX_SPAWN_POINTS];
-	gentity_t	*list_spot[MAX_SPAWN_POINTS];
-	int			numSpots, rnd, i, j;
 
-	numSpots = 0;
-	spot = NULL;
-
-	while((spot = G_Find (spot, FOFS(classname), "info_player_deathmatch")) != NULL)
+	if((spot = G_Find (spot, FOFS(classname), "info_player_deathmatch")) != NULL)
 	{
-		VectorSubtract( spot->s.origin, avoidPoint, delta );
-		dist = VectorLength( delta );
-
-		for (i = 0; i < numSpots; i++)
-		{
-			if(dist > list_dist[i])
-			{
-				if (numSpots >= MAX_SPAWN_POINTS)
-					numSpots = MAX_SPAWN_POINTS - 1;
-					
-				for(j = numSpots; j > i; j--)
-				{
-					list_dist[j] = list_dist[j-1];
-					list_spot[j] = list_spot[j-1];
-				}
-				
-				list_dist[i] = dist;
-				list_spot[i] = spot;
-				
-				numSpots++;
-				break;
-			}
-		}
-		
-		if(i >= numSpots && numSpots < MAX_SPAWN_POINTS)
-		{
-			list_dist[numSpots] = dist;
-			list_spot[numSpots] = spot;
-			numSpots++;
-		}
-	}
-	
-	if(!numSpots)
-	{
-		spot = G_Find(NULL, FOFS(classname), "info_player_deathmatch");
-
-		if (!spot)
-			G_Error( "Couldn't find a spawn point" );
-
 		VectorCopy (spot->s.origin, origin);
-		origin[2] += 9;
 		VectorCopy (spot->s.angles, angles);
 		return spot;
 	}
-
-	// select a random spot from the spawn points furthest away
-	rnd = random() * (numSpots / 2);
-
-	VectorCopy (list_spot[rnd]->s.origin, origin);
-	origin[2] += 9;
-	VectorCopy (list_spot[rnd]->s.angles, angles);
-
-	return list_spot[rnd];
+	
+	return NULL;
 }
 
 
@@ -152,88 +96,6 @@ void ClientRespawn( gentity_t *ent ) {
 
 	ClientSpawn(ent);
 }
-
-
-/*
-===========
-ForceClientSkin
-
-Forces a client's skin (for teamplay)
-===========
-*/
-/*
-static void ForceClientSkin( gclient_t *client, char *model, const char *skin ) {
-	char *p;
-
-	if ((p = strrchr(model, '/')) != 0) {
-		*p = 0;
-	}
-
-	Q_strcat(model, MAX_QPATH, "/");
-	Q_strcat(model, MAX_QPATH, skin);
-}
-*/
-
-/*
-===========
-ClientCleanName
-============
-*/
-static void ClientCleanName(const char *in, char *out, int outSize)
-{
-	int outpos = 0, colorlessLen = 0, spaces = 0;
-
-	// discard leading spaces
-	for(; *in == ' '; in++);
-	
-	for(; *in && outpos < outSize - 1; in++)
-	{
-		out[outpos] = *in;
-
-		if(*in == ' ')
-		{
-			// don't allow too many consecutive spaces
-			if(spaces > 2)
-				continue;
-			
-			spaces++;
-		}
-		else if(outpos > 0 && out[outpos - 1] == Q_COLOR_ESCAPE)
-		{
-			if(Q_IsColorString(&out[outpos - 1]))
-			{
-				colorlessLen--;
-				
-				if(ColorIndex(*in) == 0)
-				{
-					// Disallow color black in names to prevent players
-					// from getting advantage playing in front of black backgrounds
-					outpos--;
-					continue;
-				}
-			}
-			else
-			{
-				spaces = 0;
-				colorlessLen++;
-			}
-		}
-		else
-		{
-			spaces = 0;
-			colorlessLen++;
-		}
-		
-		outpos++;
-	}
-
-	out[outpos] = '\0';
-
-	// don't allow empty names
-	if( *out == '\0' || colorlessLen == 0)
-		Q_strncpyz(out, "UnnamedPlayer", outSize );
-}
-
 
 void ClientUserinfoChanged( int clientNum ) {
 }
@@ -324,7 +186,6 @@ void ClientSpawn(gentity_t *ent) {
 	clientPersistant_t	saved;
 	int		persistant[MAX_PERSISTANT];
 	gentity_t	*spawnPoint;
-	int		flags;
 	int		savedPing;
 //	char	*savedAreaBits;
 	int		eventSequence;
@@ -338,10 +199,7 @@ void ClientSpawn(gentity_t *ent) {
 	// find a spawn point
 	// do it before setting health back up, so farthest
 	// ranging doesn't count this client
-	spawnPoint = SelectRandomFurthestSpawnPoint (
-		client->ps.origin,
-		spawn_origin, spawn_angles, !!(ent->r.svFlags & SVF_BOT));
-
+	spawnPoint = SelectFirstSpawnPoint (spawn_origin, spawn_angles);
 
 	// clear everything but the persistant data
 
@@ -365,9 +223,7 @@ void ClientSpawn(gentity_t *ent) {
 	client->ps.eventSequence = eventSequence;
 
 	trap_GetUserinfo( index, userinfo, sizeof(userinfo) );
-	// clear entity values
-	client->ps.eFlags = flags;
-
+	// clear entity value
 	ent->s.groundEntityNum = ENTITYNUM_NONE;
 	ent->client = &level.clients[index];
 	ent->inuse = qtrue;
@@ -386,17 +242,12 @@ void ClientSpawn(gentity_t *ent) {
 	G_SetOrigin( ent, spawn_origin );
 	VectorCopy( spawn_origin, client->ps.origin );
 
-
 	trap_GetUsercmd( client - level.clients, &ent->client->pers.cmd );
 	SetClientViewAngle( ent, spawn_angles );
 	// don't allow full run speed for a bit
 	client->ps.pm_time = 100;
 
 	client->respawnTime = level.time;
-
-	// set default animations
-	client->ps.torsoAnim = 0;
-	client->ps.legsAnim = 0;
 
 	// run a client frame to drop exactly to the floor,
 	// initialize animations and other things
