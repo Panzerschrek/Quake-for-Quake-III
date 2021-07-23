@@ -71,93 +71,18 @@ Sets the coordinates of the rendered window
 =================
 */
 static void CG_CalcVrect (void) {
-	int		size;
 
-	// the intermission should allways be full screen
-	if ( cg.snap->ps.pm_type == PM_INTERMISSION ) {
-		size = 100;
-	} else {
-		// bound normal viewsize
-		if (cg_viewsize.integer < 30) {
-			trap_Cvar_Set ("cg_viewsize","30");
-			size = 30;
-		} else if (cg_viewsize.integer > 100) {
-			trap_Cvar_Set ("cg_viewsize","100");
-			size = 100;
-		} else {
-			size = cg_viewsize.integer;
-		}
-
-	}
-	cg.refdef.width = cgs.glconfig.vidWidth*size/100;
+	cg.refdef.width = cgs.glconfig.vidWidth;
 	cg.refdef.width &= ~1;
 
-	cg.refdef.height = cgs.glconfig.vidHeight*size/100;
+	cg.refdef.height = cgs.glconfig.vidHeight;
 	cg.refdef.height &= ~1;
 
-	cg.refdef.x = (cgs.glconfig.vidWidth - cg.refdef.width)/2;
-	cg.refdef.y = (cgs.glconfig.vidHeight - cg.refdef.height)/2;
+	cg.refdef.x = 0;
+	cg.refdef.y = 0;
 }
 
 //==============================================================================
-
-
-/*
-===============
-CG_OffsetThirdPersonView
-
-===============
-*/
-#define	FOCUS_DISTANCE	512
-static void CG_OffsetThirdPersonView( void ) {
-	vec3_t		forward, right, up;
-	vec3_t		view;
-	vec3_t		focusAngles;
-	vec3_t		focusPoint;
-	float		focusDist;
-	float		forwardScale, sideScale;
-
-	cg.refdef.vieworg[2] += cg.predictedPlayerState.viewheight;
-
-	VectorCopy( cg.refdefViewAngles, focusAngles );
-
-	// if dead, look at killer
-	if ( cg.predictedPlayerState.stats[STAT_HEALTH] <= 0 ) {
-		focusAngles[YAW] = cg.predictedPlayerState.stats[STAT_DEAD_YAW];
-		cg.refdefViewAngles[YAW] = cg.predictedPlayerState.stats[STAT_DEAD_YAW];
-	}
-
-	if ( focusAngles[PITCH] > 45 ) {
-		focusAngles[PITCH] = 45;		// don't go too far overhead
-	}
-	AngleVectors( focusAngles, forward, NULL, NULL );
-
-	VectorMA( cg.refdef.vieworg, FOCUS_DISTANCE, forward, focusPoint );
-
-	VectorCopy( cg.refdef.vieworg, view );
-
-	view[2] += 8;
-
-	cg.refdefViewAngles[PITCH] *= 0.5;
-
-	AngleVectors( cg.refdefViewAngles, forward, right, up );
-
-	forwardScale = cos( cg_thirdPersonAngle.value / 180 * M_PI );
-	sideScale = sin( cg_thirdPersonAngle.value / 180 * M_PI );
-	VectorMA( view, -cg_thirdPersonRange.value * forwardScale, forward, view );
-	VectorMA( view, -cg_thirdPersonRange.value * sideScale, right, view );
-
-	VectorCopy( view, cg.refdef.vieworg );
-
-	// select pitch to look at focus point from vieword
-	VectorSubtract( focusPoint, cg.refdef.vieworg, focusPoint );
-	focusDist = sqrt( focusPoint[0] * focusPoint[0] + focusPoint[1] * focusPoint[1] );
-	if ( focusDist < 1 ) {
-		focusDist = 1;	// should never happen
-	}
-	cg.refdefViewAngles[PITCH] = -180 / M_PI * atan2( focusPoint[2], focusDist );
-	cg.refdefViewAngles[YAW] -= cg_thirdPersonAngle.value;
-}
 
 /*
 ===============
@@ -168,9 +93,6 @@ CG_OffsetFirstPersonView
 static void CG_OffsetFirstPersonView( void ) {
 	float			*origin;
 	float			*angles;
-	float			bob;
-	float			delta;
-	float			speed;
 	vec3_t			predictedVelocity;
 	int				timeDelta;
 	
@@ -190,38 +112,8 @@ static void CG_OffsetFirstPersonView( void ) {
 		return;
 	}
 
-	// add pitch based on fall kick
-#if 0
-	ratio = ( cg.time - cg.landTime) / FALL_TIME;
-	if (ratio < 0)
-		ratio = 0;
-	angles[PITCH] += ratio * cg.fall_value;
-#endif
-
 	// add angles based on velocity
 	VectorCopy( cg.predictedPlayerState.velocity, predictedVelocity );
-
-	delta = DotProduct ( predictedVelocity, cg.refdef.viewaxis[0]);
-	angles[PITCH] += delta * cg_runpitch.value;
-	
-	delta = DotProduct ( predictedVelocity, cg.refdef.viewaxis[1]);
-	angles[ROLL] -= delta * cg_runroll.value;
-
-	// add angles based on bob
-
-	// make sure the bob is visible even at low speeds
-	speed = cg.xyspeed > 200 ? cg.xyspeed : 200;
-
-	delta = cg.bobfracsin * cg_bobpitch.value * speed;
-	if (cg.predictedPlayerState.pm_flags & PMF_DUCKED)
-		delta *= 3;		// crouching
-	angles[PITCH] += delta;
-	delta = cg.bobfracsin * cg_bobroll.value * speed;
-	if (cg.predictedPlayerState.pm_flags & PMF_DUCKED)
-		delta *= 3;		// crouching accentuates roll
-	if (cg.bobcycle & 1)
-		delta = -delta;
-	angles[ROLL] += delta;
 
 //===================================
 
@@ -230,14 +122,6 @@ static void CG_OffsetFirstPersonView( void ) {
 
 	// smooth out duck height changes
 	timeDelta = cg.time - cg.duckTime;
-
-	// add bob height
-	bob = cg.bobfracsin * cg.xyspeed * cg_bobup.value;
-	if (bob > 6) {
-		bob = 6;
-	}
-
-	origin[2] += bob;
 }
 
 
@@ -305,12 +189,6 @@ static int CG_CalcViewValues( void ) {
 	VectorCopy( ps->origin, cg.refdef.vieworg );
 	VectorCopy( ps->viewangles, cg.refdefViewAngles );
 
-	if (cg_cameraOrbit.integer) {
-		if (cg.time > cg.nextOrbitTime) {
-			cg.nextOrbitTime = cg.time + cg_cameraOrbitDelay.integer;
-			cg_thirdPersonAngle.value += cg_cameraOrbit.value;
-		}
-	}
 	// add error decay
 	if ( cg_errorDecay.value > 0 ) {
 		int		t;
@@ -389,8 +267,7 @@ void CG_DrawActiveFrame( int serverTime, stereoFrame_t stereoView, qboolean demo
 	CG_PredictPlayerState();
 
 	// decide on third person view
-	cg.renderingThirdPerson = cg.snap->ps.persistant[PERS_TEAM] != TEAM_SPECTATOR
-							&& (cg_thirdPerson.integer || (cg.snap->ps.stats[STAT_HEALTH] <= 0));
+	cg.renderingThirdPerson = 0;
 
 	// build cg.refdef
 	inwater = CG_CalcViewValues();
@@ -426,11 +303,5 @@ void CG_DrawActiveFrame( int serverTime, stereoFrame_t stereoView, qboolean demo
 	}
 
 	trap_R_RenderScene( &cg.refdef );
-
-	if ( cg_stats.integer ) {
-		CG_Printf( "cg.clientFrame:%i\n", cg.clientFrame );
-	}
-
-
 }
 

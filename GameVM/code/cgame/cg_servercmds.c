@@ -224,9 +224,6 @@ require a reload of all the media
 ===============
 */
 static void CG_MapRestart( void ) {
-	if ( cg_showmiss.integer ) {
-		CG_Printf( "CG_MapRestart\n" );
-	}
 
 	// make sure the "3 frags left" warnings play again
 	cg.fraglimitWarnings = 0;
@@ -238,9 +235,6 @@ static void CG_MapRestart( void ) {
 	cg.mapRestart = qtrue;
 
 	trap_S_ClearLoopingSounds(qtrue);
-
-	// we really should clear more parts of cg here and stop sounds
-	trap_Cvar_Set("cg_thirdPerson", "0");
 }
 
 /*
@@ -294,9 +288,6 @@ static void CG_ServerCommand( void ) {
 	}
 
 	if ( !strcmp( cmd, "chat" ) ) {
-		if ( cgs.gametype >= GT_TEAM && cg_teamChatsOnly.integer ) {
-			return;
-		}
 
 		Q_strncpyz( text, CG_Argv(1), MAX_SAY_TEXT );
 		CG_RemoveChatEscapeChar( text );
