@@ -452,7 +452,7 @@ void ClientSpawn(gentity_t *ent) {
 		if (ent->client->sess.sessionTeam != TEAM_SPECTATOR) {
 			// force the base weapon up
 			client->ps.weapon = 0;
-			client->ps.weaponstate = WEAPON_READY;
+			client->ps.weaponstate = 0;
 			// select the highest weapon number available, after any spawn given items have fired
 			client->ps.weapon = 1;
 

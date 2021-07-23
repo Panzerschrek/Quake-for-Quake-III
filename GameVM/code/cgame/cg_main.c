@@ -25,12 +25,6 @@ Foundation, Inc., 51 Franklin St, Fifth Floor, Boston, MA  02110-1301  USA
 
 int drawTeamOverlayModificationCount = -1;
 
-int sortedTeamPlayers[TEAM_MAXOVERLAY];
-int	numSortedTeamPlayers;
-
-char systemChat[256];
-char teamChat1[256];
-char teamChat2[256];
 
 int forceModelModificationCount = -1;
 
@@ -322,15 +316,6 @@ void CG_Init( int serverMessageNum, int serverCommandSequence, int clientNum ) {
 	// get the gamestate from the client system
 	trap_GetGameState( &cgs.gameState );
 
-	// check version
-	s = CG_ConfigString( CS_GAME_VERSION );
-	if ( strcmp( s, GAME_VERSION ) ) {
-		CG_Error( "Client/Server game mismatch: %s/%s", GAME_VERSION, s );
-	}
-
-	s = CG_ConfigString( CS_LEVEL_START_TIME );
-	cgs.levelStartTime = atoi( s );
-
 	CG_ParseServerinfo();
 
 	trap_CM_LoadMap( cgs.mapname );
@@ -345,8 +330,6 @@ void CG_Init( int serverMessageNum, int serverCommandSequence, int clientNum ) {
 
 	// Make sure we have update values (scores)
 	CG_SetConfigValues();
-
-	CG_ShaderStateChanged();
 
 	trap_S_ClearLoopingSounds( qtrue );
 }

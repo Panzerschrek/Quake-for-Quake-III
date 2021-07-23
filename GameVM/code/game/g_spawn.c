@@ -406,11 +406,6 @@ void SP_worldspawn( void ) {
 		G_Error( "SP_worldspawn: The first entity isn't 'worldspawn'" );
 	}
 
-	// make some data visible to connecting client
-	trap_SetConfigstring( CS_GAME_VERSION, GAME_VERSION );
-
-	trap_SetConfigstring( CS_LEVEL_START_TIME, va("%i", level.startTime ) );
-
 	G_SpawnString( "music", "", &s );
 	trap_SetConfigstring( CS_MUSIC, s );
 

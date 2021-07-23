@@ -146,8 +146,6 @@ typedef struct {
 	char			redTeam[MAX_QPATH];
 	char			blueTeam[MAX_QPATH];
 
-	int				levelStartTime;
-
 	//
 	// locally derived information from gamestate
 	//
@@ -197,17 +195,6 @@ void CG_EventHandling(int type);
 
 void CG_DrawActiveFrame( int serverTime, stereoFrame_t stereoView, qboolean demoPlayback );
 
-
-//
-// cg_draw.c, cg_newDraw.c
-//
-extern	int sortedTeamPlayers[TEAM_MAXOVERLAY];
-extern	int	numSortedTeamPlayers;
-extern	int drawTeamOverlayModificationCount;
-extern  char systemChat[256];
-extern  char teamChat1[256];
-extern  char teamChat2[256];
-
 //
 // cg_predict.c
 //
@@ -230,7 +217,6 @@ void CG_InitConsoleCommands( void );
 void CG_ExecuteNewServerCommands( int latestSequence );
 void CG_ParseServerinfo( void );
 void CG_SetConfigValues( void );
-void CG_ShaderStateChanged(void);
 
 //===============================================
 

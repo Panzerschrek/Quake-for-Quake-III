@@ -68,25 +68,13 @@ Foundation, Inc., 51 Franklin St, Fifth Floor, Boston, MA  02110-1301  USA
 #define	CS_VOTE_YES				10
 #define	CS_VOTE_NO				11
 
-#define CS_TEAMVOTE_TIME		12
-#define CS_TEAMVOTE_STRING		14
-#define	CS_TEAMVOTE_YES			16
-#define	CS_TEAMVOTE_NO			18
-
-#define	CS_GAME_VERSION			20
-#define	CS_LEVEL_START_TIME		21		// so the timer only shows the current level
-#define	CS_INTERMISSION			22		// when 1, fraglimit/timelimit has been hit and intermission will start in a second or two
-#define CS_FLAGSTATUS			23		// string indicating flag status in CTF
-#define CS_SHADERSTATE			24
-#define CS_BOTINFO				25
-
 #define	CS_ITEMS				27		// string of 0's and 1's that tell which items are present
 
 #define	CS_MODELS				32
 #define	CS_SOUNDS				(CS_MODELS+MAX_MODELS)
 #define	CS_PLAYERS				(CS_SOUNDS+MAX_SOUNDS)
 #define CS_LOCATIONS			(CS_PLAYERS+MAX_CLIENTS)
-#define CS_PARTICLES			(CS_LOCATIONS+MAX_LOCATIONS) 
+#define CS_PARTICLES			(CS_LOCATIONS+MAX_LOCATIONS)
 
 #define CS_MAX					(CS_PARTICLES+MAX_LOCATIONS)
 
@@ -111,33 +99,6 @@ typedef enum {
 
 typedef enum { GENDER_MALE, GENDER_FEMALE, GENDER_NEUTER } gender_t;
 
-/*
-===================================================================================
-
-PMOVE MODULE
-
-The pmove code takes a player_state_t and a usercmd_t and generates a new player_state_t
-and some other output data.  Used for local prediction on the client game and true
-movement on the server game.
-===================================================================================
-*/
-
-typedef enum {
-	PM_NORMAL,		// can accelerate and turn
-	PM_NOCLIP,		// noclip movement
-	PM_SPECTATOR,	// still run into walls
-	PM_DEAD,		// no acceleration or turning, but free falling
-	PM_FREEZE,		// stuck in place with no control
-	PM_INTERMISSION,	// no movement or status bar
-	PM_SPINTERMISSION	// no movement or status bar
-} pmtype_t;
-
-typedef enum {
-	WEAPON_READY, 
-	WEAPON_RAISING,
-	WEAPON_DROPPING,
-	WEAPON_FIRING
-} weaponstate_t;
 
 // pmove->pm_flags
 #define	PMF_JUMP_HELD		2
@@ -231,31 +192,7 @@ typedef enum {
 #define EF_AWARD_DENIED		0x00040000		// denied
 #define EF_TEAMVOTED		0x00080000		// already cast a team vote
 
-
-// reward sounds (stored in ps->persistant[PERS_PLAYEREVENTS])
-#define	PLAYEREVENT_DENIEDREWARD		0x0001
-#define	PLAYEREVENT_GAUNTLETREWARD		0x0002
-#define PLAYEREVENT_HOLYSHIT			0x0004
-
-// entityState_t->event values
-// entity events are for effects that take place relative
-// to an existing entities origin.  Very network efficient.
-
-// two bits at the top of the entityState->event field
-// will be incremented with each change in the event so
-// that an identical event started twice in a row can
-// be distinguished.  And off the value with ~EV_EVENT_BITS
-// to retrieve the actual event number
-#define	EV_EVENT_BIT1		0x00000100
-#define	EV_EVENT_BIT2		0x00000200
-#define	EV_EVENT_BITS		(EV_EVENT_BIT1|EV_EVENT_BIT2)
-
 #define	EVENT_VALID_MSEC	300
-
-// flip the togglebit every time an animation
-// changes so a restart of the same anim can be detected
-#define	ANIM_TOGGLEBIT		128
-
 
 typedef enum {
 	TEAM_FREE,
@@ -265,27 +202,6 @@ typedef enum {
 
 	TEAM_NUM_TEAMS
 } team_t;
-
-// Time between location updates
-#define TEAM_LOCATION_UPDATE_TIME		1000
-
-// How many players on the overlay
-#define TEAM_MAXOVERLAY		32
-
-// gitem_t->type
-typedef enum {
-	IT_BAD,
-	IT_WEAPON,				// EFX: rotate + upscale + minlight
-	IT_AMMO,				// EFX: rotate
-	IT_ARMOR,				// EFX: rotate + minlight
-	IT_HEALTH,				// EFX: static external sphere + rotating internal
-	IT_POWERUP,				// instant on, timer based
-							// EFX: rotate + external ring that rotates
-	IT_HOLDABLE,			// single use, holdable item
-							// EFX: rotate + bob
-	IT_PERSISTANT_POWERUP,
-	IT_TEAM
-} itemType_t;
 
 //
 // entityState_t->eType

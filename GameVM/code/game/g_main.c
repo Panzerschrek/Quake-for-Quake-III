@@ -311,8 +311,6 @@ void G_InitGame( int levelTime, int randomSeed, int restart ) {
 
 
 	G_Printf ("-----------------------------------\n");
-
-	trap_SetConfigstring( CS_INTERMISSION, "" );
 }
 
 
@@ -408,10 +406,6 @@ void LogExit( const char *string ) {
 	G_LogPrintf( "Exit: %s\n", string );
 
 	level.intermissionQueued = level.time;
-
-	// this will keep the clients from playing any voice sounds
-	// that will get cut off when the queued intermission starts
-	trap_SetConfigstring( CS_INTERMISSION, "1" );
 
 	// don't send more than 32 scores (FIXME?)
 	numSorted = level.numConnectedClients;

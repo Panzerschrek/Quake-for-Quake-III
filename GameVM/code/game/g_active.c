@@ -127,7 +127,6 @@ void ClientThink_real( gentity_t *ent ) {
 		client->ps.eFlags &= ~(EF_AWARD_IMPRESSIVE | EF_AWARD_EXCELLENT | EF_AWARD_GAUNTLET | EF_AWARD_ASSIST | EF_AWARD_DEFEND | EF_AWARD_CAP );
 	}
 
-	client->ps.pm_type = PM_NOCLIP;
 	client->ps.gravity = g_gravity.value;
 
 	// set speed

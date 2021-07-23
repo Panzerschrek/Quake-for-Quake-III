@@ -27,37 +27,6 @@ Foundation, Inc., 51 Franklin St, Fifth Floor, Boston, MA  02110-1301  USA
 #include "cg_local.h"
 
 /*
-=================
-CG_ParseTeamInfo
-
-=================
-*/
-static void CG_ParseTeamInfo( void ) {
-	int		i;
-	int		client;
-
-	numSortedTeamPlayers = atoi( CG_Argv( 1 ) );
-	if( numSortedTeamPlayers < 0 || numSortedTeamPlayers > TEAM_MAXOVERLAY )
-	{
-		CG_Error( "CG_ParseTeamInfo: numSortedTeamPlayers out of range (%d)",
-				numSortedTeamPlayers );
-		return;
-	}
-
-	for ( i = 0 ; i < numSortedTeamPlayers ; i++ ) {
-		client = atoi( CG_Argv( i * 6 + 2 ) );
-		if( client < 0 || client >= MAX_CLIENTS )
-		{
-		  CG_Error( "CG_ParseTeamInfo: bad client number: %d", client );
-		  return;
-		}
-
-		sortedTeamPlayers[i] = client;
-	}
-}
-
-
-/*
 ================
 CG_ParseServerinfo
 
@@ -104,54 +73,9 @@ Called on load to set the initial values from configure strings
 ================
 */
 void CG_SetConfigValues( void ) {
-	const char *s;
-
-	cgs.levelStartTime = atoi( CG_ConfigString( CS_LEVEL_START_TIME ) );
-	if( cgs.gametype == GT_CTF ) {
-		s = CG_ConfigString( CS_FLAGSTATUS );
-	}
 	cg.warmup = atoi( CG_ConfigString( CS_WARMUP ) );
 }
 
-/*
-=====================
-CG_ShaderStateChanged
-=====================
-*/
-void CG_ShaderStateChanged(void) {
-	char originalShader[MAX_QPATH];
-	char newShader[MAX_QPATH];
-	char timeOffset[16];
-	const char *o;
-	char *n,*t;
-
-	o = CG_ConfigString( CS_SHADERSTATE );
-	while (o && *o) {
-		n = strstr(o, "=");
-		if (n && *n) {
-			strncpy(originalShader, o, n-o);
-			originalShader[n-o] = 0;
-			n++;
-			t = strstr(n, ":");
-			if (t && *t) {
-				strncpy(newShader, n, t-n);
-				newShader[t-n] = 0;
-			} else {
-				break;
-			}
-			t++;
-			o = strstr(t, "@");
-			if (o) {
-				strncpy(timeOffset, t, o-t);
-				timeOffset[o-t] = 0;
-				o++;
-				trap_R_RemapShader( originalShader, newShader, timeOffset );
-			}
-		} else {
-			break;
-		}
-	}
-}
 
 /*
 ================
@@ -178,31 +102,7 @@ static void CG_ConfigStringModified( void ) {
 		CG_ParseServerinfo();
 	} else if ( num == CS_WARMUP ) {
 		CG_ParseWarmup();
-	} else if ( num == CS_SCORES1 ) {
-	} else if ( num == CS_SCORES2 ) {
-	} else if ( num == CS_LEVEL_START_TIME ) {
-		cgs.levelStartTime = atoi( str );
-	} else if ( num == CS_VOTE_TIME ) {
-	} else if ( num == CS_VOTE_YES ) {
-	} else if ( num == CS_VOTE_NO ) {
-	} else if ( num == CS_VOTE_STRING ) {
-	} else if ( num >= CS_TEAMVOTE_TIME && num <= CS_TEAMVOTE_TIME + 1) {
-	} else if ( num >= CS_TEAMVOTE_YES && num <= CS_TEAMVOTE_YES + 1) {
-	} else if ( num >= CS_TEAMVOTE_NO && num <= CS_TEAMVOTE_NO + 1) {
-	} else if ( num >= CS_TEAMVOTE_STRING && num <= CS_TEAMVOTE_STRING + 1) {
-	} else if ( num == CS_INTERMISSION ) {
-		cg.intermissionStarted = atoi( str );
-	} else if ( num >= CS_MODELS && num < CS_MODELS+MAX_MODELS ) {
-	} else if ( num >= CS_SOUNDS && num < CS_SOUNDS+MAX_SOUNDS ) {
-	} else if ( num >= CS_PLAYERS && num < CS_PLAYERS+MAX_CLIENTS ) {
-	} else if ( num == CS_FLAGSTATUS ) {
-		if( cgs.gametype == GT_CTF ) {
-		}
 	}
-	else if ( num == CS_SHADERSTATE ) {
-		CG_ShaderStateChanged();
-	}
-		
 }
 
 /*
@@ -292,11 +192,6 @@ static void CG_ServerCommand( void ) {
 		Q_strncpyz( text, CG_Argv(1), MAX_SAY_TEXT );
 		CG_RemoveChatEscapeChar( text );
 		CG_Printf( "%s\n", text );
-		return;
-	}
-
-	if ( !strcmp( cmd, "tinfo" ) ) {
-		CG_ParseTeamInfo();
 		return;
 	}
 
