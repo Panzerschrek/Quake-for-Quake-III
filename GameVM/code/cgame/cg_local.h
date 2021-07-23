@@ -120,18 +120,7 @@ typedef struct {
 	qboolean		localServer;		// detected on startup by checking sv_running
 
 	// parsed from serverinfo
-	gametype_t		gametype;
 	char			mapname[MAX_QPATH];
-	char			redTeam[MAX_QPATH];
-	char			blueTeam[MAX_QPATH];
-
-	//
-	// locally derived information from gamestate
-	//
-
-	int				numInlineModels;
-	vec3_t			inlineModelMidpoints[MAX_MODELS];
-
 } cgs_t;
 
 //==============================================================================

@@ -39,13 +39,8 @@ void CG_ParseServerinfo( void ) {
 	char	*mapname;
 
 	info = CG_ConfigString( CS_SERVERINFO );
-	trap_Cvar_Set("g_gametype", va("%i", cgs.gametype));
 	mapname = Info_ValueForKey( info, "mapname" );
 	Com_sprintf( cgs.mapname, sizeof( cgs.mapname ), "maps/%s.bsp", mapname );
-	Q_strncpyz( cgs.redTeam, Info_ValueForKey( info, "g_redTeam" ), sizeof(cgs.redTeam) );
-	trap_Cvar_Set("g_redTeam", cgs.redTeam);
-	Q_strncpyz( cgs.blueTeam, Info_ValueForKey( info, "g_blueTeam" ), sizeof(cgs.blueTeam) );
-	trap_Cvar_Set("g_blueTeam", cgs.blueTeam);
 }
 
 /*
@@ -76,74 +71,6 @@ void CG_SetConfigValues( void ) {
 	cg.warmup = atoi( CG_ConfigString( CS_WARMUP ) );
 }
 
-
-/*
-================
-CG_ConfigStringModified
-
-================
-*/
-static void CG_ConfigStringModified( void ) {
-	const char	*str;
-	int		num;
-
-	num = atoi( CG_Argv( 1 ) );
-
-	// get the gamestate from the client system, which will have the
-	// new configstring already integrated
-	trap_GetGameState( &cgs.gameState );
-
-	// look up the individual string that was modified
-	str = CG_ConfigString( num );
-
-	// do something with it if necessary
-	if ( num == CS_MUSIC ) {
-	} else if ( num == CS_SERVERINFO ) {
-		CG_ParseServerinfo();
-	} else if ( num == CS_WARMUP ) {
-		CG_ParseWarmup();
-	}
-}
-
-/*
-===============
-CG_MapRestart
-
-The server has issued a map_restart, so the next snapshot
-is completely new and should not be interpolated to.
-
-A tournement restart will clear everything, but doesn't
-require a reload of all the media
-===============
-*/
-static void CG_MapRestart( void ) {
-
-	// make sure the "3 frags left" warnings play again
-	cg.intermissionStarted = qfalse;
-	cg.levelShot = qfalse;
-
-	cg.mapRestart = qtrue;
-
-	trap_S_ClearLoopingSounds(qtrue);
-}
-
-/*
-=================
-CG_RemoveChatEscapeChar
-=================
-*/
-static void CG_RemoveChatEscapeChar( char *text ) {
-	int i, l;
-
-	l = 0;
-	for ( i = 0; text[i]; i++ ) {
-		if (text[i] == '\x19')
-			continue;
-		text[l++] = text[i];
-	}
-	text[l] = '\0';
-}
-
 /*
 =================
 CG_ServerCommand
@@ -167,33 +94,8 @@ static void CG_ServerCommand( void ) {
 		return;
 	}
 
-	if ( !strcmp( cmd, "cs" ) ) {
-		CG_ConfigStringModified();
-		return;
-	}
-
 	if ( !strcmp( cmd, "print" ) ) {
 		CG_Printf( "%s", CG_Argv(1) );
-		return;
-	}
-
-	if ( !strcmp( cmd, "chat" ) ) {
-
-		Q_strncpyz( text, CG_Argv(1), MAX_SAY_TEXT );
-		CG_RemoveChatEscapeChar( text );
-		CG_Printf( "%s\n", text );
-		return;
-	}
-
-	if ( !strcmp( cmd, "tchat" ) ) {
-		Q_strncpyz( text, CG_Argv(1), MAX_SAY_TEXT );
-		CG_RemoveChatEscapeChar( text );
-		CG_Printf( "%s\n", text );
-		return;
-	}
-
-	if ( !strcmp( cmd, "map_restart" ) ) {
-		CG_MapRestart();
 		return;
 	}
 
