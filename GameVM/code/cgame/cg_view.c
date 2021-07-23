@@ -24,52 +24,6 @@ Foundation, Inc., 51 Franklin St, Fifth Floor, Boston, MA  02110-1301  USA
 // for a 3D rendering
 #include "cg_local.h"
 
-
-/*
-=============================================================================
-
-  MODEL TESTING
-
-The viewthing and gun positioning tools from Q2 have been integrated and
-enhanced into a single model testing facility.
-
-Model viewing can begin with either "testmodel <modelname>" or "testgun <modelname>".
-
-The names must be the full pathname after the basedir, like 
-"models/weapons/v_launch/tris.md3" or "players/male/tris.md3"
-
-Testmodel will create a fake entity 100 units in front of the current view
-position, directly facing the viewer.  It will remain immobile, so you can
-move around it to view it from different angles.
-
-Testgun will cause the model to follow the player around and suppress the real
-view weapon model.  The default frame 0 of most guns is completely off screen,
-so you will probably have to cycle a couple frames to see it.
-
-"nextframe", "prevframe", "nextskin", and "prevskin" commands will change the
-frame or skin of the testmodel.  These are bound to F5, F6, F7, and F8 in
-q3default.cfg.
-
-If a gun is being tested, the "gun_x", "gun_y", and "gun_z" variables will let
-you adjust the positioning.
-
-Note that none of the model testing features update while the game is paused, so
-it may be convenient to test with deathmatch set to 1 so that bringing down the
-console doesn't pause the game.
-
-=============================================================================
-*/
-
-//============================================================================
-
-
-/*
-=================
-CG_CalcVrect
-
-Sets the coordinates of the rendered window
-=================
-*/
 static void CG_CalcVrect (void) {
 
 	cg.refdef.width = cgs.glconfig.vidWidth;
@@ -82,23 +36,9 @@ static void CG_CalcVrect (void) {
 	cg.refdef.y = 0;
 }
 
-//==============================================================================
-
-/*
-===============
-CG_OffsetFirstPersonView
-
-===============
-*/
 static void CG_OffsetFirstPersonView( void ) {
 	float			*origin;
 	float			*angles;
-	vec3_t			predictedVelocity;
-	int				timeDelta;
-	
-	if ( cg.snap->ps.pm_type == PM_INTERMISSION ) {
-		return;
-	}
 
 	origin = cg.refdef.vieworg;
 	angles = cg.refdefViewAngles;
@@ -112,28 +52,11 @@ static void CG_OffsetFirstPersonView( void ) {
 		return;
 	}
 
-	// add angles based on velocity
-	VectorCopy( cg.predictedPlayerState.velocity, predictedVelocity );
-
-//===================================
-
 	// add view height
 	origin[2] += cg.predictedPlayerState.viewheight;
-
-	// smooth out duck height changes
-	timeDelta = cg.time - cg.duckTime;
 }
 
-
-/*
-====================
-CG_CalcFov
-
-Fixed fov at intermissions, otherwise account for fov variable and zooms.
-====================
-*/
-
-static int CG_CalcFov( void ) {
+static void CG_CalcFov( void ) {
 	float	x;
 	float	fov_x, fov_y;
 
@@ -146,24 +69,9 @@ static int CG_CalcFov( void ) {
 	// set it
 	cg.refdef.fov_x = fov_x;
 	cg.refdef.fov_y = fov_y;
-
-	if ( !cg.zoomed ) {
-		cg.zoomSensitivity = 1;
-	} else {
-		cg.zoomSensitivity = cg.refdef.fov_y / 75.0;
-	}
-
-	return 0;
 }
 
-/*
-===============
-CG_CalcViewValues
-
-Sets cg.refdef view values
-===============
-*/
-static int CG_CalcViewValues( void ) {
+static void CG_CalcViewValues( void ) {
 	playerState_t	*ps;
 
 	memset( &cg.refdef, 0, sizeof( cg.refdef ) );
@@ -172,14 +80,6 @@ static int CG_CalcViewValues( void ) {
 	CG_CalcVrect();
 
 	ps = &cg.predictedPlayerState;
-
-	// intermission view
-	if ( ps->pm_type == PM_INTERMISSION ) {
-		VectorCopy( ps->origin, cg.refdef.vieworg );
-		VectorCopy( ps->viewangles, cg.refdefViewAngles );
-		AnglesToAxis( cg.refdefViewAngles, cg.refdef.viewaxis );
-		return CG_CalcFov();
-	}
 
 	cg.bobcycle = ( ps->bobCycle & 128 ) >> 7;
 	cg.bobfracsin = fabs( sin( ( ps->bobCycle & 127 ) / 127.0 * M_PI ) );
@@ -208,27 +108,10 @@ static int CG_CalcViewValues( void ) {
 	// position eye relative to origin
 	AnglesToAxis( cg.refdefViewAngles, cg.refdef.viewaxis );
 
-	if ( cg.hyperspace ) {
-		cg.refdef.rdflags |= RDF_NOWORLDMODEL | RDF_HYPERSPACE;
-	}
-
-	// field of view
-	return CG_CalcFov();
+	CG_CalcFov();
 }
 
-
-//=========================================================================
-
-/*
-=================
-CG_DrawActiveFrame
-
-Generates and draws a game scene and status information at the given time.
-=================
-*/
 void CG_DrawActiveFrame( int serverTime, stereoFrame_t stereoView, qboolean demoPlayback ) {
-	int		inwater;
-
 	cg.time = serverTime;
 	cg.demoPlayback = demoPlayback;
 
@@ -270,13 +153,13 @@ void CG_DrawActiveFrame( int serverTime, stereoFrame_t stereoView, qboolean demo
 	cg.renderingThirdPerson = 0;
 
 	// build cg.refdef
-	inwater = CG_CalcViewValues();
+	CG_CalcViewValues();
 
 	cg.refdef.time = cg.time;
 	memcpy( cg.refdef.areamask, cg.snap->areamask, sizeof( cg.refdef.areamask ) );
 
 	// update audio positions
-	trap_S_Respatialize( cg.snap->ps.clientNum, cg.refdef.vieworg, cg.refdef.viewaxis, inwater );
+	trap_S_Respatialize( cg.snap->ps.clientNum, cg.refdef.vieworg, cg.refdef.viewaxis, 0 );
 
 	// make sure the lagometerSample and frame timing isn't done twice when in stereo
 	if ( stereoView != STEREO_RIGHT ) {
@@ -304,4 +187,3 @@ void CG_DrawActiveFrame( int serverTime, stereoFrame_t stereoView, qboolean demo
 
 	trap_R_RenderScene( &cg.refdef );
 }
-
