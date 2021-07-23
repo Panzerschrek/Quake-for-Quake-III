@@ -133,10 +133,6 @@ void ClientThink_real( gentity_t *ent ) {
 	// set speed
 	client->ps.speed = g_speed.value;
 
-	if ( client->ps.powerups[PW_HASTE] ) {
-		client->ps.speed *= 1.3;
-	}
-
 	// set up for pmove
 	oldEventSequence = client->ps.eventSequence;
 
@@ -150,20 +146,6 @@ void ClientThink_real( gentity_t *ent ) {
 
 	pm.ps = &client->ps;
 	pm.cmd = *ucmd;
-	if ( pm.ps->pm_type == PM_DEAD ) {
-		pm.tracemask = MASK_PLAYERSOLID & ~CONTENTS_BODY;
-	}
-	else if ( ent->r.svFlags & SVF_BOT ) {
-		pm.tracemask = MASK_PLAYERSOLID | CONTENTS_BOTCLIP;
-	}
-	else {
-		pm.tracemask = MASK_PLAYERSOLID;
-	}
-	pm.trace = trap_Trace;
-	pm.pointcontents = trap_PointContents;
-	pm.debugLevel = g_debugMove.integer;
-	pm.noFootsteps = ( g_dmflags.integer & DF_NO_FOOTSTEPS ) > 0;
-
 	pm.pmove_fixed = pmove_fixed.integer | client->pers.pmoveFixed;
 	pm.pmove_msec = pmove_msec.integer;
 
@@ -183,9 +165,6 @@ void ClientThink_real( gentity_t *ent ) {
 
 	// use the snapped origin for linking so it matches client predicted versions
 	VectorCopy( ent->s.pos.trBase, ent->r.currentOrigin );
-
-	VectorCopy (pm.mins, ent->r.mins);
-	VectorCopy (pm.maxs, ent->r.maxs);
 
 	// link entity now, after any personal teleporters have been used
 	trap_LinkEntity (ent);
@@ -282,26 +261,11 @@ void SpectatorClientEndFrame( gentity_t *ent ) {
 			if ( cl->pers.connected == CON_CONNECTED && cl->sess.sessionTeam != TEAM_SPECTATOR ) {
 				flags = (cl->ps.eFlags & ~(EF_VOTED | EF_TEAMVOTED)) | (ent->client->ps.eFlags & (EF_VOTED | EF_TEAMVOTED));
 				ent->client->ps = cl->ps;
-				ent->client->ps.pm_flags |= PMF_FOLLOW;
 				ent->client->ps.eFlags = flags;
 				return;
 			}
 		}
 
-		if ( ent->client->ps.pm_flags & PMF_FOLLOW ) {
-			// drop them to free spectators unless they are dedicated camera followers
-			if ( ent->client->sess.spectatorClient >= 0 ) {
-				ent->client->sess.spectatorState = SPECTATOR_FREE;
-			}
-
-			ClientBegin( ent->client - level.clients );
-		}
-	}
-
-	if ( ent->client->sess.spectatorState == SPECTATOR_SCOREBOARD ) {
-		ent->client->ps.pm_flags |= PMF_SCOREBOARD;
-	} else {
-		ent->client->ps.pm_flags &= ~PMF_SCOREBOARD;
 	}
 }
 

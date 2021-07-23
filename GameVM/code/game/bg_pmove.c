@@ -32,7 +32,6 @@ pml_t		pml;
 
 // movement parameters
 float	pm_stopspeed = 100.0f;
-float	pm_duckScale = 0.25f;
 float	pm_swimScale = 0.50f;
 
 float	pm_accelerate = 10.0f;
@@ -273,11 +272,6 @@ void PmoveSingle (pmove_t *pmove) {
 	// by setting a conditional breakpoint fot the previous frame
 	c_pmove++;
 
-	// clear results
-	pm->numtouch = 0;
-	pm->watertype = 0;
-	pm->waterlevel = 0;
-
 	// make sure walking button is clear if they are running, to avoid
 	// proxy no-footsteps cheats
 	if ( abs( pm->cmd.forwardmove ) > 64 || abs( pm->cmd.rightmove ) > 64 ) {
@@ -301,12 +295,6 @@ void PmoveSingle (pmove_t *pmove) {
 		pml.msec = 200;
 	}
 	pm->ps->commandTime = pmove->cmd.serverTime;
-
-	// save old org in case we get stuck
-	VectorCopy (pm->ps->origin, pml.previous_origin);
-
-	// save old velocity for crashlanding
-	VectorCopy (pm->ps->velocity, pml.previous_velocity);
 
 	pml.frametime = pml.msec * 0.001;
 

@@ -41,16 +41,6 @@ typedef struct {
 	float		frametime;
 
 	int			msec;
-
-	qboolean	walking;
-	qboolean	groundPlane;
-	trace_t		groundTrace;
-
-	float		impactSpeed;
-
-	vec3_t		previous_origin;
-	vec3_t		previous_velocity;
-	int			previous_waterlevel;
 } pml_t;
 
 extern	pmove_t		*pm;
@@ -58,7 +48,6 @@ extern	pml_t		pml;
 
 // movement parameters
 extern	float	pm_stopspeed;
-extern	float	pm_duckScale;
 extern	float	pm_swimScale;
 
 extern	float	pm_accelerate;

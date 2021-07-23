@@ -637,7 +637,7 @@ void ClientSpawn(gentity_t *ent) {
 	ent->inuse = qtrue;
 	ent->classname = "player";
 	ent->r.contents = CONTENTS_BODY;
-	ent->clipmask = MASK_PLAYERSOLID;
+	ent->clipmask = 0;
 	ent->waterlevel = 0;
 	ent->watertype = 0;
 	ent->flags = 0;
@@ -647,16 +647,7 @@ void ClientSpawn(gentity_t *ent) {
 
 	client->ps.clientNum = index;
 
-	client->ps.stats[STAT_WEAPONS] = ( 1 << WP_MACHINEGUN );
-	if ( g_gametype.integer == GT_TEAM ) {
-		client->ps.ammo[WP_MACHINEGUN] = 50;
-	} else {
-		client->ps.ammo[WP_MACHINEGUN] = 100;
-	}
-
-	client->ps.stats[STAT_WEAPONS] |= ( 1 << WP_GAUNTLET );
-	client->ps.ammo[WP_GAUNTLET] = -1;
-	client->ps.ammo[WP_GRAPPLING_HOOK] = -1;
+	client->ps.stats[STAT_WEAPONS] = 0;
 
 	// health will count down towards max_health
 	ent->health = client->ps.stats[STAT_HEALTH] = client->ps.stats[STAT_MAX_HEALTH] + 25;
@@ -678,28 +669,19 @@ void ClientSpawn(gentity_t *ent) {
 	client->latched_buttons = 0;
 
 	// set default animations
-	client->ps.torsoAnim = TORSO_STAND;
-	client->ps.legsAnim = LEGS_IDLE;
+	client->ps.torsoAnim = 0;
+	client->ps.legsAnim = 0;
 
 	if (!level.intermissiontime) {
 		if (ent->client->sess.sessionTeam != TEAM_SPECTATOR) {
 			// force the base weapon up
-			client->ps.weapon = WP_MACHINEGUN;
+			client->ps.weapon = 0;
 			client->ps.weaponstate = WEAPON_READY;
 			// select the highest weapon number available, after any spawn given items have fired
 			client->ps.weapon = 1;
 
-			for (i = WP_NUM_WEAPONS - 1 ; i > 0 ; i--) {
-				if (client->ps.stats[STAT_WEAPONS] & (1 << i)) {
-					client->ps.weapon = i;
-					break;
-				}
-			}
 			// positively link the client, even if the command times are weird
 			VectorCopy(ent->client->ps.origin, ent->r.currentOrigin);
-
-			tent = G_TempEntity(ent->client->ps.origin, EV_PLAYER_TELEPORT_IN);
-			tent->s.clientNum = ent->s.clientNum;
 
 			trap_LinkEntity (ent);
 		}
@@ -737,16 +719,6 @@ void ClientDisconnect( int clientNum ) {
 	ent = g_entities + clientNum;
 	if (!ent->client || ent->client->pers.connected == CON_DISCONNECTED) {
 		return;
-	}
-
-	// send effect if they were completely connected
-	if ( ent->client->pers.connected == CON_CONNECTED 
-		&& ent->client->sess.sessionTeam != TEAM_SPECTATOR ) {
-		tent = G_TempEntity( ent->client->ps.origin, EV_PLAYER_TELEPORT_OUT );
-		tent->s.clientNum = ent->s.clientNum;
-
-		// They don't get to take powerups with them!
-		// Especially important for stuff like CTF flags
 	}
 
 	G_LogPrintf( "ClientDisconnect: %i\n", clientNum );

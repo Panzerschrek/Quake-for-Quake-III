@@ -140,7 +140,6 @@ typedef enum {
 } weaponstate_t;
 
 // pmove->pm_flags
-#define	PMF_DUCKED			1
 #define	PMF_JUMP_HELD		2
 #define	PMF_BACKWARDS_JUMP	8		// go into backwards land
 #define	PMF_BACKWARDS_RUN	16		// coast down to backwards run
@@ -148,11 +147,6 @@ typedef enum {
 #define	PMF_TIME_KNOCKBACK	64		// pm_time is an air-accelerate only time
 #define	PMF_TIME_WATERJUMP	256		// pm_time is waterjump
 #define	PMF_RESPAWNED		512		// clear after attack and jump buttons come up
-#define	PMF_USE_ITEM_HELD	1024
-#define PMF_GRAPPLE_PULL	2048	// pull towards grapple location
-#define PMF_FOLLOW			4096	// spectate following another player
-#define PMF_SCOREBOARD		8192	// spectate as a scoreboard
-#define PMF_INVULEXPAND		16384	// invulnerability sphere set to full size
 
 #define	PMF_ALL_TIMES	(PMF_TIME_WATERJUMP|PMF_TIME_LAND|PMF_TIME_KNOCKBACK)
 
@@ -163,32 +157,12 @@ typedef struct {
 
 	// command (in)
 	usercmd_t	cmd;
-	int			tracemask;			// collide against these types of surfaces
-	int			debugLevel;			// if set, diagnostic output will be printed
-	qboolean	noFootsteps;		// if the game is setup for no footsteps by the server
-	qboolean	gauntletHit;		// true if a gauntlet attack would actually hit something
 
 	int			framecount;
-
-	// results (out)
-	int			numtouch;
-	int			touchents[MAXTOUCH];
-
-	vec3_t		mins, maxs;			// bounding box size
-
-	int			watertype;
-	int			waterlevel;
-
-	float		xyspeed;
 
 	// for fixed msec Pmove
 	int			pmove_fixed;
 	int			pmove_msec;
-
-	// callbacks to test the world
-	// these will be different functions during game and cgame
-	void		(*trace)( trace_t *results, const vec3_t start, const vec3_t mins, const vec3_t maxs, const vec3_t end, int passEntityNum, int contentMask );
-	int			(*pointcontents)( const vec3_t point, int passEntityNum );
 } pmove_t;
 
 // if a full pmove isn't done on the client, you can just update the angles
@@ -257,61 +231,6 @@ typedef enum {
 #define EF_AWARD_DENIED		0x00040000		// denied
 #define EF_TEAMVOTED		0x00080000		// already cast a team vote
 
-// NOTE: may not have more than 16
-typedef enum {
-	PW_NONE,
-
-	PW_QUAD,
-	PW_BATTLESUIT,
-	PW_HASTE,
-	PW_INVIS,
-	PW_REGEN,
-	PW_FLIGHT,
-
-	PW_REDFLAG,
-	PW_BLUEFLAG,
-	PW_NEUTRALFLAG,
-
-	PW_SCOUT,
-	PW_GUARD,
-	PW_DOUBLER,
-	PW_AMMOREGEN,
-	PW_INVULNERABILITY,
-
-	PW_NUM_POWERUPS
-
-} powerup_t;
-
-typedef enum {
-	HI_NONE,
-
-	HI_TELEPORTER,
-	HI_MEDKIT,
-	HI_KAMIKAZE,
-	HI_PORTAL,
-	HI_INVULNERABILITY,
-
-	HI_NUM_HOLDABLE
-} holdable_t;
-
-
-typedef enum {
-	WP_NONE,
-
-	WP_GAUNTLET,
-	WP_MACHINEGUN,
-	WP_SHOTGUN,
-	WP_GRENADE_LAUNCHER,
-	WP_ROCKET_LAUNCHER,
-	WP_LIGHTNING,
-	WP_RAILGUN,
-	WP_PLASMAGUN,
-	WP_BFG,
-	WP_GRAPPLING_HOOK,
-
-	WP_NUM_WEAPONS
-} weapon_t;
-
 
 // reward sounds (stored in ps->persistant[PERS_PLAYEREVENTS])
 #define	PLAYEREVENT_DENIEDREWARD		0x0001
@@ -333,198 +252,6 @@ typedef enum {
 
 #define	EVENT_VALID_MSEC	300
 
-typedef enum {
-	EV_NONE,
-
-	EV_FOOTSTEP,
-	EV_FOOTSTEP_METAL,
-	EV_FOOTSPLASH,
-	EV_FOOTWADE,
-	EV_SWIM,
-
-	EV_STEP_4,
-	EV_STEP_8,
-	EV_STEP_12,
-	EV_STEP_16,
-
-	EV_FALL_SHORT,
-	EV_FALL_MEDIUM,
-	EV_FALL_FAR,
-
-	EV_JUMP_PAD,			// boing sound at origin, jump sound on player
-
-	EV_JUMP,
-	EV_WATER_TOUCH,	// foot touches
-	EV_WATER_LEAVE,	// foot leaves
-	EV_WATER_UNDER,	// head touches
-	EV_WATER_CLEAR,	// head leaves
-
-	EV_ITEM_PICKUP,			// normal item pickups are predictable
-	EV_GLOBAL_ITEM_PICKUP,	// powerup / team sounds are broadcast to everyone
-
-	EV_NOAMMO,
-	EV_CHANGE_WEAPON,
-	EV_FIRE_WEAPON,
-
-	EV_USE_ITEM0,
-	EV_USE_ITEM1,
-	EV_USE_ITEM2,
-	EV_USE_ITEM3,
-	EV_USE_ITEM4,
-	EV_USE_ITEM5,
-	EV_USE_ITEM6,
-	EV_USE_ITEM7,
-	EV_USE_ITEM8,
-	EV_USE_ITEM9,
-	EV_USE_ITEM10,
-	EV_USE_ITEM11,
-	EV_USE_ITEM12,
-	EV_USE_ITEM13,
-	EV_USE_ITEM14,
-	EV_USE_ITEM15,
-
-	EV_ITEM_RESPAWN,
-	EV_ITEM_POP,
-	EV_PLAYER_TELEPORT_IN,
-	EV_PLAYER_TELEPORT_OUT,
-
-	EV_GRENADE_BOUNCE,		// eventParm will be the soundindex
-
-	EV_GENERAL_SOUND,
-	EV_GLOBAL_SOUND,		// no attenuation
-	EV_GLOBAL_TEAM_SOUND,
-
-	EV_BULLET_HIT_FLESH,
-	EV_BULLET_HIT_WALL,
-
-	EV_MISSILE_HIT,
-	EV_MISSILE_MISS,
-	EV_MISSILE_MISS_METAL,
-	EV_RAILTRAIL,
-	EV_SHOTGUN,
-	EV_BULLET,				// otherEntity is the shooter
-
-	EV_PAIN,
-	EV_DEATH1,
-	EV_DEATH2,
-	EV_DEATH3,
-	EV_OBITUARY,
-
-	EV_POWERUP_QUAD,
-	EV_POWERUP_BATTLESUIT,
-	EV_POWERUP_REGEN,
-
-	EV_GIB_PLAYER,			// gib a previously living player
-	EV_SCOREPLUM,			// score plum
-
-//#ifdef MISSIONPACK
-	EV_PROXIMITY_MINE_STICK,
-	EV_PROXIMITY_MINE_TRIGGER,
-	EV_KAMIKAZE,			// kamikaze explodes
-	EV_OBELISKEXPLODE,		// obelisk explodes
-	EV_OBELISKPAIN,			// obelisk is in pain
-	EV_INVUL_IMPACT,		// invulnerability sphere impact
-	EV_JUICED,				// invulnerability juiced effect
-	EV_LIGHTNINGBOLT,		// lightning bolt bounced of invulnerability sphere
-//#endif
-
-	EV_DEBUG_LINE,
-	EV_STOPLOOPINGSOUND,
-	EV_TAUNT,
-	EV_TAUNT_YES,
-	EV_TAUNT_NO,
-	EV_TAUNT_FOLLOWME,
-	EV_TAUNT_GETFLAG,
-	EV_TAUNT_GUARDBASE,
-	EV_TAUNT_PATROL
-
-} entity_event_t;
-
-
-typedef enum {
-	GTS_RED_CAPTURE,
-	GTS_BLUE_CAPTURE,
-	GTS_RED_RETURN,
-	GTS_BLUE_RETURN,
-	GTS_RED_TAKEN,
-	GTS_BLUE_TAKEN,
-	GTS_REDOBELISK_ATTACKED,
-	GTS_BLUEOBELISK_ATTACKED,
-	GTS_REDTEAM_SCORED,
-	GTS_BLUETEAM_SCORED,
-	GTS_REDTEAM_TOOK_LEAD,
-	GTS_BLUETEAM_TOOK_LEAD,
-	GTS_TEAMS_ARE_TIED,
-	GTS_KAMIKAZE
-} global_team_sound_t;
-
-// animations
-typedef enum {
-	BOTH_DEATH1,
-	BOTH_DEAD1,
-	BOTH_DEATH2,
-	BOTH_DEAD2,
-	BOTH_DEATH3,
-	BOTH_DEAD3,
-
-	TORSO_GESTURE,
-
-	TORSO_ATTACK,
-	TORSO_ATTACK2,
-
-	TORSO_DROP,
-	TORSO_RAISE,
-
-	TORSO_STAND,
-	TORSO_STAND2,
-
-	LEGS_WALKCR,
-	LEGS_WALK,
-	LEGS_RUN,
-	LEGS_BACK,
-	LEGS_SWIM,
-
-	LEGS_JUMP,
-	LEGS_LAND,
-
-	LEGS_JUMPB,
-	LEGS_LANDB,
-
-	LEGS_IDLE,
-	LEGS_IDLECR,
-
-	LEGS_TURN,
-
-	TORSO_GETFLAG,
-	TORSO_GUARDBASE,
-	TORSO_PATROL,
-	TORSO_FOLLOWME,
-	TORSO_AFFIRMATIVE,
-	TORSO_NEGATIVE,
-
-	MAX_ANIMATIONS,
-
-	LEGS_BACKCR,
-	LEGS_BACKWALK,
-	FLAG_RUN,
-	FLAG_STAND,
-	FLAG_STAND2RUN,
-
-	MAX_TOTALANIMATIONS
-} animNumber_t;
-
-
-typedef struct animation_s {
-	int		firstFrame;
-	int		numFrames;
-	int		loopFrames;			// 0 to numFrames
-	int		frameLerp;			// msec between frames
-	int		initialLerp;		// msec to get to first frame
-	int		reversed;			// true if animation is reversed
-	int		flipflop;			// true if animation should flipflop back to base
-} animation_t;
-
-
 // flip the togglebit every time an animation
 // changes so a restart of the same anim can be detected
 #define	ANIM_TOGGLEBIT		128
@@ -545,49 +272,6 @@ typedef enum {
 // How many players on the overlay
 #define TEAM_MAXOVERLAY		32
 
-//team task
-typedef enum {
-	TEAMTASK_NONE,
-	TEAMTASK_OFFENSE, 
-	TEAMTASK_DEFENSE,
-	TEAMTASK_PATROL,
-	TEAMTASK_FOLLOW,
-	TEAMTASK_RETRIEVE,
-	TEAMTASK_ESCORT,
-	TEAMTASK_CAMP
-} teamtask_t;
-
-// means of death
-typedef enum {
-	MOD_UNKNOWN,
-	MOD_SHOTGUN,
-	MOD_GAUNTLET,
-	MOD_MACHINEGUN,
-	MOD_GRENADE,
-	MOD_GRENADE_SPLASH,
-	MOD_ROCKET,
-	MOD_ROCKET_SPLASH,
-	MOD_PLASMA,
-	MOD_PLASMA_SPLASH,
-	MOD_RAILGUN,
-	MOD_LIGHTNING,
-	MOD_BFG,
-	MOD_BFG_SPLASH,
-	MOD_WATER,
-	MOD_SLIME,
-	MOD_LAVA,
-	MOD_CRUSH,
-	MOD_TELEFRAG,
-	MOD_FALLING,
-	MOD_SUICIDE,
-	MOD_TARGET_LASER,
-	MOD_TRIGGER_HURT,
-	MOD_GRAPPLE
-} meansOfDeath_t;
-
-
-//---------------------------------------------------------
-
 // gitem_t->type
 typedef enum {
 	IT_BAD,
@@ -602,41 +286,6 @@ typedef enum {
 	IT_PERSISTANT_POWERUP,
 	IT_TEAM
 } itemType_t;
-
-#define MAX_ITEM_MODELS 4
-
-typedef struct gitem_s {
-	char		*classname;	// spawning name
-	char		*pickup_sound;
-	char		*world_model[MAX_ITEM_MODELS];
-
-	char		*icon;
-	char		*pickup_name;	// for printing on pickup
-
-	int			quantity;		// for ammo how much, or duration of powerup
-	itemType_t  giType;			// IT_* flags
-
-	int			giTag;
-
-	char		*precaches;		// string of all models and images this item will use
-	char		*sounds;		// string of all sounds this item will use
-} gitem_t;
-
-
-// g_dmflags->integer flags
-#define	DF_NO_FALLING			8
-#define DF_FIXED_FOV			16
-#define	DF_NO_FOOTSTEPS			32
-
-// content masks
-#define	MASK_ALL				(-1)
-#define	MASK_SOLID				(CONTENTS_SOLID)
-#define	MASK_PLAYERSOLID		(CONTENTS_SOLID|CONTENTS_PLAYERCLIP|CONTENTS_BODY)
-#define	MASK_DEADSOLID			(CONTENTS_SOLID|CONTENTS_PLAYERCLIP)
-#define	MASK_WATER				(CONTENTS_WATER|CONTENTS_LAVA|CONTENTS_SLIME)
-#define	MASK_OPAQUE				(CONTENTS_SOLID|CONTENTS_SLIME|CONTENTS_LAVA)
-#define	MASK_SHOT				(CONTENTS_SOLID|CONTENTS_BODY|CONTENTS_CORPSE)
-
 
 //
 // entityState_t->eType
@@ -660,35 +309,3 @@ typedef enum {
 							// by setting eType to ET_EVENTS + eventNum
 							// this avoids having to set eFlags and eventNum
 } entityType_t;
-
-
-#define ARENAS_PER_TIER		4
-#define MAX_ARENAS			1024
-#define	MAX_ARENAS_TEXT		8192
-
-#define MAX_BOTS			1024
-#define MAX_BOTS_TEXT		8192
-
-
-// Kamikaze
-
-// 1st shockwave times
-#define KAMI_SHOCKWAVE_STARTTIME		0
-#define KAMI_SHOCKWAVEFADE_STARTTIME	1500
-#define KAMI_SHOCKWAVE_ENDTIME			2000
-// explosion/implosion times
-#define KAMI_EXPLODE_STARTTIME			250
-#define KAMI_IMPLODE_STARTTIME			2000
-#define KAMI_IMPLODE_ENDTIME			2250
-// 2nd shockwave times
-#define KAMI_SHOCKWAVE2_STARTTIME		2000
-#define KAMI_SHOCKWAVE2FADE_STARTTIME	2500
-#define KAMI_SHOCKWAVE2_ENDTIME			3000
-// radius of the models without scaling
-#define KAMI_SHOCKWAVEMODEL_RADIUS		88
-#define KAMI_BOOMSPHEREMODEL_RADIUS		72
-// maximum radius of the models during the effect
-#define KAMI_SHOCKWAVE_MAXRADIUS		1320
-#define KAMI_BOOMSPHERE_MAXRADIUS		720
-#define KAMI_SHOCKWAVE2_MAXRADIUS		704
-

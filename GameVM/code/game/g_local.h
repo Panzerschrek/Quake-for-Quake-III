@@ -109,8 +109,6 @@ struct gentity_s {
 	// timing variables
 	float		wait;
 	float		random;
-
-	gitem_t		*item;			// for bonus items
 };
 
 
