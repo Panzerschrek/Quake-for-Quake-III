@@ -119,9 +119,6 @@ require a reload of all the media
 static void CG_MapRestart( void ) {
 
 	// make sure the "3 frags left" warnings play again
-	cg.fraglimitWarnings = 0;
-
-	cg.timelimitWarnings = 0;
 	cg.intermissionStarted = qfalse;
 	cg.levelShot = qfalse;
 

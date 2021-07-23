@@ -64,29 +64,12 @@ typedef struct {
 	qboolean	loading;			// don't defer players at initial startup
 	qboolean	intermissionStarted;	// don't play voice rewards, because game will end shortly
 
-	// there are only one or two snapshot_t that are relevant at a time
-	int			latestSnapshotNum;	// the number of snapshots the client system has received
-	int			latestSnapshotTime;	// the time from latestSnapshotNum, so we don't need to read the snapshot yet
-
-	snapshot_t	*snap;				// cg.snap->serverTime <= cg.time
-	snapshot_t	*nextSnap;			// cg.nextSnap->serverTime > cg.time, or NULL
-	snapshot_t	activeSnapshots[2];
-
-	float		frameInterpolation;	// (float)( cg.time - cg.frame->serverTime ) / (cg.nextFrame->serverTime - cg.frame->serverTime)
-
-	qboolean	thisFrameTeleport;
-	qboolean	nextFrameTeleport;
+	snapshot_t	snap;				// cg.snap->serverTime <= cg.time
 
 	int			frametime;		// cg.time - cg.oldTime
 
 	int			time;			// this is the time value that the client
 								// is rendering at.
-	int			oldTime;		// time at last frame, used for missile trails and prediction checking
-
-	int			physicsTime;	// either cg.snap->time or cg.nextSnap->time
-
-	int			timelimitWarnings;	// 5 min, 1 min, overtime
-	int			fraglimitWarnings;
 
 	qboolean	mapRestart;			// set on a map restart to set back the weapon
 
@@ -94,10 +77,6 @@ typedef struct {
 
 	// prediction state
 	playerState_t	predictedPlayerState;
-	centity_t		predictedPlayerEntity;
-	qboolean	validPPS;				// clear until the first call to CG_PredictPlayerState
-	int			predictedErrorTime;
-	vec3_t		predictedError;
 
 	int			eventSequence;
 	int			predictableEvents[MAX_PREDICTED_EVENTS];
@@ -162,7 +141,6 @@ extern	cg_t			cg;
 extern	centity_t		cg_entities[MAX_GENTITIES];
 
 extern	vmCvar_t		cg_errorDecay;
-extern	vmCvar_t		cg_nopredict;
 extern	vmCvar_t		cg_synchronousClients;
 extern	vmCvar_t 		cg_forceModel;
 extern	vmCvar_t		cg_predictItems;
@@ -194,11 +172,6 @@ void CG_EventHandling(int type);
 //
 
 void CG_DrawActiveFrame( int serverTime, stereoFrame_t stereoView, qboolean demoPlayback );
-
-//
-// cg_predict.c
-//
-void CG_PredictPlayerState( void );
 
 //
 // cg_snapshot.c

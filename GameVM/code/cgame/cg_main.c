@@ -81,7 +81,6 @@ centity_t			cg_entities[MAX_GENTITIES];
 
 
 vmCvar_t	cg_errorDecay;
-vmCvar_t	cg_nopredict;
 vmCvar_t	cg_synchronousClients;
 vmCvar_t 	cg_forceModel;
 vmCvar_t	cg_predictItems;
@@ -106,7 +105,6 @@ typedef struct {
 
 static cvarTable_t cvarTable[] = {
 	{ &cg_errorDecay, "cg_errordecay", "100", 0 },
-	{ &cg_nopredict, "cg_nopredict", "0", 0 },
 	{ &cg_forceModel, "cg_forceModel", "0", CVAR_ARCHIVE  },
 	{ &cg_predictItems, "cg_predictItems", "1", CVAR_ARCHIVE },
 	{ &cg_deferPlayers, "cg_deferPlayers", "1", CVAR_ARCHIVE },
