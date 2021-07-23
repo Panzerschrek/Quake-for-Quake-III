@@ -276,9 +276,7 @@ typedef struct {
 //
 qboolean	G_SpawnString( const char *key, const char *defaultString, char **out );
 // spawn string returns a temporary reference, you must CopyString() if you want to keep it
-qboolean	G_SpawnFloat( const char *key, const char *defaultString, float *out );
 qboolean	G_SpawnInt( const char *key, const char *defaultString, int *out );
-qboolean	G_SpawnVector( const char *key, const char *defaultString, float *out );
 void		G_SpawnEntitiesFromString( void );
 char *G_NewString( const char *string );
 
@@ -291,15 +289,9 @@ void	G_InitGentity( gentity_t *e );
 gentity_t	*G_Spawn (void);
 gentity_t *G_TempEntity( vec3_t origin, int event );
 void	G_FreeEntity( gentity_t *e );
-qboolean	G_EntitiesFree( void );
 
 void G_SetOrigin( gentity_t *ent, vec3_t origin );
 const char *BuildShaderStateConfig( void );
-
-//
-// g_misc.c
-//
-void TeleportPlayer( gentity_t *player, vec3_t origin, vec3_t angles );
 
 //
 // g_client.c

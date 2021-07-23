@@ -105,7 +105,6 @@ static int gameCvarTableSize = ARRAY_LEN( gameCvarTable );
 void G_InitGame( int levelTime, int randomSeed, int restart );
 void G_RunFrame( int levelTime );
 void G_ShutdownGame( int restart );
-void CheckExitRules( void );
 
 
 /*
@@ -177,10 +176,6 @@ void QDECL G_Error( const char *fmt, ... ) {
 }
 
 
-void G_RemapTeamShaders( void ) {
-}
-
-
 /*
 =================
 G_RegisterCvars
@@ -202,9 +197,6 @@ void G_RegisterCvars( void ) {
 		}
 	}
 
-	if (remapped) {
-		G_RemapTeamShaders();
-	}
 
 	// check some things
 	if ( g_gametype.integer < 0 || g_gametype.integer >= GT_MAX_GAME_TYPE ) {
@@ -243,10 +235,6 @@ void G_UpdateCvars( void ) {
 				}
 			}
 		}
-	}
-
-	if (remapped) {
-		G_RemapTeamShaders();
 	}
 }
 
@@ -327,8 +315,6 @@ void G_InitGame( int levelTime, int randomSeed, int restart ) {
 
 
 	G_Printf ("-----------------------------------\n");
-
-	G_RemapTeamShaders();
 
 	trap_SetConfigstring( CS_INTERMISSION, "" );
 }

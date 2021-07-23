@@ -25,43 +25,6 @@ Foundation, Inc., 51 Franklin St, Fifth Floor, Boston, MA  02110-1301  USA
 #include "g_local.h"
 
 /*
-================
-G_FindConfigstringIndex
-
-================
-*/
-int G_FindConfigstringIndex( char *name, int start, int max, qboolean create ) {
-	int		i;
-	char	s[MAX_STRING_CHARS];
-
-	if ( !name || !name[0] ) {
-		return 0;
-	}
-
-	for ( i=1 ; i<max ; i++ ) {
-		trap_GetConfigstring( start + i, s, sizeof( s ) );
-		if ( !s[0] ) {
-			break;
-		}
-		if ( !strcmp( s, name ) ) {
-			return i;
-		}
-	}
-
-	if ( !create ) {
-		return 0;
-	}
-
-	if ( i == max ) {
-		G_Error( "G_FindConfigstringIndex: overflow" );
-	}
-
-	trap_SetConfigstring( start + i, name );
-
-	return i;
-}
-
-/*
 =============
 G_Find
 
@@ -152,43 +115,17 @@ gentity_t *G_Spawn( void ) {
 		}
 		G_Error( "G_Spawn: no free entities" );
 	}
-	
+
 	// open up a new slot
 	level.num_entities++;
 
 	// let the server system know that there are more entities
-	trap_LocateGameData( level.gentities, level.num_entities, sizeof( gentity_t ), 
+	trap_LocateGameData( level.gentities, level.num_entities, sizeof( gentity_t ),
 		&level.clients[0].ps, sizeof( level.clients[0] ) );
 
 	G_InitGentity( e );
 	return e;
 }
-
-/*
-=================
-G_EntitiesFree
-=================
-*/
-qboolean G_EntitiesFree( void ) {
-	int			i;
-	gentity_t	*e;
-
-	if ( level.num_entities < ENTITYNUM_MAX_NORMAL ) {
-		// can open a new slot if needed
-		return qtrue;
-	}
-
-	e = &g_entities[MAX_CLIENTS];
-	for ( i = MAX_CLIENTS; i < level.num_entities; i++, e++) {
-		if ( e->inuse ) {
-			continue;
-		}
-		// slot available
-		return qtrue;
-	}
-	return qfalse;
-}
-
 
 /*
 =================

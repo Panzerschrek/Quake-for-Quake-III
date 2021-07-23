@@ -42,15 +42,6 @@ qboolean	G_SpawnString( const char *key, const char *defaultString, char **out )
 	return qfalse;
 }
 
-qboolean	G_SpawnFloat( const char *key, const char *defaultString, float *out ) {
-	char		*s;
-	qboolean	present;
-
-	present = G_SpawnString( key, defaultString, &s );
-	*out = atof( s );
-	return present;
-}
-
 qboolean	G_SpawnInt( const char *key, const char *defaultString, int *out ) {
 	char		*s;
 	qboolean	present;
@@ -59,17 +50,6 @@ qboolean	G_SpawnInt( const char *key, const char *defaultString, int *out ) {
 	*out = atoi( s );
 	return present;
 }
-
-qboolean	G_SpawnVector( const char *key, const char *defaultString, float *out ) {
-	char		*s;
-	qboolean	present;
-
-	present = G_SpawnString( key, defaultString, &s );
-	sscanf( s, "%f %f %f", &out[0], &out[1], &out[2] );
-	return present;
-}
-
-
 
 //
 // fields are needed for spawning from the entity string
