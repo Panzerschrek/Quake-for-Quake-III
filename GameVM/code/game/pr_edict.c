@@ -658,25 +658,22 @@ ED_ParseGlobals
 void ED_ParseGlobals (char *data)
 {
 	char	keyname[64];
+	char*	token;
 	ddef_t	*key;
 
-	while (1)
+	while (data[0] != 0)
 	{	
 	// parse key
-		data = COM_Parse (data);
-		if (com_token[0] == '}')
+		token = COM_Parse (&data);
+		if (token[0] == '}')
 			break;
-		if (!data)
-			Sys_Error ("ED_ParseEntity: EOF without closing brace");
 
-		strcpy (keyname, com_token);
+		strcpy (keyname, token);
 
 	// parse value	
-		data = COM_Parse (data);
-		if (!data)
-			Sys_Error ("ED_ParseEntity: EOF without closing brace");
+		token = COM_Parse (&data);
 
-		if (com_token[0] == '}')
+		if (token[0] == '}')
 			Sys_Error ("ED_ParseEntity: closing brace without data");
 
 		key = ED_FindGlobal (keyname);
@@ -686,7 +683,7 @@ void ED_ParseGlobals (char *data)
 			continue;
 		}
 
-		if (!ED_ParseEpair ((void *)pr_globals, key, com_token))
+		if (!ED_ParseEpair ((void *)pr_globals, key, token))
 			Host_Error ("ED_ParseGlobals: parse error");
 	}
 }
@@ -818,6 +815,7 @@ Used for initial level load and for savegames.
 */
 char *ED_ParseEdict (char *data, edict_t *ent)
 {
+	char*		token;
 	ddef_t		*key;
 	qboolean	anglehack;
 	qboolean	init;
@@ -826,35 +824,33 @@ char *ED_ParseEdict (char *data, edict_t *ent)
 
 	init = qfalse;
 
-// clear it
+	// clear it
 	if (ent != sv.edicts)	// hack
 		memset (&ent->v, 0, progs->entityfields * 4);
 
-// go through all the dictionary pairs
+	// go through all the dictionary pairs
 	while (1)
 	{	
-	// parse key
-		data = COM_Parse (data);
-		if (com_token[0] == '}')
+		// parse key
+		token = COM_Parse (&data);
+		if (token[0] == '}')
 			break;
-		if (!data)
-			Sys_Error ("ED_ParseEntity: EOF without closing brace");
 		
-// anglehack is to allow QuakeEd to write single scalar angles
-// and allow them to be turned into vectors. (FIXME...)
-if (!strcmp(com_token, "angle"))
-{
-	strcpy (com_token, "angles");
-	anglehack = qtrue;
-}
-else
-	anglehack = qfalse;
+		// anglehack is to allow QuakeEd to write single scalar angles
+		// and allow them to be turned into vectors. (FIXME...)
+		if (!strcmp(token, "angle"))
+		{
+			strcpy (token, "angles");
+			anglehack = qtrue;
+		}
+		else
+			anglehack = qfalse;
 
-// FIXME: change light to _light to get rid of this hack
-if (!strcmp(com_token, "light"))
-	strcpy (com_token, "light_lev");	// hack for single light def
+		// FIXME: change light to _light to get rid of this hack
+		if (!strcmp(token, "light"))
+			strcpy (token, "light_lev");	// hack for single light def
 
-		strcpy (keyname, com_token);
+		strcpy (keyname, token);
 
 		// another hack to fix heynames with trailing spaces
 		n = strlen(keyname);
@@ -864,18 +860,16 @@ if (!strcmp(com_token, "light"))
 			n--;
 		}
 
-	// parse value	
-		data = COM_Parse (data);
-		if (!data)
-			Sys_Error ("ED_ParseEntity: EOF without closing brace");
+		// parse value
+		token = COM_Parse (&data);
 
-		if (com_token[0] == '}')
+		if (token[0] == '}')
 			Sys_Error ("ED_ParseEntity: closing brace without data");
 
 		init = qtrue;
 
-// keynames with a leading underscore are used for utility comments,
-// and are immediately discarded by quake
+		// keynames with a leading underscore are used for utility comments,
+		// and are immediately discarded by quake
 		if (keyname[0] == '_')
 			continue;
 		
@@ -886,14 +880,14 @@ if (!strcmp(com_token, "light"))
 			continue;
 		}
 
-if (anglehack)
-{
-char	temp[32];
-strcpy (temp, com_token);
-sprintf (com_token, "0 %s 0", temp);
-}
+		if (anglehack)
+		{
+			char	temp[32];
+			strcpy (temp, token);
+			sprintf (token, "0 %s 0", temp);
+		}
 
-		if (!ED_ParseEpair ((void *)&ent->v, key, com_token))
+		if (!ED_ParseEpair ((void *)&ent->v, key, token))
 			Host_Error ("ED_ParseEdict: parse error");
 	}
 
@@ -921,6 +915,7 @@ to call ED_CallSpawnFunctions () to let the objects initialize themselves.
 */
 void ED_LoadFromFile (char *data)
 {	
+	char*		token;
 	edict_t		*ent;
 	int			inhibit;
 	dfunction_t	*func;
@@ -929,15 +924,15 @@ void ED_LoadFromFile (char *data)
 	inhibit = 0;
 	pr_global_struct->time = sv.time;
 	
-// parse ents
+	// parse ents
 	while (1)
 	{
-// parse the opening brace	
-		data = COM_Parse (data);
-		if (!data)
+		// parse the opening brace
+		token = COM_Parse (&data);
+		if (!token)
 			break;
-		if (com_token[0] != '{')
-			Sys_Error ("ED_LoadFromFile: found %s when expecting {",com_token);
+		if (token[0] != '{')
+			Sys_Error ("ED_LoadFromFile: found %s when expecting {", token);
 
 		if (!ent)
 			ent = EDICT_NUM(0);
@@ -945,7 +940,7 @@ void ED_LoadFromFile (char *data)
 			ent = ED_Alloc ();
 		data = ED_ParseEdict (data, ent);
 
-// remove things from different skill levels or deathmatch
+		// remove things from different skill levels or deathmatch
 		if (deathmatch.value)
 		{
 			if (((int)ent->v.spawnflags & SPAWNFLAG_NOT_DEATHMATCH))
