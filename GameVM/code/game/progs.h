@@ -58,8 +58,8 @@ extern	dfunction_t		*pr_functions;
 #define PR_DYNAMIC_STRINGS_BUFF_SIZE	(65536*4)
 extern	char			*pr_strings;
 extern char				*pr_tmp_string;
-char					*pr_dynamic_strings;
-char					*pr_next_dynamic_string;
+extern char				*pr_dynamic_strings;
+extern char				*pr_next_dynamic_string;
 
 extern	ddef_t			*pr_globaldefs;
 extern	ddef_t			*pr_fielddefs;

@@ -938,9 +938,9 @@ void PF_ftos (void)
 	v = G_FLOAT(OFS_PARM0);
 	
 	if (v == (int)v)
-		sprintf (pr_tmp_string, "%d",(int)v);
+		Com_sprintf (pr_tmp_string, PR_TMP_STRING_SIZE, "%d",(int)v);
 	else
-		sprintf (pr_tmp_string, "%5.1f",v);
+		Com_sprintf (pr_tmp_string, PR_TMP_STRING_SIZE, "%5.1f",v);
 	G_INT(OFS_RETURN) = pr_tmp_string - pr_strings;
 }
 
@@ -953,7 +953,7 @@ void PF_fabs (void)
 
 void PF_vtos (void)
 {
-	sprintf (pr_tmp_string, "'%5.1f %5.1f %5.1f'", G_VECTOR(OFS_PARM0)[0], G_VECTOR(OFS_PARM0)[1], G_VECTOR(OFS_PARM0)[2]);
+	Com_sprintf (pr_tmp_string, PR_TMP_STRING_SIZE, "'%5.1f %5.1f %5.1f'", G_VECTOR(OFS_PARM0)[0], G_VECTOR(OFS_PARM0)[1], G_VECTOR(OFS_PARM0)[2]);
 	G_INT(OFS_RETURN) = pr_tmp_string - pr_strings;
 }
 
