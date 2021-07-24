@@ -235,13 +235,25 @@ setmodel(entity, model)
 void PF_setmodel (void)
 {
 	edict_t	*e;
-	char	*m;
+	char	*m, **check;
+	int		i;
 
 	e = G_EDICT(OFS_PARM0);
 	m = G_STRING(OFS_PARM1);
+
+	// check to see if model was properly precached
+	for (i=0, check = sv.model_precache ; *check ; i++, check++)
+		if (!strcmp(*check, m))
+			break;
+
+	if(qfalse) // PANZER - disabled for brush models. TODO - fix this.
+	{
+		if (!*check)
+			PR_RunError ("no precache: %s\n", m);
+	}
+
 	e->v.model = m - pr_strings;
-	// PANZER TODO - set min/max.
-	// PANZER TODO - maybe set model index?
+	e->v.modelindex = i;
 }
 
 /*
@@ -1083,7 +1095,6 @@ void PF_precache_sound (void)
 
 void PF_precache_model (void)
 {
-#if 0 // PANZER TODO - fix it
 	char	*s;
 	int		i;
 	
@@ -1099,14 +1110,12 @@ void PF_precache_model (void)
 		if (!sv.model_precache[i])
 		{
 			sv.model_precache[i] = s;
-			sv.models[i] = Mod_ForName (s, true);
 			return;
 		}
 		if (!strcmp(sv.model_precache[i], s))
 			return;
 	}
 	PR_RunError ("PF_precache_model: overflow");
-#endif
 }
 
 

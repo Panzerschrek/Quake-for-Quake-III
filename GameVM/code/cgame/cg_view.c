@@ -103,10 +103,11 @@ void CG_AddEntities()
 		AnglesToAxis( in_ent->angles, out_ent.axis );
 
 		if ( in_ent->solid == SOLID_BMODEL )
-		{
 			out_ent.hModel = cgs.inlineDrawModel[in_ent->modelindex];
-			trap_R_AddRefEntityToScene(&out_ent);
-		}
+		else
+			out_ent.hModel= cgs.gameModels[in_ent->modelindex];
+
+		trap_R_AddRefEntityToScene(&out_ent);
 	}
 }
 

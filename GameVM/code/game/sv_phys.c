@@ -1551,6 +1551,8 @@ void SV_Physics (void)
 			SV_Physics_Pusher (ent);
 		else if (ent->v.movetype == MOVETYPE_NONE)
 			SV_Physics_None (ent);
+		else if (ent->v.movetype == MOVETYPE_NOCLIP)
+			SV_Physics_Noclip (ent);
 
 #if 0 // PANZER TODO - fix it
 		if (i > 0 && i <= svs.maxclients)

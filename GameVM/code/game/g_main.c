@@ -183,6 +183,18 @@ void G_UpdateCvars( void ) {
 	}
 }
 
+void G_SetModelsConfig()
+{
+	int		i;
+	for (i=0 ; i<MAX_MODELS ; i++)
+	{
+		if (!sv.model_precache[i])
+			continue;
+
+		trap_SetConfigstring(CS_MODELS + i, sv.model_precache[i]);
+	}
+}
+
 /*
 ============
 G_InitGame
@@ -204,6 +216,13 @@ void G_InitGame( int levelTime, int randomSeed, int restart ) {
 
 	PR_Init();
 	PR_LoadProgs();
+
+	// TODO - move to another place.
+	{
+		pr_global_struct->world = 1;
+		pr_global_struct->coop = 0;
+		pr_global_struct->deathmatch = 0;
+	}
 
 	// set some level globals
 	memset( &level, 0, sizeof( level ) );
@@ -243,6 +262,7 @@ void G_InitGame( int levelTime, int randomSeed, int restart ) {
 	// parse the key/value pairs and spawn gentities
 	G_SpawnEntitiesFromString();
 
+	G_SetModelsConfig();
 
 	G_Printf ("-----------------------------------\n");
 }
@@ -413,6 +433,7 @@ void G_RunFrame( int levelTime ) {
 
 		// Update position.
 		VectorCopy(edict->v.origin, ent->s.origin);
+		VectorCopy(edict->v.angles, ent->s.angles);
 
 		// Update models every frame.
 		// TODO - maybe do this only after spawn?
@@ -427,6 +448,8 @@ void G_RunFrame( int levelTime ) {
 				VectorCopy(ent->r.mins, edict->v.mins);
 				VectorCopy(ent->r.maxs, edict->v.maxs);
 			}
+			else
+				ent->s.modelindex = edict->v.modelindex;
 		}
 
 	}
