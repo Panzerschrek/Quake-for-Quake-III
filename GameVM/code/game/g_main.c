@@ -352,6 +352,7 @@ Advances the non-player objects in the world
 void G_RunFrame( int levelTime ) {
 	int			i;
 	gentity_t	*ent;
+	edict_t		*edict;
 
 	level.time = levelTime;
 	host_frametime = levelTime / 1000.0;
@@ -401,6 +402,17 @@ void G_RunFrame( int levelTime ) {
 		}
 
 		G_RunThink( ent );
+
+		// Update models every frame.
+		// TODO - maybe do this only after spawn?
+		edict = EDICT_NUM(ent->q1_edict_number);
+		if(edict->v.model != 0)
+		{
+			char* model= pr_strings + edict->v.model;
+			if(model[0] == '*')
+				trap_SetBrushModel( ent, model);
+		}
+
 	}
 
 	// perform final fixups on the players

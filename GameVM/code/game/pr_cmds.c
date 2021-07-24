@@ -234,34 +234,14 @@ setmodel(entity, model)
 */
 void PF_setmodel (void)
 {
-#if 0 // PANZER TODO - fix it
 	edict_t	*e;
-	char	*m, **check;
-	model_t	*mod;
-	int		i;
+	char	*m;
 
 	e = G_EDICT(OFS_PARM0);
 	m = G_STRING(OFS_PARM1);
-
-// check to see if model was properly precached
-	for (i=0, check = sv.model_precache ; *check ; i++, check++)
-		if (!strcmp(*check, m))
-			break;
-			
-	if (!*check)
-		PR_RunError ("no precache: %s\n", m);
-		
-
 	e->v.model = m - pr_strings;
-	e->v.modelindex = i; //SV_ModelIndex (m);
-
-	mod = sv.models[ (int)e->v.modelindex];  // Mod_ForName (m, true);
-	
-	if (mod)
-		SetMinMaxSize (e, mod->mins, mod->maxs, qtrue);
-	else
-		SetMinMaxSize (e, vec3_origin, vec3_origin, qtrue);
-#endif
+	// PANZER TODO - set min/max.
+	// PANZER TODO - maybe set model index?
 }
 
 /*
