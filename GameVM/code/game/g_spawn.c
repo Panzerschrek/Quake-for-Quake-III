@@ -222,44 +222,93 @@ level.spawnVars[], then call the class specific spawn function
 void G_SpawnGEntityFromSpawnVars( void ) {
 	int			i;
 	gentity_t	*ent;
+	qboolean	anglehack;
+	char		keyname[256];
+	char		value[256];
+	int			n;
+	ddef_t		*key;
+	dfunction_t	*func;
+	edict_t		*edict;
 
 	// get the next free entity
 	ent = G_Spawn();
 
+	edict = ED_Alloc ();
+	ent->q1_edict_number = NUM_FOR_EDICT(edict);
+
 	for ( i = 0 ; i < level.numSpawnVars ; i++ ) {
-		G_ParseField( level.spawnVars[i][0], level.spawnVars[i][1], ent );
+		strcpy(keyname, level.spawnVars[i][0]);
+		strcpy(value, level.spawnVars[i][1]);
+
+		// anglehack is to allow QuakeEd to write single scalar angles
+		// and allow them to be turned into vectors. (FIXME...)
+		if (!strcmp(keyname, "angle"))
+		{
+			strcpy (keyname, "angles");
+			anglehack = qtrue;
+		}
+		else
+			anglehack = qfalse;
+
+		if (!strcmp(keyname, "light"))
+			strcpy (keyname, "light_lev");	// hack for single light def
+
+		// another hack to fix heynames with trailing spaces
+		n = strlen(keyname);
+		while (n && keyname[n-1] == ' ')
+		{
+			keyname[n-1] = 0;
+			n--;
+		}
+
+		// keynames with a leading underscore are used for utility comments,
+		// and are immediately discarded by quake
+		if (keyname[0] == '_')
+			continue;
+
+		key = ED_FindField (keyname);
+		if (!key)
+		{
+			G_Printf ("'%s' is not a field\n", keyname);
+			continue;
+		}
+
+		if (anglehack)
+		{
+			char	temp[256];
+			strcpy (temp, value);
+			Com_sprintf (value, MAX_STRING_TOKENS, "0 %s 0", temp);
+		}
+
+		if (!ED_ParseEpair ((void *)&edict->v, key, value))
+			G_Error ("ED_ParseEdict: parse error");
 	}
 
-	// check for "notsingle" flag
+	if (!edict->v.classname)
 	{
-		G_SpawnInt( "notsingle", "0", &i );
-		if ( i ) {
-			G_FreeEntity( ent );
-			return;
-		}
-	}
-	{
-		G_SpawnInt( "notfree", "0", &i );
-		if ( i ) {
-			G_FreeEntity( ent );
-			return;
-		}
-	}
-
-	G_SpawnInt( "notq3a", "0", &i );
-	if ( i ) {
-		G_FreeEntity( ent );
+		G_Printf ("No classname for:\n");
+		ED_Print (edict);
+		ED_Free(edict);
+		G_FreeEntity(ent);
 		return;
 	}
+
+	func = ED_FindFunction ( pr_strings + edict->v.classname );
+	if (!func)
+	{
+		G_Printf ("No spawn function for:\n");
+		ED_Print (edict);
+		ED_Free (edict);
+		G_FreeEntity(ent);
+		return;
+	}
+
+	pr_global_struct->self = EDICT_TO_PROG(edict);
+	PR_ExecuteProgram (func - pr_functions);
 
 	// move editor origin to pos
 	VectorCopy( ent->s.origin, ent->s.pos.trBase );
 	VectorCopy( ent->s.origin, ent->r.currentOrigin );
-
-	// if we didn't get a classname, don't bother spawning anything
-	if ( !G_CallSpawn( ent ) ) {
-		G_FreeEntity( ent );
-	}
 }
 
 
@@ -376,6 +425,21 @@ Parses textual entity definitions out of an entstring and spawns gentities.
 ==============
 */
 void G_SpawnEntitiesFromString( void ) {
+
+	edict_t	*edict;
+
+	sv.max_edicts = MAX_EDICTS;
+
+	sv.edicts = G_Alloc (sv.max_edicts*pr_edict_size);
+
+	edict = EDICT_NUM(0);
+	memset (&edict->v, 0, progs->entityfields * 4);
+	edict->free = qfalse;
+	//edict->v.model = ED_NewString (sv.worldmodel->name) - pr_strings;
+	edict->v.modelindex = 1;		// world model
+	edict->v.solid = SOLID_BSP;
+	edict->v.movetype = MOVETYPE_PUSH;
+
 	// allow calls to G_Spawn*()
 	level.spawning = qtrue;
 	level.numSpawnVars = 0;

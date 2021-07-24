@@ -21,7 +21,6 @@ Foundation, Inc., 59 Temple Place - Suite 330, Boston, MA  02111-1307, USA.
 // quakedef.h -- primary header for client
 #include "../qcommon/q_shared.h"
 #include "common.h"
-#include "g_local.h"
 
 #define	QUAKE_GAME			// as opposed to utilities
 
@@ -87,7 +86,6 @@ void	VID_UnlockBuffer (void);
 // stats are integers communicated to the client by the server
 //
 #define	MAX_CL_STATS		32
-#define	STAT_HEALTH			0
 #define	STAT_FRAGS			1
 #define	STAT_WEAPON			2
 #define	STAT_AMMO			3

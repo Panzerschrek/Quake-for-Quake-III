@@ -1,4 +1,4 @@
-#include "quakedef.h"
+#include "g_local.h"
 
 // ClearLink is used for new headnodes
 void ClearLink (link_t *l)

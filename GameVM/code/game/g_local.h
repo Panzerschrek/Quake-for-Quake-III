@@ -22,9 +22,9 @@ Foundation, Inc., 51 Franklin St, Fifth Floor, Boston, MA  02110-1301  USA
 //
 // g_local.h -- local definitions for game module
 
-#include "../qcommon/q_shared.h"
-#include "bg_public.h"
+#include "quakedef.h"
 #include "g_public.h"
+#include "bg_public.h"
 
 //==================================================================
 
@@ -63,6 +63,8 @@ struct gentity_s {
 
 	int			nextthink;
 	void		(*think)(gentity_t *self);
+
+	int q1_edict_number;
 };
 
 typedef enum {

@@ -1,4 +1,4 @@
-#include "quakedef.h"
+#include "g_local.h"
 
 /*
 =================
