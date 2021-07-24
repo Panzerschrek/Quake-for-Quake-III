@@ -47,18 +47,6 @@ int		type_size[8] = {1,sizeof(string_t)/4,1,3,1,1,sizeof(func_t)/4,sizeof(void *
 ddef_t *ED_FieldAtOfs (int ofs);
 qboolean	ED_ParseEpair (void *base, ddef_t *key, char *s);
 
-cvar_t	nomonsters = {"nomonsters", "0"};
-cvar_t	gamecfg = {"gamecfg", "0"};
-cvar_t	scratch1 = {"scratch1", "0"};
-cvar_t	scratch2 = {"scratch2", "0"};
-cvar_t	scratch3 = {"scratch3", "0"};
-cvar_t	scratch4 = {"scratch4", "0"};
-cvar_t	savedgamecfg = {"savedgamecfg", "0", qtrue};
-cvar_t	saved1 = {"saved1", "0", qtrue};
-cvar_t	saved2 = {"saved2", "0", qtrue};
-cvar_t	saved3 = {"saved3", "0", qtrue};
-cvar_t	saved4 = {"saved4", "0", qtrue};
-
 #define	MAX_FIELD_LEN	64
 #define GEFV_CACHESIZE	2
 
@@ -68,6 +56,8 @@ typedef struct {
 } gefv_cache;
 
 static gefv_cache	gefvCache[GEFV_CACHESIZE] = {{NULL, ""}, {NULL, ""}};
+
+void *G_Alloc( int size );
 
 /*
 =================
@@ -484,6 +474,7 @@ void ED_Print (edict_t *ed)
 	}
 }
 
+#if 0 // PANZER TODO - fix it
 /*
 =============
 ED_Write
@@ -530,6 +521,7 @@ void ED_Write (FILE *f, edict_t *ed)
 
 	fprintf (f, "}\n");
 }
+#endif
 
 void ED_PrintNum (int ent)
 {
@@ -617,6 +609,7 @@ FIXME: need to tag constants, doesn't really work
 ==============================================================================
 */
 
+#if 0 // PANZER TODO - fix it
 /*
 =============
 ED_WriteGlobals
@@ -649,6 +642,7 @@ void ED_WriteGlobals (FILE *f)
 	}
 	fprintf (f,"}\n");
 }
+#endif
 
 /*
 =============
@@ -1023,7 +1017,7 @@ void PR_LoadProgs (void)
 
 	pr_functions = (dfunction_t *)((byte *)progs + progs->ofs_functions);
 
-	pr_strings = Hunk_AllocName( progs->numstrings + PR_TMP_STRING_SIZE + PR_DYNAMIC_STRINGS_BUFF_SIZE, "pr_strings" );
+	pr_strings = G_Alloc( progs->numstrings + PR_TMP_STRING_SIZE + PR_DYNAMIC_STRINGS_BUFF_SIZE );
 	Q_memcpy( pr_strings, ((char*)progs) + progs->ofs_strings, progs->numstrings );
 	pr_tmp_string = pr_strings + progs->numstrings;
 	pr_next_dynamic_string = pr_dynamic_strings = pr_tmp_string + PR_TMP_STRING_SIZE;
@@ -1088,17 +1082,6 @@ void PR_Init (void)
 	Cmd_AddCommand ("edicts", ED_PrintEdicts);
 	Cmd_AddCommand ("edictcount", ED_Count);
 	Cmd_AddCommand ("profile", PR_Profile_f);
-	Cvar_RegisterVariable (&nomonsters);
-	Cvar_RegisterVariable (&gamecfg);
-	Cvar_RegisterVariable (&scratch1);
-	Cvar_RegisterVariable (&scratch2);
-	Cvar_RegisterVariable (&scratch3);
-	Cvar_RegisterVariable (&scratch4);
-	Cvar_RegisterVariable (&savedgamecfg);
-	Cvar_RegisterVariable (&saved1);
-	Cvar_RegisterVariable (&saved2);
-	Cvar_RegisterVariable (&saved3);
-	Cvar_RegisterVariable (&saved4);
 }
 
 
