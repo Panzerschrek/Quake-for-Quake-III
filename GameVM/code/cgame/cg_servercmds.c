@@ -54,7 +54,6 @@ Cmd_Argc() / Cmd_Argv()
 */
 static void CG_ServerCommand( void ) {
 	const char	*cmd;
-	char		text[MAX_SAY_TEXT];
 
 	cmd = CG_Argv(0);
 
@@ -63,35 +62,8 @@ static void CG_ServerCommand( void ) {
 		return;
 	}
 
-	if ( !strcmp( cmd, "cp" ) ) {
-		return;
-	}
-
 	if ( !strcmp( cmd, "print" ) ) {
 		CG_Printf( "%s", CG_Argv(1) );
-		return;
-	}
-
-	if ( Q_stricmp (cmd, "remapShader") == 0 )
-	{
-		if (trap_Argc() == 4)
-		{
-			char shader1[MAX_QPATH];
-			char shader2[MAX_QPATH];
-			char shader3[MAX_QPATH];
-
-			Q_strncpyz(shader1, CG_Argv(1), sizeof(shader1));
-			Q_strncpyz(shader2, CG_Argv(2), sizeof(shader2));
-			Q_strncpyz(shader3, CG_Argv(3), sizeof(shader3));
-
-			trap_R_RemapShader(shader1, shader2, shader3);
-		}
-		
-		return;
-	}
-
-	// loaddeferred can be both a servercmd and a consolecmd
-	if ( !strcmp( cmd, "loaddefered" ) ) {	// FIXME: spelled wrong, but not changing for demo
 		return;
 	}
 

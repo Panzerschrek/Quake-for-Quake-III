@@ -47,12 +47,12 @@ static void CG_OffsetFirstPersonView( void ) {
 	if ( cg.snap.ps.stats[STAT_HEALTH] <= 0 ) {
 		angles[ROLL] = 40;
 		angles[PITCH] = -15;
-		origin[2] += cg.predictedPlayerState.viewheight;
+		origin[2] += cg.snap.ps.viewheight;
 		return;
 	}
 
 	// add view height
-	origin[2] += cg.predictedPlayerState.viewheight;
+	origin[2] += cg.snap.ps.viewheight;
 }
 
 static void CG_CalcFov( void ) {
@@ -71,17 +71,13 @@ static void CG_CalcFov( void ) {
 }
 
 static void CG_CalcViewValues( void ) {
-	playerState_t	*ps;
-
 	memset( &cg.refdef, 0, sizeof( cg.refdef ) );
 
 	// calculate size of 3D view
 	CG_CalcVrect();
 
-	ps = &cg.predictedPlayerState;
-
-	VectorCopy( ps->origin, cg.refdef.vieworg );
-	VectorCopy( ps->viewangles, cg.refdefViewAngles );
+	VectorCopy( cg.snap.ps.origin, cg.refdef.vieworg );
+	VectorCopy( cg.snap.ps.viewangles, cg.refdefViewAngles );
 
 	CG_OffsetFirstPersonView();
 
@@ -106,14 +102,6 @@ void CG_DrawActiveFrame( int serverTime, stereoFrame_t stereoView, qboolean demo
 
 	// set up cg.snap and possibly cg.nextSnap
 	CG_ProcessSnapshots();
-
-	// if we haven't received any snapshots yet, all
-	// we can draw is the information screen
-	if ( ( cg.snap.snapFlags & SNAPFLAG_NOT_ACTIVE ) ) {
-		return;
-	}
-
-	cg.predictedPlayerState = cg.snap.ps;
 
 	// build cg.refdef
 	CG_CalcViewValues();

@@ -28,10 +28,7 @@ Cmd_Kill_f
 =================
 */
 void Cmd_Kill_f( gentity_t *ent ) {
-	if (ent->health <= 0) {
-		return;
-	}
-	ent->client->ps.stats[STAT_HEALTH] = ent->health = -999;
+	ent->client->ps.stats[STAT_HEALTH] = -999;
 }
 
 /*

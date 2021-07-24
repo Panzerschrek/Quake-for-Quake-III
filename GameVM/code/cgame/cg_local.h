@@ -45,9 +45,6 @@ typedef struct {
 	int			time;			// this is the time value that the client
 								// is rendering at.
 
-	// prediction state
-	playerState_t	predictedPlayerState;
-
 	// view rendering
 	refdef_t	refdef;
 	vec3_t		refdefViewAngles;		// will be converted to refdef.viewaxis

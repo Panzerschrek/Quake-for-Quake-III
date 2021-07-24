@@ -52,7 +52,6 @@ SelectFirstSpawnPoint
 Chooses a player start, deathmatch start, etc
 ============
 */
-#define	MAX_SPAWN_POINTS	128
 gentity_t *SelectFirstSpawnPoint ( vec3_t origin, vec3_t angles ) {
 	gentity_t	*spot;
 
@@ -237,7 +236,7 @@ void ClientSpawn(gentity_t *ent) {
 	client->ps.clientNum = index;
 
 	// health will count down towards max_health
-	ent->health = client->ps.stats[STAT_HEALTH] = 125;
+	client->ps.stats[STAT_HEALTH] = 125;
 
 	G_SetOrigin( ent, spawn_origin );
 	VectorCopy( spawn_origin, client->ps.origin );

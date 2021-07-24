@@ -63,8 +63,6 @@ struct gentity_s {
 
 	int			nextthink;
 	void		(*think)(gentity_t *self);
-
-	int			health;
 };
 
 typedef enum {
@@ -116,10 +114,7 @@ typedef struct {
 	// store latched cvars here that we want to get at often
 	int			maxclients;
 
-	int			framenum;
 	int			time;					// in msec
-	int			previousTime;			// so movers can back up when blocked
-
 	int			startTime;				// level.time the map was started
 
 	// spawn variables
@@ -154,7 +149,6 @@ gentity_t *G_TempEntity( vec3_t origin, int event );
 void	G_FreeEntity( gentity_t *e );
 
 void G_SetOrigin( gentity_t *ent, vec3_t origin );
-const char *BuildShaderStateConfig( void );
 
 //
 // g_client.c

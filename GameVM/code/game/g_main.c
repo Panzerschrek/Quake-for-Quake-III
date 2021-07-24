@@ -32,7 +32,6 @@ typedef struct {
 	int			cvarFlags;
 	int			modificationCount;  // for tracking changes
 	qboolean	trackChange;	    // track this variable, and announce if changed
-  qboolean teamShader;        // track and if changed, update shader state
 } cvarTable_t;
 
 gentity_t		g_entities[MAX_GENTITIES];
@@ -43,7 +42,6 @@ vmCvar_t	g_speed;
 vmCvar_t	g_debugAlloc;
 vmCvar_t	pmove_fixed;
 vmCvar_t	pmove_msec;
-vmCvar_t	g_listEntity;
 
 static cvarTable_t		gameCvarTable[] = {
 	// noset vars
@@ -53,14 +51,11 @@ static cvarTable_t		gameCvarTable[] = {
 	// latched vars
 	{ &g_maxclients, "sv_maxclients", "8", CVAR_SERVERINFO | CVAR_LATCH | CVAR_ARCHIVE, 0, qfalse  },
 
+	{ &g_speed, "g_speed", "320", 0, 0 },
+	{ &g_debugAlloc, "g_debugAlloc", "0", 0, 0 },
 
-	{ &g_speed, "g_speed", "320", 0, 0, qtrue  },
-	{ &g_debugAlloc, "g_debugAlloc", "0", 0, 0, qfalse },
-
-	{ &g_listEntity, "g_listEntity", "0", 0, 0, qfalse },
-
-	{ &pmove_fixed, "pmove_fixed", "0", CVAR_SYSTEMINFO, 0, qfalse},
-	{ &pmove_msec, "pmove_msec", "8", CVAR_SYSTEMINFO, 0, qfalse},
+	{ &pmove_fixed, "pmove_fixed", "0", CVAR_SYSTEMINFO, 0 },
+	{ &pmove_msec, "pmove_msec", "8", CVAR_SYSTEMINFO, 0 },
 };
 
 static int gameCvarTableSize = ARRAY_LEN( gameCvarTable );
@@ -148,17 +143,12 @@ G_RegisterCvars
 void G_RegisterCvars( void ) {
 	int			i;
 	cvarTable_t	*cv;
-	qboolean remapped = qfalse;
 
 	for ( i = 0, cv = gameCvarTable ; i < gameCvarTableSize ; i++, cv++ ) {
 		trap_Cvar_Register( cv->vmCvar, cv->cvarName,
 			cv->defaultString, cv->cvarFlags );
 		if ( cv->vmCvar )
 			cv->modificationCount = cv->vmCvar->modificationCount;
-
-		if (cv->teamShader) {
-			remapped = qtrue;
-		}
 	}
 }
 
@@ -182,10 +172,6 @@ void G_UpdateCvars( void ) {
 				if ( cv->trackChange ) {
 					trap_SendServerCommand( -1, va("print \"Server: %s changed to %s\n\"", 
 						cv->cvarName, cv->vmCvar->string ) );
-				}
-
-				if (cv->teamShader) {
-					remapped = qtrue;
 				}
 			}
 		}
@@ -359,8 +345,6 @@ void G_RunFrame( int levelTime ) {
 	int			i;
 	gentity_t	*ent;
 
-	level.framenum++;
-	level.previousTime = level.time;
 	level.time = levelTime;
 
 	// get any cvar changes
@@ -416,12 +400,5 @@ void G_RunFrame( int levelTime ) {
 		if ( ent->inuse ) {
 			ClientEndFrame( ent );
 		}
-	}
-
-	if (g_listEntity.integer) {
-		for (i = 0; i < MAX_GENTITIES; i++) {
-			G_Printf("%4i: %s\n", i, g_entities[i].classname);
-		}
-		trap_Cvar_Set("g_listEntity", "0");
 	}
 }

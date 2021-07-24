@@ -75,7 +75,6 @@ field_t fields[] = {
 	{"model", FOFS(model), F_STRING},
 	{"model2", FOFS(model2), F_STRING},
 	{"spawnflags", FOFS(spawnflags), F_INT},
-	{"health", FOFS(health), F_INT},
 	{"angles", FOFS(s.angles), F_VECTOR},
 	{"angle", FOFS(s.angles), F_ANGLEHACK},
 
@@ -163,8 +162,6 @@ char *G_NewString( const char *string ) {
 	
 	return newb;
 }
-
-
 
 
 /*
@@ -264,7 +261,6 @@ void G_SpawnGEntityFromSpawnVars( void ) {
 		G_FreeEntity( ent );
 	}
 }
-
 
 
 /*
