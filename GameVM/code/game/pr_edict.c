@@ -553,15 +553,17 @@ For debugging, prints a single edicy
 */
 void ED_PrintEdict_f (void)
 {
+#if 0 // PANZER TODO - fix it
 	int		i;
 	
-	i = Q_atoi (Cmd_Argv(1));
+	i = atoi (Cmd_Argv(1));
 	if (i >= sv.num_edicts)
 	{
 		G_Printf("Bad edict number\n");
 		return;
 	}
 	ED_PrintNum (i);
+#endif
 }
 
 /*
@@ -996,15 +998,11 @@ void PR_LoadProgs (void)
 	for (i=0 ; i<GEFV_CACHESIZE ; i++)
 		gefvCache[i].field[0] = 0;
 
-	CRC_Init (&pr_crc);
 
 	progs = (dprograms_t *)COM_LoadHunkFile ("progs.dat");
 	if (!progs)
 		G_Printf ("PR_LoadProgs: couldn't load progs.dat");
 	G_DPrintf ("Programs occupy %iK.\n", com_filesize/1024);
-
-	for (i=0 ; i<com_filesize ; i++)
-		CRC_ProcessByte (&pr_crc, ((byte *)progs)[i]);
 
 // byte swap the header
 	for (i=0 ; i<sizeof(*progs)/4 ; i++)
@@ -1018,7 +1016,7 @@ void PR_LoadProgs (void)
 	pr_functions = (dfunction_t *)((byte *)progs + progs->ofs_functions);
 
 	pr_strings = G_Alloc( progs->numstrings + PR_TMP_STRING_SIZE + PR_DYNAMIC_STRINGS_BUFF_SIZE );
-	Q_memcpy( pr_strings, ((char*)progs) + progs->ofs_strings, progs->numstrings );
+	memcpy( pr_strings, ((char*)progs) + progs->ofs_strings, progs->numstrings );
 	pr_tmp_string = pr_strings + progs->numstrings;
 	pr_next_dynamic_string = pr_dynamic_strings = pr_tmp_string + PR_TMP_STRING_SIZE;
 
@@ -1078,10 +1076,12 @@ PR_Init
 */
 void PR_Init (void)
 {
+#if 0 // PANZER TODO - fix it
 	Cmd_AddCommand ("edict", ED_PrintEdict_f);
 	Cmd_AddCommand ("edicts", ED_PrintEdicts);
 	Cmd_AddCommand ("edictcount", ED_Count);
 	Cmd_AddCommand ("profile", PR_Profile_f);
+#endif
 }
 
 

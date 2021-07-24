@@ -440,6 +440,7 @@ trace_t SV_PushEntity (edict_t *ent, vec3_t push)
 }					
 #endif
 
+#if 0 // PANZER TODO - fix it
 /*
 ============
 SV_PushMove
@@ -565,6 +566,7 @@ void SV_PushMove (edict_t *pusher, float movetime)
 
 	
 }
+#endif
 
 #ifdef QUAKE2
 /*
@@ -705,6 +707,7 @@ void SV_PushRotate (edict_t *pusher, float movetime)
 }
 #endif
 
+#if 0 // PANZER TODO - fix it
 /*
 ================
 SV_Physics_Pusher
@@ -751,7 +754,7 @@ void SV_Physics_Pusher (edict_t *ent)
 	}
 
 }
-
+#endif
 
 /*
 ===============================================================================
@@ -897,6 +900,7 @@ void SV_WallFriction (edict_t *ent, trace_t *trace)
 	ent->v.velocity[1] = side[1] * (1 + d);
 }
 
+#if 0 // PANZER TODO - fix it
 /*
 =====================
 SV_TryUnstick
@@ -957,6 +961,7 @@ int SV_TryUnstick (edict_t *ent, vec3_t oldvel)
 	VectorCopy (vec3_origin, ent->v.velocity);
 	return 7;		// still not moving
 }
+#endif
 
 #if 0 // PANZER TODO - fix it
 /*
@@ -1064,6 +1069,7 @@ void SV_WalkMove (edict_t *ent)
 #endif
 
 
+#if 0 // PANZER TODO - fix it
 /*
 ================
 SV_Physics_Client
@@ -1144,6 +1150,7 @@ void SV_Physics_Client (edict_t	*ent, int num)
 	pr_global_struct->self = EDICT_TO_PROG(ent);
 	PR_ExecuteProgram (pr_global_struct->PlayerPostThink);
 }
+#endif
 
 //============================================================================
 
@@ -1551,7 +1558,7 @@ void SV_Physics (void)
 		{
 			SV_LinkEdict (ent, qtrue);	// force retouch even for stationary
 		}
-
+#if 0 // PANZER TODO - fix it
 		if (i > 0 && i <= svs.maxclients)
 			SV_Physics_Client (ent, i);
 		else if (ent->v.movetype == MOVETYPE_PUSH)
@@ -1576,6 +1583,7 @@ void SV_Physics (void)
 			SV_Physics_Toss (ent);
 		else
 			G_Printf ("SV_Physics: bad movetype %i", (int)ent->v.movetype);
+#endif
 	}
 	
 	if (pr_global_struct->force_retouch)
