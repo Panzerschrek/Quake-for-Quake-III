@@ -63,6 +63,9 @@ typedef struct {
 
 	// parsed from serverinfo
 	char			mapname[MAX_QPATH];
+
+	int				numInlineModels;
+	qhandle_t		inlineDrawModel[MAX_MODELS];
 } cgs_t;
 
 //==============================================================================
