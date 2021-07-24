@@ -126,7 +126,7 @@ void PF_setorigin (void)
 	e = G_EDICT(OFS_PARM0);
 	org = G_VECTOR(OFS_PARM1);
 	VectorCopy (org, e->v.origin);
-	SV_LinkEdict (e, false);
+	SV_LinkEdict (e, qfalse);
 }
 
 
@@ -144,7 +144,7 @@ void SetMinMaxSize (edict_t *e, float *min, float *max, qboolean rotate)
 		if (min[i] > max[i])
 			PR_RunError ("backwards mins/maxs");
 
-	rotate = false;		// FIXME: implement rotation properly again
+	rotate = qfalse;		// FIXME: implement rotation properly again
 
 	if (!rotate)
 	{
@@ -201,7 +201,7 @@ void SetMinMaxSize (edict_t *e, float *min, float *max, qboolean rotate)
 	VectorCopy (rmax, e->v.maxs);
 	VectorSubtract (max, min, e->v.size);
 	
-	SV_LinkEdict (e, false);
+	SV_LinkEdict (e, qfalse);
 }
 
 /*
@@ -221,7 +221,7 @@ void PF_setsize (void)
 	e = G_EDICT(OFS_PARM0);
 	min = G_VECTOR(OFS_PARM1);
 	max = G_VECTOR(OFS_PARM2);
-	SetMinMaxSize (e, min, max, false);
+	SetMinMaxSize (e, min, max, qfalse);
 }
 
 
@@ -234,6 +234,7 @@ setmodel(entity, model)
 */
 void PF_setmodel (void)
 {
+#if 0 // PANZER TODO - fix it
 	edict_t	*e;
 	char	*m, **check;
 	model_t	*mod;
@@ -257,9 +258,10 @@ void PF_setmodel (void)
 	mod = sv.models[ (int)e->v.modelindex];  // Mod_ForName (m, true);
 	
 	if (mod)
-		SetMinMaxSize (e, mod->mins, mod->maxs, true);
+		SetMinMaxSize (e, mod->mins, mod->maxs, qtrue);
 	else
-		SetMinMaxSize (e, vec3_origin, vec3_origin, true);
+		SetMinMaxSize (e, vec3_origin, vec3_origin, qtrue);
+#endif
 }
 
 /*
@@ -609,6 +611,7 @@ traceline (vector1, vector2, tryents)
 */
 void PF_traceline (void)
 {
+#if 0 // PANZER TODO - fix it
 	float	*v1, *v2;
 	trace_t	trace;
 	int		nomonsters;
@@ -633,6 +636,7 @@ void PF_traceline (void)
 		pr_global_struct->trace_ent = EDICT_TO_PROG(trace.ent);
 	else
 		pr_global_struct->trace_ent = EDICT_TO_PROG(sv.edicts);
+#endif
 }
 
 
@@ -682,10 +686,13 @@ void PF_checkpos (void)
 
 //============================================================================
 
+#if 0 // PANZER TODO - fix it
 byte	checkpvs[MAX_MAP_LEAFS/8];
+#endif
 
 int PF_newcheckclient (int check)
 {
+#if 0 // PANZER TODO - fix it
 	int		i;
 	byte	*pvs;
 	edict_t	*ent;
@@ -732,6 +739,8 @@ int PF_newcheckclient (int check)
 	memcpy (checkpvs, pvs, (sv.worldmodel->numleafs+7)>>3 );
 
 	return i;
+#endif
+	return 1;
 }
 
 /*
@@ -753,6 +762,7 @@ name checkclient ()
 int c_invis, c_notvis;
 void PF_checkclient (void)
 {
+#if 0 // PANZER TODO - fix it
 	edict_t	*ent, *self;
 	mleaf_t	*leaf;
 	int		l;
@@ -788,6 +798,7 @@ c_notvis++;
 // might be able to see it
 c_invis++;
 	RETURN_EDICT(ent);
+#endif
 }
 
 //============================================================================
@@ -1090,6 +1101,7 @@ void PF_precache_sound (void)
 
 void PF_precache_model (void)
 {
+#if 0 // PANZER TODO - fix it
 	char	*s;
 	int		i;
 	
@@ -1112,6 +1124,7 @@ void PF_precache_model (void)
 			return;
 	}
 	PR_RunError ("PF_precache_model: overflow");
+#endif
 }
 
 
@@ -1122,12 +1135,16 @@ void PF_coredump (void)
 
 void PF_traceon (void)
 {
+#if 0 // PANZER TODO - fix it
 	pr_trace = true;
+#endif
 }
 
 void PF_traceoff (void)
 {
+#if 0 // PANZER TODO - fix it
 	pr_trace = false;
+#endif
 }
 
 void PF_eprint (void)
@@ -1170,7 +1187,7 @@ void PF_walkmove (void)
 	oldf = pr_xfunction;
 	oldself = pr_global_struct->self;
 	
-	G_FLOAT(OFS_RETURN) = SV_movestep(ent, move, true);
+	G_FLOAT(OFS_RETURN) = SV_movestep(ent, move, qtrue);
 	
 	
 // restore program state
@@ -1187,6 +1204,7 @@ void() droptofloor
 */
 void PF_droptofloor (void)
 {
+#if 0 // PANZER TODO - fix it
 	edict_t		*ent;
 	vec3_t		end;
 	trace_t		trace;
@@ -1208,6 +1226,7 @@ void PF_droptofloor (void)
 		ent->v.groundentity = EDICT_TO_PROG(trace.ent);
 		G_FLOAT(OFS_RETURN) = 1;
 	}
+#endif
 }
 
 /*
@@ -1331,6 +1350,7 @@ vector aim(entity, missilespeed)
 cvar_t	sv_aim = {"sv_aim", "0.93"};
 void PF_aim (void)
 {
+#if 0 // PANZER TODO - fix it
 	edict_t	*ent, *check, *bestent;
 	vec3_t	start, dir, end, bestdir;
 	int		i, j;
@@ -1347,7 +1367,7 @@ void PF_aim (void)
 // try sending a trace straight
 	VectorCopy (pr_global_struct->v_forward, dir);
 	VectorMA (start, 2048, dir, end);
-	tr = SV_Move (start, vec3_origin, vec3_origin, end, false, ent);
+	tr = SV_Move (start, vec3_origin, vec3_origin, end, qfalse, ent);
 	if (tr.ent && tr.ent->v.takedamage == DAMAGE_AIM
 	&& (!teamplay.value || ent->v.team <=0 || ent->v.team != tr.ent->v.team) )
 	{
@@ -1399,6 +1419,7 @@ void PF_aim (void)
 	{
 		VectorCopy (bestdir, G_VECTOR(OFS_RETURN));
 	}
+#endif
 }
 
 /*
@@ -1656,7 +1677,7 @@ void PF_changelevel (void)
 // make sure we don't issue two changelevels
 	if (svs.changelevel_issued)
 		return;
-	svs.changelevel_issued = true;
+	svs.changelevel_issued = qtrue;
 	
 	s = G_STRING(OFS_PARM0);
 	Cbuf_AddText (va("changelevel %s\n",s));

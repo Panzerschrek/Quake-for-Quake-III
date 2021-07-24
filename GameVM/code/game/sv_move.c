@@ -59,7 +59,7 @@ qboolean SV_CheckBottom (edict_t *ent)
 		}
 
 	c_yes++;
-	return true;		// we got out easy
+	return qtrue;		// we got out easy
 
 realcheck:
 	c_no++;
@@ -72,10 +72,10 @@ realcheck:
 	start[0] = stop[0] = (mins[0] + maxs[0])*0.5;
 	start[1] = stop[1] = (mins[1] + maxs[1])*0.5;
 	stop[2] = start[2] - 2*STEPSIZE;
-	trace = SV_Move (start, vec3_origin, vec3_origin, stop, true, ent);
+	trace = SV_Move (start, vec3_origin, vec3_origin, stop, qtrue, ent);
 
 	if (trace.fraction == 1.0)
-		return false;
+		return qfalse;
 	mid = bottom = trace.endpos[2];
 	
 // the corners must be within 16 of the midpoint	
@@ -85,16 +85,16 @@ realcheck:
 			start[0] = stop[0] = x ? maxs[0] : mins[0];
 			start[1] = stop[1] = y ? maxs[1] : mins[1];
 			
-			trace = SV_Move (start, vec3_origin, vec3_origin, stop, true, ent);
+			trace = SV_Move (start, vec3_origin, vec3_origin, stop, qtrue, ent);
 			
 			if (trace.fraction != 1.0 && trace.endpos[2] > bottom)
 				bottom = trace.endpos[2];
 			if (trace.fraction == 1.0 || mid - trace.endpos[2] > STEPSIZE)
-				return false;
+				return qfalse;
 		}
 
 	c_yes++;
-	return true;
+	return qtrue;
 }
 
 
@@ -110,6 +110,7 @@ pr_global_struct->trace_normal is set to the normal of the blocking wall
 */
 qboolean SV_movestep (edict_t *ent, vec3_t move, qboolean relink)
 {
+#if 0 // PANZER TODO - fix it
 	float		dz;
 	vec3_t		oldorg, neworg, end;
 	trace_t		trace;
@@ -136,24 +137,24 @@ qboolean SV_movestep (edict_t *ent, vec3_t move, qboolean relink)
 				if (dz < 30)
 					neworg[2] += 8;
 			}
-			trace = SV_Move (ent->v.origin, ent->v.mins, ent->v.maxs, neworg, false, ent);
+			trace = SV_Move (ent->v.origin, ent->v.mins, ent->v.maxs, neworg, qfalse, ent);
 	
 			if (trace.fraction == 1)
 			{
 				if ( ((int)ent->v.flags & FL_SWIM) && SV_PointContents(trace.endpos) == CONTENTS_EMPTY )
-					return false;	// swim monster left water
+					return qfalse;	// swim monster left water
 	
 				VectorCopy (trace.endpos, ent->v.origin);
 				if (relink)
-					SV_LinkEdict (ent, true);
-				return true;
+					SV_LinkEdict (ent, qtrue);
+				return qtrue;
 			}
 			
 			if (enemy == sv.edicts)
 				break;
 		}
 		
-		return false;
+		return qfalse;
 	}
 
 // push down from a step height above the wished position
@@ -161,17 +162,17 @@ qboolean SV_movestep (edict_t *ent, vec3_t move, qboolean relink)
 	VectorCopy (neworg, end);
 	end[2] -= STEPSIZE*2;
 
-	trace = SV_Move (neworg, ent->v.mins, ent->v.maxs, end, false, ent);
+	trace = SV_Move (neworg, ent->v.mins, ent->v.maxs, end, qfalse, ent);
 
 	if (trace.allsolid)
-		return false;
+		return qfalse;
 
 	if (trace.startsolid)
 	{
 		neworg[2] -= STEPSIZE;
-		trace = SV_Move (neworg, ent->v.mins, ent->v.maxs, end, false, ent);
+		trace = SV_Move (neworg, ent->v.mins, ent->v.maxs, end, qfalse, ent);
 		if (trace.allsolid || trace.startsolid)
-			return false;
+			return qfalse;
 	}
 	if (trace.fraction == 1)
 	{
@@ -180,13 +181,13 @@ qboolean SV_movestep (edict_t *ent, vec3_t move, qboolean relink)
 		{
 			VectorAdd (ent->v.origin, move, ent->v.origin);
 			if (relink)
-				SV_LinkEdict (ent, true);
+				SV_LinkEdict (ent, qtrue);
 			ent->v.flags = (int)ent->v.flags & ~FL_ONGROUND;
 //	Con_Printf ("fall down\n"); 
-			return true;
+			return qtrue;
 		}
 	
-		return false;		// walked off an edge
+		return qfalse;		// walked off an edge
 	}
 
 // check point traces down for dangling corners
@@ -198,11 +199,11 @@ qboolean SV_movestep (edict_t *ent, vec3_t move, qboolean relink)
 		{	// entity had floor mostly pulled out from underneath it
 			// and is trying to correct
 			if (relink)
-				SV_LinkEdict (ent, true);
-			return true;
+				SV_LinkEdict (ent, qtrue);
+			return qtrue;
 		}
 		VectorCopy (oldorg, ent->v.origin);
-		return false;
+		return qfalse;
 	}
 
 	if ( (int)ent->v.flags & FL_PARTIALGROUND )
@@ -214,8 +215,10 @@ qboolean SV_movestep (edict_t *ent, vec3_t move, qboolean relink)
 
 // the move is ok
 	if (relink)
-		SV_LinkEdict (ent, true);
-	return true;
+		SV_LinkEdict (ent, qtrue);
+	return qtrue;
+#endif
+	return qfalse;
 }
 
 
@@ -245,19 +248,19 @@ qboolean SV_StepDirection (edict_t *ent, float yaw, float dist)
 	move[2] = 0;
 
 	VectorCopy (ent->v.origin, oldorigin);
-	if (SV_movestep (ent, move, false))
+	if (SV_movestep (ent, move, qfalse))
 	{
 		delta = ent->v.angles[YAW] - ent->v.ideal_yaw;
 		if (delta > 45 && delta < 315)
 		{		// not turned far enough, so don't take the step
 			VectorCopy (oldorigin, ent->v.origin);
 		}
-		SV_LinkEdict (ent, true);
-		return true;
+		SV_LinkEdict (ent, qtrue);
+		return qtrue;
 	}
-	SV_LinkEdict (ent, true);
+	SV_LinkEdict (ent, qtrue);
 		
-	return false;
+	return qfalse;
 }
 
 /*
@@ -378,11 +381,11 @@ qboolean SV_CloseEnough (edict_t *ent, edict_t *goal, float dist)
 	for (i=0 ; i<3 ; i++)
 	{
 		if (goal->v.absmin[i] > ent->v.absmax[i] + dist)
-			return false;
+			return qfalse;
 		if (goal->v.absmax[i] < ent->v.absmin[i] - dist)
-			return false;
+			return qfalse;
 	}
-	return true;
+	return qtrue;
 }
 
 /*

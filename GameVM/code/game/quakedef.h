@@ -19,26 +19,14 @@ Foundation, Inc., 59 Temple Place - Suite 330, Boston, MA  02111-1307, USA.
 
 */
 // quakedef.h -- primary header for client
-
+#include "../qcommon/q_shared.h"
+#include "common.h"
 
 #define	QUAKE_GAME			// as opposed to utilities
 
 #define	VERSION				1.09
 
 //define	PARANOID			// speed sapping error checking
-
-#ifdef QUAKE2
-#define	GAMENAME	"id1"		// directory to look in by default
-#else
-#define	GAMENAME	"id1"
-#endif
-
-#include <math.h>
-#include <string.h>
-#include <stdarg.h>
-#include <stdio.h>
-#include <stdlib.h>
-#include <setjmp.h>
 
 #ifdef NDEBUG
 #define Q_ASSERT(x)
@@ -76,7 +64,6 @@ void	VID_UnlockBuffer (void);
 #define MIN_HEIGHT		200
 
 #define	MAX_QPATH		64			// max length of a quake game pathname
-#define	MAX_OSPATH		128			// max length of a filesystem pathname
 
 #define	ON_EPSILON		0.1			// point on plane side epsilon
 
@@ -191,13 +178,6 @@ void	VID_UnlockBuffer (void);
 // Use for multiplayer testing only - VERY dangerous!!!
 // #define IDGODS
 
-#include "common.h"
-#include "bspfile.h"
-#include "vid.h"
-#include "sys.h"
-#include "zone.h"
-#include "mathlib.h"
-
 typedef struct
 {
 	vec3_t	origin;
@@ -209,42 +189,10 @@ typedef struct
 	int		effects;
 } entity_state_t;
 
-
-#include "wad.h"
-#include "draw.h"
-#include "cvar.h"
-#include "screen.h"
-#include "net.h"
 #include "protocol.h"
-#include "cmd.h"
-#include "sbar.h"
-#include "sound.h"
-#include "render.h"
-#include "client.h"
 #include "progs.h"
 #include "server.h"
-
-#ifdef GLQUAKE
-#include "gl_model.h"
-#include "gl_shader.h"
-#include "gl_hatch.h"
-#else
-#include "model.h"
-#include "d_iface.h"
-#endif
-
-#include "input.h"
 #include "world.h"
-#include "keys.h"
-#include "console.h"
-#include "view.h"
-#include "menu.h"
-#include "crc.h"
-#include "cdaudio.h"
-
-#ifdef GLQUAKE
-#include "glquake.h"
-#endif
 
 //=============================================================================
 

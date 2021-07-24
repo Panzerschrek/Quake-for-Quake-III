@@ -53,11 +53,11 @@ cvar_t	scratch1 = {"scratch1", "0"};
 cvar_t	scratch2 = {"scratch2", "0"};
 cvar_t	scratch3 = {"scratch3", "0"};
 cvar_t	scratch4 = {"scratch4", "0"};
-cvar_t	savedgamecfg = {"savedgamecfg", "0", true};
-cvar_t	saved1 = {"saved1", "0", true};
-cvar_t	saved2 = {"saved2", "0", true};
-cvar_t	saved3 = {"saved3", "0", true};
-cvar_t	saved4 = {"saved4", "0", true};
+cvar_t	savedgamecfg = {"savedgamecfg", "0", qtrue};
+cvar_t	saved1 = {"saved1", "0", qtrue};
+cvar_t	saved2 = {"saved2", "0", qtrue};
+cvar_t	saved3 = {"saved3", "0", qtrue};
+cvar_t	saved4 = {"saved4", "0", qtrue};
 
 #define	MAX_FIELD_LEN	64
 #define GEFV_CACHESIZE	2
@@ -79,7 +79,7 @@ Sets everything to NULL
 void ED_ClearEdict (edict_t *e)
 {
 	memset (&e->v, 0, progs->entityfields * 4);
-	e->free = false;
+	e->free = qfalse;
 }
 
 /*
@@ -132,7 +132,7 @@ void ED_Free (edict_t *ed)
 {
 	SV_UnlinkEdict (ed);		// unlink from world bsp
 
-	ed->free = true;
+	ed->free = qtrue;
 	ed->v.model = 0;
 	ed->v.takedamage = 0;
 	ed->v.modelindex = 0;
@@ -786,7 +786,7 @@ qboolean	ED_ParseEpair (void *base, ddef_t *key, char *s)
 		if (!def)
 		{
 			Con_Printf ("Can't find field %s\n", s);
-			return false;
+			return qfalse;
 		}
 		*(int *)d = G_INT(def->ofs);
 		break;
@@ -796,7 +796,7 @@ qboolean	ED_ParseEpair (void *base, ddef_t *key, char *s)
 		if (!func)
 		{
 			Con_Printf ("Can't find function %s\n", s);
-			return false;
+			return qfalse;
 		}
 		*(func_t *)d = func - pr_functions;
 		break;
@@ -804,7 +804,7 @@ qboolean	ED_ParseEpair (void *base, ddef_t *key, char *s)
 	default:
 		break;
 	}
-	return true;
+	return qtrue;
 }
 
 /*
@@ -824,7 +824,7 @@ char *ED_ParseEdict (char *data, edict_t *ent)
 	char		keyname[256];
 	int			n;
 
-	init = false;
+	init = qfalse;
 
 // clear it
 	if (ent != sv.edicts)	// hack
@@ -845,10 +845,10 @@ char *ED_ParseEdict (char *data, edict_t *ent)
 if (!strcmp(com_token, "angle"))
 {
 	strcpy (com_token, "angles");
-	anglehack = true;
+	anglehack = qtrue;
 }
 else
-	anglehack = false;
+	anglehack = qfalse;
 
 // FIXME: change light to _light to get rid of this hack
 if (!strcmp(com_token, "light"))
@@ -872,7 +872,7 @@ if (!strcmp(com_token, "light"))
 		if (com_token[0] == '}')
 			Sys_Error ("ED_ParseEntity: closing brace without data");
 
-		init = true;	
+		init = qtrue;
 
 // keynames with a leading underscore are used for utility comments,
 // and are immediately discarded by quake
@@ -898,7 +898,7 @@ sprintf (com_token, "0 %s 0", temp);
 	}
 
 	if (!init)
-		ent->free = true;
+		ent->free = qtrue;
 
 	return data;
 }
