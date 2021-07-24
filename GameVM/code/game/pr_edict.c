@@ -993,15 +993,21 @@ PR_LoadProgs
 void PR_LoadProgs (void)
 {
 	int		i;
+	static byte progs_data[1024 * 1024];
+	fileHandle_t file_handle;
 
 // flush the non-C variable lookup cache
 	for (i=0 ; i<GEFV_CACHESIZE ; i++)
 		gefvCache[i].field[0] = 0;
 
+	progs = (dprograms_t *)progs_data;
 
-	progs = (dprograms_t *)COM_LoadHunkFile ("progs.dat");
-	if (!progs)
-		G_Printf ("PR_LoadProgs: couldn't load progs.dat");
+	// TODO - check for errors.
+	trap_FS_FOpenFile("progs.dat", &file_handle, FS_READ);
+	// There is no way to request file size. So, try to read maximum size.
+	trap_FS_Read(progs_data, sizeof(progs_data), file_handle);
+	trap_FS_FCloseFile(file_handle);
+
 	G_DPrintf ("Programs occupy %iK.\n", com_filesize/1024);
 
 // byte swap the header
