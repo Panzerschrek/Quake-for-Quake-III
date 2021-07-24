@@ -1003,7 +1003,9 @@ void PR_LoadProgs (void)
 	progs = (dprograms_t *)progs_data;
 
 	// TODO - check for errors.
-	trap_FS_FOpenFile("progs.dat", &file_handle, FS_READ);
+	trap_FS_FOpenFile("vm/progs.dat", &file_handle, FS_READ);
+	if(file_handle == 0)
+		G_Error("Failed to open vm/progs.dat");
 	// There is no way to request file size. So, try to read maximum size.
 	trap_FS_Read(progs_data, sizeof(progs_data), file_handle);
 	trap_FS_FCloseFile(file_handle);

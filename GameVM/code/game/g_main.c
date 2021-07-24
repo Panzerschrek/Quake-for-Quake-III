@@ -202,6 +202,9 @@ void G_InitGame( int levelTime, int randomSeed, int restart ) {
 
 	G_InitMemory();
 
+	PR_Init();
+	PR_LoadProgs();
+
 	// set some level globals
 	memset( &level, 0, sizeof( level ) );
 	level.time = levelTime;
