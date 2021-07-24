@@ -60,6 +60,7 @@ static cvarTable_t		gameCvarTable[] = {
 
 static int gameCvarTableSize = ARRAY_LEN( gameCvarTable );
 
+double host_frametime;
 
 void G_InitGame( int levelTime, int randomSeed, int restart );
 void G_RunFrame( int levelTime );
@@ -350,6 +351,7 @@ void G_RunFrame( int levelTime ) {
 	gentity_t	*ent;
 
 	level.time = levelTime;
+	host_frametime = levelTime / 1000.0;
 
 	// get any cvar changes
 	G_UpdateCvars();

@@ -1008,8 +1008,6 @@ void PR_LoadProgs (void)
 	trap_FS_Read(progs_data, sizeof(progs_data), file_handle);
 	trap_FS_FCloseFile(file_handle);
 
-	G_DPrintf ("Programs occupy %iK.\n", com_filesize/1024);
-
 // byte swap the header
 	for (i=0 ; i<sizeof(*progs)/4 ; i++)
 		((int *)progs)[i] = LittleLong ( ((int *)progs)[i] );		
