@@ -61,7 +61,7 @@ void PF_error (void)
 	edict_t	*ed;
 	
 	s = PF_VarString(0);
-	Con_Printf ("======SERVER ERROR in %s:\n%s\n"
+	G_Printf ("======SERVER ERROR in %s:\n%s\n"
 	,pr_strings + pr_xfunction->s_name,s);
 	ed = PROG_TO_EDICT(pr_global_struct->self);
 	ED_Print (ed);
@@ -85,7 +85,7 @@ void PF_objerror (void)
 	edict_t	*ed;
 	
 	s = PF_VarString(0);
-	Con_Printf ("======OBJECT ERROR in %s:\n%s\n"
+	G_Printf ("======OBJECT ERROR in %s:\n%s\n"
 	,pr_strings + pr_xfunction->s_name,s);
 	ed = PROG_TO_EDICT(pr_global_struct->self);
 	ED_Print (ed);
@@ -301,7 +301,7 @@ void PF_sprint (void)
 	
 	if (entnum < 1 || entnum > svs.maxclients)
 	{
-		Con_Printf ("tried to sprint to a non-client\n");
+		G_Printf ("tried to sprint to a non-client\n");
 		return;
 	}
 		
@@ -332,7 +332,7 @@ void PF_centerprint (void)
 	
 	if (entnum < 1 || entnum > svs.maxclients)
 	{
-		Con_Printf ("tried to sprint to a non-client\n");
+		G_Printf ("tried to sprint to a non-client\n");
 		return;
 	}
 		
@@ -526,7 +526,7 @@ void PF_ambientsound (void)
 			
 	if (!*check)
 	{
-		Con_Printf ("no precache: %s\n", samp);
+		G_Printf ("no precache: %s\n", samp);
 		return;
 	}
 
@@ -573,13 +573,13 @@ void PF_sound (void)
 	attenuation = G_FLOAT(OFS_PARM4);
 	
 	if (volume < 0 || volume > 255)
-		Sys_Error ("SV_StartSound: volume = %i", volume);
+		G_Printf ("SV_StartSound: volume = %i", volume);
 
 	if (attenuation < 0 || attenuation > 4)
-		Sys_Error ("SV_StartSound: attenuation = %f", attenuation);
+		G_Printf ("SV_StartSound: attenuation = %f", attenuation);
 
 	if (channel < 0 || channel > 7)
-		Sys_Error ("SV_StartSound: channel = %i", channel);
+		G_Printf ("SV_StartSound: channel = %i", channel);
 
 	SV_StartSound (entity, channel, sample, volume, attenuation);
 }
@@ -593,7 +593,7 @@ break()
 */
 void PF_break (void)
 {
-Con_Printf ("break statement\n");
+G_Printf ("break statement\n");
 *(int *)-4 = 0;	// dump to debugger
 //	PR_RunError ("break statement");
 }
@@ -929,7 +929,7 @@ PF_dprint
 */
 void PF_dprint (void)
 {
-	Con_DPrintf ("%s",PF_VarString(0));
+	G_DPrintf ("%s",PF_VarString(0));
 }
 
 void PF_ftos (void)

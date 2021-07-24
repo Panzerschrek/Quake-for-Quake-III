@@ -32,7 +32,7 @@ Foundation, Inc., 59 Temple Place - Suite 330, Boston, MA  02111-1307, USA.
 #ifdef NDEBUG
 #define Q_ASSERT(x)
 #else
-#define Q_ASSERT(x) if (!(x)) { Sys_Error("Assertion failed: \""#x"\""); }
+#define Q_ASSERT(x) if (!(x)) { G_Printf("Assertion failed: \""#x"\""); }
 #endif
 
 

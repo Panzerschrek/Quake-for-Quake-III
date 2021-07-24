@@ -123,6 +123,10 @@ void QDECL G_Printf( const char *fmt, ... ) {
 	trap_Print( text );
 }
 
+void QDECL G_DPrintf( const char *fmt, ... ) {
+	// TODO - implement it
+}
+
 void QDECL G_Error( const char *fmt, ... ) {
 	va_list		argptr;
 	char		text[1024];

@@ -101,7 +101,7 @@ edict_t *ED_Alloc (void)
 	}
 	
 	if (i == MAX_EDICTS)
-		Sys_Error ("ED_Alloc: no free edicts");
+		G_Printf ("ED_Alloc: no free edicts");
 		
 	sv.num_edicts++;
 	e = EDICT_NUM(i);
@@ -442,11 +442,11 @@ void ED_Print (edict_t *ed)
 
 	if (ed->free)
 	{
-		Con_Printf ("FREE\n");
+		G_Printf ("FREE\n");
 		return;
 	}
 
-	Con_Printf("\nEDICT %i:\n", NUM_FOR_EDICT(ed));
+	G_Printf("\nEDICT %i:\n", NUM_FOR_EDICT(ed));
 	for (i=1 ; i<progs->numfielddefs ; i++)
 	{
 		d = &pr_fielddefs[i];
@@ -465,12 +465,12 @@ void ED_Print (edict_t *ed)
 		if (j == type_size[type])
 			continue;
 	
-		Con_Printf ("%s",name);
+		G_Printf ("%s",name);
 		l = strlen (name);
 		while (l++ < 15)
-			Con_Printf (" ");
+			G_Printf (" ");
 
-		Con_Printf ("%s\n", PR_ValueString(d->type, (eval_t *)v));		
+		G_Printf ("%s\n", PR_ValueString(d->type, (eval_t *)v));
 	}
 }
 
@@ -539,7 +539,7 @@ void ED_PrintEdicts (void)
 {
 	int		i;
 	
-	Con_Printf ("%i entities\n", sv.num_edicts);
+	G_Printf ("%i entities\n", sv.num_edicts);
 	for (i=0 ; i<sv.num_edicts ; i++)
 		ED_PrintNum (i);
 }
@@ -558,7 +558,7 @@ void ED_PrintEdict_f (void)
 	i = Q_atoi (Cmd_Argv(1));
 	if (i >= sv.num_edicts)
 	{
-		Con_Printf("Bad edict number\n");
+		G_Printf("Bad edict number\n");
 		return;
 	}
 	ED_PrintNum (i);
@@ -592,11 +592,11 @@ void ED_Count (void)
 			step++;
 	}
 
-	Con_Printf ("num_edicts:%3i\n", sv.num_edicts);
-	Con_Printf ("active    :%3i\n", active);
-	Con_Printf ("view      :%3i\n", models);
-	Con_Printf ("touch     :%3i\n", solid);
-	Con_Printf ("step      :%3i\n", step);
+	G_Printf ("num_edicts:%3i\n", sv.num_edicts);
+	G_Printf ("active    :%3i\n", active);
+	G_Printf ("view      :%3i\n", models);
+	G_Printf ("touch     :%3i\n", solid);
+	G_Printf ("step      :%3i\n", step);
 
 }
 
@@ -668,12 +668,12 @@ void ED_ParseGlobals (char *data)
 		token = COM_Parse (&data);
 
 		if (token[0] == '}')
-			Sys_Error ("ED_ParseEntity: closing brace without data");
+			G_Printf ("ED_ParseEntity: closing brace without data");
 
 		key = ED_FindGlobal (keyname);
 		if (!key)
 		{
-			Con_Printf ("'%s' is not a global\n", keyname);
+			G_Printf ("'%s' is not a global\n", keyname);
 			continue;
 		}
 
@@ -701,7 +701,7 @@ char *ED_NewString (char *string)
 	pr_next_dynamic_string += l;
 	if (pr_next_dynamic_string - pr_dynamic_strings > PR_DYNAMIC_STRINGS_BUFF_SIZE)
 	{
-		Sys_Error( "ED_NewString: out of string buffer\n" );
+		G_Printf( "ED_NewString: out of string buffer\n" );
 		return NULL;
 	}
 
@@ -776,7 +776,7 @@ qboolean	ED_ParseEpair (void *base, ddef_t *key, char *s)
 		def = ED_FindField (s);
 		if (!def)
 		{
-			Con_Printf ("Can't find field %s\n", s);
+			G_Printf ("Can't find field %s\n", s);
 			return qfalse;
 		}
 		*(int *)d = G_INT(def->ofs);
@@ -786,7 +786,7 @@ qboolean	ED_ParseEpair (void *base, ddef_t *key, char *s)
 		func = ED_FindFunction (s);
 		if (!func)
 		{
-			Con_Printf ("Can't find function %s\n", s);
+			G_Printf ("Can't find function %s\n", s);
 			return qfalse;
 		}
 		*(func_t *)d = func - pr_functions;
@@ -858,7 +858,7 @@ char *ED_ParseEdict (char *data, edict_t *ent)
 		token = COM_Parse (&data);
 
 		if (token[0] == '}')
-			Sys_Error ("ED_ParseEntity: closing brace without data");
+			G_Printf ("ED_ParseEntity: closing brace without data");
 
 		init = qtrue;
 
@@ -870,7 +870,7 @@ char *ED_ParseEdict (char *data, edict_t *ent)
 		key = ED_FindField (keyname);
 		if (!key)
 		{
-			Con_Printf ("'%s' is not a field\n", keyname);
+			G_Printf ("'%s' is not a field\n", keyname);
 			continue;
 		}
 
@@ -926,7 +926,7 @@ void ED_LoadFromFile (char *data)
 		if (!token)
 			break;
 		if (token[0] != '{')
-			Sys_Error ("ED_LoadFromFile: found %s when expecting {", token);
+			G_Printf ("ED_LoadFromFile: found %s when expecting {", token);
 
 		if (!ent)
 			ent = EDICT_NUM(0);
@@ -958,7 +958,7 @@ void ED_LoadFromFile (char *data)
 //
 		if (!ent->v.classname)
 		{
-			Con_Printf ("No classname for:\n");
+			G_Printf ("No classname for:\n");
 			ED_Print (ent);
 			ED_Free (ent);
 			continue;
@@ -969,7 +969,7 @@ void ED_LoadFromFile (char *data)
 
 		if (!func)
 		{
-			Con_Printf ("No spawn function for:\n");
+			G_Printf ("No spawn function for:\n");
 			ED_Print (ent);
 			ED_Free (ent);
 			continue;
@@ -979,7 +979,7 @@ void ED_LoadFromFile (char *data)
 		PR_ExecuteProgram (func - pr_functions);
 	}	
 
-	Con_DPrintf ("%i entities inhibited\n", inhibit);
+	G_DPrintf ("%i entities inhibited\n", inhibit);
 }
 
 
@@ -1000,8 +1000,8 @@ void PR_LoadProgs (void)
 
 	progs = (dprograms_t *)COM_LoadHunkFile ("progs.dat");
 	if (!progs)
-		Sys_Error ("PR_LoadProgs: couldn't load progs.dat");
-	Con_DPrintf ("Programs occupy %iK.\n", com_filesize/1024);
+		G_Printf ("PR_LoadProgs: couldn't load progs.dat");
+	G_DPrintf ("Programs occupy %iK.\n", com_filesize/1024);
 
 	for (i=0 ; i<com_filesize ; i++)
 		CRC_ProcessByte (&pr_crc, ((byte *)progs)[i]);
@@ -1011,9 +1011,9 @@ void PR_LoadProgs (void)
 		((int *)progs)[i] = LittleLong ( ((int *)progs)[i] );		
 
 	if (progs->version != PROG_VERSION)
-		Sys_Error ("progs.dat has wrong version number (%i should be %i)", progs->version, PROG_VERSION);
+		G_Printf ("progs.dat has wrong version number (%i should be %i)", progs->version, PROG_VERSION);
 	if (progs->crc != PROGHEADER_CRC)
-		Sys_Error ("progs.dat system vars have been modified, progdefs.h is out of date");
+		G_Printf ("progs.dat system vars have been modified, progdefs.h is out of date");
 
 	pr_functions = (dfunction_t *)((byte *)progs + progs->ofs_functions);
 
@@ -1061,7 +1061,7 @@ void PR_LoadProgs (void)
 	{
 		pr_fielddefs[i].type = LittleShort (pr_fielddefs[i].type);
 		if (pr_fielddefs[i].type & DEF_SAVEGLOBAL)
-			Sys_Error ("PR_LoadProgs: pr_fielddefs[i].type & DEF_SAVEGLOBAL");
+			G_Printf ("PR_LoadProgs: pr_fielddefs[i].type & DEF_SAVEGLOBAL");
 		pr_fielddefs[i].ofs = LittleShort (pr_fielddefs[i].ofs);
 		pr_fielddefs[i].s_name = LittleLong (pr_fielddefs[i].s_name);
 	}
@@ -1089,7 +1089,7 @@ void PR_Init (void)
 edict_t *EDICT_NUM(int n)
 {
 	if (n < 0 || n >= sv.max_edicts)
-		Sys_Error ("EDICT_NUM: bad number %i", n);
+		G_Printf ("EDICT_NUM: bad number %i", n);
 	return (edict_t *)((byte *)sv.edicts+ (n)*pr_edict_size);
 }
 
@@ -1101,6 +1101,6 @@ int NUM_FOR_EDICT(edict_t *e)
 	b = b / pr_edict_size;
 	
 	if (b < 0 || b >= sv.num_edicts)
-		Sys_Error ("NUM_FOR_EDICT: bad pointer");
+		G_Printf ("NUM_FOR_EDICT: bad pointer");
 	return b;
 }
