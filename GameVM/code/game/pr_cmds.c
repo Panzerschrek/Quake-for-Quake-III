@@ -857,10 +857,12 @@ float cvar (string)
 void PF_cvar (void)
 {
 	char	*str;
+	char	buffer[1024];
 	
 	str = G_STRING(OFS_PARM0);
 	
-	G_FLOAT(OFS_RETURN) = trap_Cvar_VariableValue(str);
+	trap_Cvar_VariableStringBuffer( str, buffer, sizeof( buffer ) );
+	G_FLOAT(OFS_RETURN) = atof(buffer);
 }
 
 /*
@@ -1288,11 +1290,13 @@ PF_checkbottom
 */
 void PF_checkbottom (void)
 {
+#if 0 // PANZER TODO - fix it
 	edict_t	*ent;
 	
 	ent = G_EDICT(OFS_PARM0);
 
 	G_FLOAT(OFS_RETURN) = SV_CheckBottom (ent);
+#endif
 }
 
 /*
@@ -1302,11 +1306,13 @@ PF_pointcontents
 */
 void PF_pointcontents (void)
 {
+#if 0 // PANZER TODO - fix it
 	float	*v;
 	
 	v = G_VECTOR(OFS_PARM0);
 
 	G_FLOAT(OFS_RETURN) = SV_PointContents (v);	
+#endif
 }
 
 /*
