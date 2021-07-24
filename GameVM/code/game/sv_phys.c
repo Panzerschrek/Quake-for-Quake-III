@@ -440,7 +440,7 @@ trace_t SV_PushEntity (edict_t *ent, vec3_t push)
 }					
 #endif
 
-#if 0 // PANZER TODO - fix it
+
 /*
 ============
 SV_PushMove
@@ -472,13 +472,13 @@ void SV_PushMove (edict_t *pusher, float movetime)
 
 	VectorCopy (pusher->v.origin, pushorig);
 	
-// move the pusher to it's final position
+	// move the pusher to it's final position
 
 	VectorAdd (pusher->v.origin, move, pusher->v.origin);
 	pusher->v.ltime += movetime;
 	SV_LinkEdict (pusher, qfalse);
 
-
+#if 0 // PANZER TODO - fix this.
 // see if any solid entities are inside the final position
 	num_moved = 0;
 	check = NEXT_EDICT(sv.edicts);
@@ -488,9 +488,6 @@ void SV_PushMove (edict_t *pusher, float movetime)
 			continue;
 		if (check->v.movetype == MOVETYPE_PUSH
 		|| check->v.movetype == MOVETYPE_NONE
-#ifdef QUAKE2
-		|| check->v.movetype == MOVETYPE_FOLLOW
-#endif
 		|| check->v.movetype == MOVETYPE_NOCLIP)
 			continue;
 
@@ -561,12 +558,10 @@ void SV_PushMove (edict_t *pusher, float movetime)
 				SV_LinkEdict (moved_edict[i], qfalse);
 			}
 			return;
-		}	
+		}
 	}
-
-	
-}
 #endif
+}
 
 #ifdef QUAKE2
 /*
@@ -707,7 +702,6 @@ void SV_PushRotate (edict_t *pusher, float movetime)
 }
 #endif
 
-#if 0 // PANZER TODO - fix it
 /*
 ================
 SV_Physics_Pusher
@@ -734,14 +728,9 @@ void SV_Physics_Pusher (edict_t *ent)
 
 	if (movetime)
 	{
-#ifdef QUAKE2
-		if (ent->v.avelocity[0] || ent->v.avelocity[1] || ent->v.avelocity[2])
-			SV_PushRotate (ent, movetime);
-		else
-#endif
-			SV_PushMove (ent, movetime);	// advances ent->v.ltime if not blocked
+		SV_PushMove (ent, movetime);	// advances ent->v.ltime if not blocked
 	}
-		
+
 	if (thinktime > oldltime && thinktime <= ent->v.ltime)
 	{
 		ent->v.nextthink = 0;
@@ -754,7 +743,6 @@ void SV_Physics_Pusher (edict_t *ent)
 	}
 
 }
-#endif
 
 /*
 ===============================================================================
@@ -1558,6 +1546,12 @@ void SV_Physics (void)
 		{
 			SV_LinkEdict (ent, qtrue);	// force retouch even for stationary
 		}
+
+		if (ent->v.movetype == MOVETYPE_PUSH)
+			SV_Physics_Pusher (ent);
+		else if (ent->v.movetype == MOVETYPE_NONE)
+			SV_Physics_None (ent);
+
 #if 0 // PANZER TODO - fix it
 		if (i > 0 && i <= svs.maxclients)
 			SV_Physics_Client (ent, i);
@@ -1565,19 +1559,12 @@ void SV_Physics (void)
 			SV_Physics_Pusher (ent);
 		else if (ent->v.movetype == MOVETYPE_NONE)
 			SV_Physics_None (ent);
-#ifdef QUAKE2
-		else if (ent->v.movetype == MOVETYPE_FOLLOW)
-			SV_Physics_Follow (ent);
-#endif
 		else if (ent->v.movetype == MOVETYPE_NOCLIP)
 			SV_Physics_Noclip (ent);
 		else if (ent->v.movetype == MOVETYPE_STEP)
 			SV_Physics_Step (ent);
 		else if (ent->v.movetype == MOVETYPE_TOSS 
 		|| ent->v.movetype == MOVETYPE_BOUNCE
-#ifdef QUAKE2
-		|| ent->v.movetype == MOVETYPE_BOUNCEMISSILE
-#endif
 		|| ent->v.movetype == MOVETYPE_FLY
 		|| ent->v.movetype == MOVETYPE_FLYMISSILE)
 			SV_Physics_Toss (ent);

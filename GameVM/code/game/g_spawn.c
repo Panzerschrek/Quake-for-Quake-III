@@ -309,6 +309,7 @@ void G_SpawnGEntityFromSpawnVars( void ) {
 	// move editor origin to pos
 	VectorCopy( edict->v.origin, ent->s.pos.trBase );
 	VectorCopy( edict->v.origin, ent->r.currentOrigin );
+	VectorCopy( edict->v.origin, ent->s.origin );
 
 	trap_LinkEntity (ent);
 }

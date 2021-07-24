@@ -210,6 +210,8 @@ void G_InitGame( int levelTime, int randomSeed, int restart ) {
 	level.time = levelTime;
 	level.startTime = levelTime;
 
+	sv.time = 1.0;
+
 	// initialize all entities for this game
 	memset( g_entities, 0, MAX_GENTITIES * sizeof(g_entities[0]) );
 	level.gentities = g_entities;
@@ -354,11 +356,15 @@ void G_RunFrame( int levelTime ) {
 	gentity_t	*ent;
 	edict_t		*edict;
 
+	host_frametime = ( levelTime - level.time ) / 1000.0;
+	pr_global_struct->frametime = host_frametime;
 	level.time = levelTime;
-	host_frametime = levelTime / 1000.0;
 
 	// get any cvar changes
 	G_UpdateCvars();
+
+	// Run Quake1 physics (for all entities)
+	SV_Physics();
 
 	//
 	// go through all allocated objects
@@ -403,14 +409,24 @@ void G_RunFrame( int levelTime ) {
 
 		G_RunThink( ent );
 
+		edict = EDICT_NUM(ent->q1_edict_number);
+
+		// Update position.
+		VectorCopy(edict->v.origin, ent->s.origin);
+
 		// Update models every frame.
 		// TODO - maybe do this only after spawn?
-		edict = EDICT_NUM(ent->q1_edict_number);
 		if(edict->v.model != 0)
 		{
 			char* model= pr_strings + edict->v.model;
 			if(model[0] == '*')
-				trap_SetBrushModel( ent, model);
+			{
+				trap_SetBrushModel(ent, model);
+				// PANZER HACK! This is wrong.
+				// Probably we should instead call "trap_SetBrushModel" in "PR_setmodel" call and update mins/max in this function!
+				VectorCopy(ent->r.mins, edict->v.mins);
+				VectorCopy(ent->r.maxs, edict->v.maxs);
+			}
 		}
 
 	}
