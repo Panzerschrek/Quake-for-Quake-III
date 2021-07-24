@@ -343,7 +343,7 @@ bool_t model_md3_save(const model_t *model, xbuf_t *xbuf, char **out_error)
 	{
 		i += sizeof(md3_mesh_t); /* mesh header */
 		i += mesh->num_triangles * sizeof(int[3]); /* triangle elements */
-		/* FIXME - shaders? */
+		i += model->num_skins * sizeof(md3_shader_t);
 		i += mesh->num_vertices * sizeof(float[2]); /* texcoords */
 		i += mesh->num_vertices * model->num_frames * sizeof(md3_vertex_t); /* framevertices */
 	}
@@ -391,6 +391,7 @@ bool_t model_md3_save(const model_t *model, xbuf_t *xbuf, char **out_error)
 		xbuf_write_data(xbuf, sizeof(md3_frameinfo_t), &md3_frameinfo);
 	}
 
+
 /* write tags */
 	for (i = 0, frameinfo = model->frameinfo; i < model->num_frames; i++, frameinfo++)
 	{
@@ -428,7 +429,7 @@ bool_t model_md3_save(const model_t *model, xbuf_t *xbuf, char **out_error)
 		md3_mesh.flags = 0; /* unused */
 
 		md3_mesh.num_frames = LittleLong(model->num_frames);
-		md3_mesh.num_shaders = 0; // FIXME - TODO
+		md3_mesh.num_shaders = model->total_skins;
 		md3_mesh.num_vertices = LittleLong(mesh->num_vertices);
 		md3_mesh.num_triangles = LittleLong(mesh->num_triangles);
 
@@ -438,7 +439,7 @@ bool_t model_md3_save(const model_t *model, xbuf_t *xbuf, char **out_error)
 		j += mesh->num_triangles * sizeof(int[3]);
 
 		md3_mesh.lump_shaders = j;
-		j += 0; // FIXME - TODO
+		j += sizeof(md3_shader_t) * model->num_skins;
 
 		md3_mesh.lump_texcoords = j;
 		j += mesh->num_vertices * sizeof(float[2]);
@@ -463,7 +464,16 @@ bool_t model_md3_save(const model_t *model, xbuf_t *xbuf, char **out_error)
 		}
 
 	/* write shaders */
-		// FIXME - TODO
+		for (j = 0; j < model->total_skins; j++)
+		{
+			char skin_name[256];
+			sprintf(skin_name, "md3_skin%d.tga", j);
+			image_save(skin_name, mesh->skins[j].components[SKIN_DIFFUSE], NULL);
+
+			md3_shader_t md3_shader;
+			strcpy(md3_shader.name, "textures/soldier"); // TODO - add possibility to configure shader name.
+			xbuf_write_data(xbuf, sizeof(md3_shader), &md3_shader);
+		}
 
 	/* write texcoords */
 		for (j = 0; j < mesh->num_vertices; j++)
