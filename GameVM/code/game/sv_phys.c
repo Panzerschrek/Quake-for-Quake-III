@@ -40,11 +40,13 @@ solid_edge items only clip against bsp models.
 
 */
 
+#if 0 // PANZER TODO - fix it
 cvar_t	sv_friction = {"sv_friction","4",false,true};
 cvar_t	sv_stopspeed = {"sv_stopspeed","100"};
 cvar_t	sv_gravity = {"sv_gravity","800",false,true};
 cvar_t	sv_maxvelocity = {"sv_maxvelocity","2000"};
 cvar_t	sv_nostep = {"sv_nostep","0"};
+#endif
 
 #ifdef QUAKE2
 static	vec3_t	vec_origin = {0.0, 0.0, 0.0};
@@ -83,6 +85,7 @@ void SV_CheckAllEnts (void)
 	}
 }
 
+#if 0 // PANZER TODO - fix it
 /*
 ================
 SV_CheckVelocity
@@ -113,6 +116,7 @@ void SV_CheckVelocity (edict_t *ent)
 			ent->v.velocity[i] = -sv_maxvelocity.value;
 	}
 }
+#endif
 
 /*
 =============
@@ -130,7 +134,7 @@ qboolean SV_RunThink (edict_t *ent)
 
 	thinktime = ent->v.nextthink;
 	if (thinktime <= 0 || thinktime > sv.time + host_frametime)
-		return true;
+		return qtrue;
 		
 	if (thinktime < sv.time)
 		thinktime = sv.time;	// don't let things stay in the past.
@@ -214,6 +218,7 @@ int ClipVelocity (vec3_t in, vec3_t normal, vec3_t out, float overbounce)
 }
 
 
+#if 0 // PANZER TODO - fix it
 /*
 ============
 SV_FlyMove
@@ -258,7 +263,7 @@ int SV_FlyMove (edict_t *ent, float time, trace_t *steptrace)
 		for (i=0 ; i<3 ; i++)
 			end[i] = ent->v.origin[i] + time_left * ent->v.velocity[i];
 
-		trace = SV_Move (ent->v.origin, ent->v.mins, ent->v.maxs, end, false, ent);
+		trace = SV_Move (ent->v.origin, ent->v.mins, ent->v.maxs, end, qfalse, ent);
 
 		if (trace.allsolid)
 		{	// entity is trapped in another solid
@@ -361,7 +366,7 @@ int SV_FlyMove (edict_t *ent, float time, trace_t *steptrace)
 
 	return blocked;
 }
-
+# endif
 
 /*
 ============
@@ -387,7 +392,10 @@ void SV_AddGravity (edict_t *ent)
 	else
 		ent_gravity = 1.0;
 #endif
+
+#if 0 // PANZER TODO - fix it
 	ent->v.velocity[2] -= ent_gravity * sv_gravity.value * host_frametime;
+#endif
 }
 
 
@@ -399,6 +407,7 @@ PUSHMOVE
 ===============================================================================
 */
 
+#if 0 // PANZER TODO - fix it
 /*
 ============
 SV_PushEntity
@@ -422,14 +431,14 @@ trace_t SV_PushEntity (edict_t *ent, vec3_t push)
 		trace = SV_Move (ent->v.origin, ent->v.mins, ent->v.maxs, end, MOVE_NORMAL, ent);	
 	
 	VectorCopy (trace.endpos, ent->v.origin);
-	SV_LinkEdict (ent, true);
+	SV_LinkEdict (ent, qtrue);
 
 	if (trace.ent)
 		SV_Impact (ent, trace.ent);		
 
 	return trace;
 }					
-
+#endif
 
 /*
 ============
@@ -466,7 +475,7 @@ void SV_PushMove (edict_t *pusher, float movetime)
 
 	VectorAdd (pusher->v.origin, move, pusher->v.origin);
 	pusher->v.ltime += movetime;
-	SV_LinkEdict (pusher, false);
+	SV_LinkEdict (pusher, qfalse);
 
 
 // see if any solid entities are inside the final position
@@ -529,10 +538,10 @@ void SV_PushMove (edict_t *pusher, float movetime)
 			}
 			
 			VectorCopy (entorig, check->v.origin);
-			SV_LinkEdict (check, true);
+			SV_LinkEdict (check, qtrue);
 
 			VectorCopy (pushorig, pusher->v.origin);
-			SV_LinkEdict (pusher, false);
+			SV_LinkEdict (pusher, qfalse);
 			pusher->v.ltime -= movetime;
 
 			// if the pusher has a "blocked" function, call it
@@ -548,7 +557,7 @@ void SV_PushMove (edict_t *pusher, float movetime)
 			for (i=0 ; i<num_moved ; i++)
 			{
 				VectorCopy (moved_from[i], moved_edict[i]->v.origin);
-				SV_LinkEdict (moved_edict[i], false);
+				SV_LinkEdict (moved_edict[i], qfalse);
 			}
 			return;
 		}	
@@ -777,7 +786,7 @@ void SV_CheckStuck (edict_t *ent)
 	if (!SV_TestEntityPosition(ent))
 	{
 		Con_DPrintf ("Unstuck.\n");
-		SV_LinkEdict (ent, true);
+		SV_LinkEdict (ent, qtrue);
 		return;
 	}
 	
@@ -791,7 +800,7 @@ void SV_CheckStuck (edict_t *ent)
 				if (!SV_TestEntityPosition(ent))
 				{
 					Con_DPrintf ("Unstuck.\n");
-					SV_LinkEdict (ent, true);
+					SV_LinkEdict (ent, qtrue);
 					return;
 				}
 			}
@@ -800,7 +809,7 @@ void SV_CheckStuck (edict_t *ent)
 	Con_DPrintf ("player is stuck.\n");
 }
 
-
+#if 0 // PANZER TODO - fix it
 /*
 =============
 SV_CheckWater
@@ -858,6 +867,7 @@ qboolean SV_CheckWater (edict_t *ent)
 	
 	return ent->v.waterlevel > 1;
 }
+#endif
 
 /*
 ============
@@ -948,6 +958,7 @@ int SV_TryUnstick (edict_t *ent, vec3_t oldvel)
 	return 7;		// still not moving
 }
 
+#if 0 // PANZER TODO - fix it
 /*
 =====================
 SV_WalkMove
@@ -985,8 +996,10 @@ void SV_WalkMove (edict_t *ent)
 	if (ent->v.movetype != MOVETYPE_WALK)
 		return;		// gibbed by a trigger
 	
+#if 0 // PANZER TODO - fix it
 	if (sv_nostep.value)
 		return;
+#endif
 	
 	if ( (int)sv_player->v.flags & FL_WATERJUMP )
 		return;
@@ -1048,6 +1061,7 @@ void SV_WalkMove (edict_t *ent)
 		VectorCopy (nostepvel, ent->v.velocity);
 	}
 }
+#endif
 
 
 /*
@@ -1124,7 +1138,7 @@ void SV_Physics_Client (edict_t	*ent, int num)
 //
 // call standard player post-think
 //		
-	SV_LinkEdict (ent, true);
+	SV_LinkEdict (ent, qtrue);
 
 	pr_global_struct->time = sv.time;
 	pr_global_struct->self = EDICT_TO_PROG(ent);
@@ -1179,7 +1193,7 @@ void SV_Physics_Noclip (edict_t *ent)
 	VectorMA (ent->v.angles, host_frametime, ent->v.avelocity, ent->v.angles);
 	VectorMA (ent->v.origin, host_frametime, ent->v.velocity, ent->v.origin);
 
-	SV_LinkEdict (ent, false);
+	SV_LinkEdict (ent, qfalse);
 }
 
 /*
@@ -1190,6 +1204,7 @@ TOSS / BOUNCE
 ==============================================================================
 */
 
+#if 0 // PANZER TODO - fix it
 /*
 =============
 SV_CheckWaterTransition
@@ -1235,7 +1250,9 @@ void SV_CheckWaterTransition (edict_t *ent)
 		ent->v.waterlevel = cont;
 	}
 }
+#endif
 
+#if 0 // PANZER TODO - fix it
 /*
 =============
 SV_Physics_Toss
@@ -1340,6 +1357,7 @@ void SV_Physics_Toss (edict_t *ent)
 // check for in water
 	SV_CheckWaterTransition (ent);
 }
+#endif
 
 /*
 ===============================================================================
@@ -1349,6 +1367,7 @@ STEPPING MOVEMENT
 ===============================================================================
 */
 
+#if 0 // PANZER TODO - fix it
 /*
 =============
 SV_Physics_Step
@@ -1474,9 +1493,9 @@ void SV_Physics_Step (edict_t *ent)
 	if ( ! ((int)ent->v.flags & (FL_ONGROUND | FL_FLY | FL_SWIM) ) )
 	{
 		if (ent->v.velocity[2] < sv_gravity.value*-0.1)
-			hitsound = true;
+			hitsound = qtrue;
 		else
-			hitsound = false;
+			hitsound = qfalse;
 
 		SV_AddGravity (ent);
 		SV_CheckVelocity (ent);
@@ -1495,6 +1514,7 @@ void SV_Physics_Step (edict_t *ent)
 	
 	SV_CheckWaterTransition (ent);
 }
+#endif
 #endif
 
 //============================================================================
@@ -1529,7 +1549,7 @@ void SV_Physics (void)
 
 		if (pr_global_struct->force_retouch)
 		{
-			SV_LinkEdict (ent, true);	// force retouch even for stationary
+			SV_LinkEdict (ent, qtrue);	// force retouch even for stationary
 		}
 
 		if (i > 0 && i <= svs.maxclients)

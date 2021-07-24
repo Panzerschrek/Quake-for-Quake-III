@@ -21,6 +21,7 @@ Foundation, Inc., 59 Temple Place - Suite 330, Boston, MA  02111-1307, USA.
 // quakedef.h -- primary header for client
 #include "../qcommon/q_shared.h"
 #include "common.h"
+#include "g_local.h"
 
 #define	QUAKE_GAME			// as opposed to utilities
 
