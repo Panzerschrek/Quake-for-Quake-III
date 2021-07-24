@@ -35,6 +35,7 @@ is not a staircase.
 */
 int c_yes, c_no;
 
+#if 0 // PANZER TODO - fix it
 qboolean SV_CheckBottom (edict_t *ent)
 {
 	vec3_t	mins, maxs, start, stop;
@@ -96,6 +97,7 @@ realcheck:
 	c_yes++;
 	return qtrue;
 }
+#endif
 
 
 /*
