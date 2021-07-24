@@ -105,7 +105,10 @@ void CG_AddEntities()
 		if ( in_ent->solid == SOLID_BMODEL )
 			out_ent.hModel = cgs.inlineDrawModel[in_ent->modelindex];
 		else
+		{
 			out_ent.hModel= cgs.gameModels[in_ent->modelindex];
+			out_ent.frame = out_ent.oldframe = in_ent->frame;
+		}
 
 		trap_R_AddRefEntityToScene(&out_ent);
 	}

@@ -434,6 +434,7 @@ void G_RunFrame( int levelTime ) {
 		// Update position.
 		VectorCopy(edict->v.origin, ent->s.origin);
 		VectorCopy(edict->v.angles, ent->s.angles);
+		ent->s.frame = edict->v.frame;
 
 		// Update models every frame.
 		// TODO - maybe do this only after spawn?
