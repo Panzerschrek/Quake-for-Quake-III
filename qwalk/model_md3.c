@@ -22,6 +22,9 @@
 #include "global.h"
 #include "model.h"
 
+extern const char *g_skinpath;
+extern const char *g_skin_base_name;
+
 typedef struct md3_vertex_s
 {
 	short origin[3];
@@ -312,10 +315,31 @@ static unsigned short md3_encodenormal(const float n[3])
 	return ((blat & 0xff) << 8) | (blng & 0xff);
 }
 
+static char *md3_create_skin_filename(const char *skinname)
+{
+	char temp[1024];
+	char *c;
+
+/* in case skinname is already a file path, strip path and extension (so "models/something/skin.pcx" becomes "skin") */
+	if ((c = strrchr(skinname, '/')))
+		strcpy(temp, c + 1);
+	else
+		strcpy(temp, skinname);
+
+	if ((c = strchr(temp, '.')))
+		*c = '\0';
+
+	if (g_skinpath && g_skinpath[0])
+		return msprintf("%s/%s.tga", g_skinpath, temp);
+	else
+		return msprintf("%s.tga", temp);
+}
+
 bool_t model_md3_save(const model_t *model, xbuf_t *xbuf, char **out_error)
 {
 	md3_header_t header;
 	const frameinfo_t *frameinfo;
+	char **skinfilenames;
 	const tag_t *tag;
 	const mesh_t *mesh;
 	int i, j, k, m;
@@ -328,6 +352,14 @@ bool_t model_md3_save(const model_t *model, xbuf_t *xbuf, char **out_error)
 	header.num_tags   = LittleLong(model->num_tags);
 	header.num_meshes = LittleLong(model->num_meshes);
 	header.num_skins  = LittleLong(model->num_skins);
+
+/* create 32-bit skins and save them to TGA files */
+	skinfilenames = (char**)qmalloc(sizeof(char*) * model->num_skins);
+	for (i = 0; i < model->num_skins; i++)
+	{
+		skinfilenames[i] = model->num_skins == 1 ? msprintf("%s.tga", g_skin_base_name) : msprintf("%s%d.tga", g_skin_base_name, i);
+		image_save(skinfilenames[i], model->meshes[0].skins[i].components[SKIN_DIFFUSE], out_error);
+	}
 
 /* calculate lump offsets */
 	i = sizeof(md3_header_t);
@@ -466,12 +498,8 @@ bool_t model_md3_save(const model_t *model, xbuf_t *xbuf, char **out_error)
 	/* write shaders */
 		for (j = 0; j < model->total_skins; j++)
 		{
-			char skin_name[256];
-			sprintf(skin_name, "md3_skin%d.tga", j);
-			image_save(skin_name, mesh->skins[j].components[SKIN_DIFFUSE], NULL);
-
 			md3_shader_t md3_shader;
-			strcpy(md3_shader.name, "textures/soldier"); // TODO - add possibility to configure shader name.
+			strcpy(md3_shader.name, skinfilenames[j]);
 			xbuf_write_data(xbuf, sizeof(md3_shader), &md3_shader);
 		}
 
