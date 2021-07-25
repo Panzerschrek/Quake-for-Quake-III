@@ -24,15 +24,6 @@ Foundation, Inc., 51 Franklin St, Fifth Floor, Boston, MA  02110-1301  USA
 
 /*
 =================
-Cmd_Kill_f
-=================
-*/
-void Cmd_Kill_f( gentity_t *ent ) {
-	ent->client->ps.stats[STAT_HEALTH] = -999;
-}
-
-/*
-=================
 ClientCommand
 =================
 */
@@ -52,8 +43,5 @@ void ClientCommand( int clientNum ) {
 
 	trap_Argv( 0, cmd, sizeof( cmd ) );
 
-	if (Q_stricmp (cmd, "kill") == 0)
-		Cmd_Kill_f (ent);
-	else
-		trap_SendServerCommand( clientNum, va("print \"unknown cmd %s\n\"", cmd ) );
+	trap_SendServerCommand( clientNum, va("print \"unknown cmd %s\n\"", cmd ) );
 }

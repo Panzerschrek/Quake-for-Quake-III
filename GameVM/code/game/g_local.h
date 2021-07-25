@@ -95,9 +95,6 @@ struct gclient_s {
 									// of the g_sycronousclients case
 	int			buttons;
 
-	// timers
-	int			respawnTime;		// can respawn when time > this, force after g_forcerespwan
-
 	char		*areabits;
 };
 
@@ -155,9 +152,9 @@ void G_SetOrigin( gentity_t *ent, vec3_t origin );
 //
 // g_client.c
 //
-void SetClientViewAngle( gentity_t *ent, vec3_t angle );
-void ClientRespawn(gentity_t *ent);
-void ClientSpawn( gentity_t *ent );
+void SetClientViewAngle( gclient_t *client, vec3_t angle );
+void ClientRespawn(gclient_t *ent);
+void ClientSpawn( gclient_t *ent );
 
 //
 // g_svcmds.c
@@ -188,8 +185,6 @@ void ClientCommand( int clientNum );
 // g_active.c
 //
 void ClientThink( int clientNum );
-void ClientEndFrame( gentity_t *ent );
-void G_RunClient( gentity_t *ent );
 
 //
 // g_mem.c

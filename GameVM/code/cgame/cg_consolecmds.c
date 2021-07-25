@@ -80,10 +80,4 @@ void CG_InitConsoleCommands( void ) {
 	for ( i = 0 ; i < ARRAY_LEN( commands ) ; i++ ) {
 		trap_AddCommand( commands[i].cmd );
 	}
-
-	//
-	// the game server will interpret these commands, which will be automatically
-	// forwarded to the server after they are not recognized locally
-	//
-	trap_AddCommand ("kill");
 }
