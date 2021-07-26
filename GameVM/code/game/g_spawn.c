@@ -23,24 +23,11 @@ Foundation, Inc., 51 Franklin St, Fifth Floor, Boston, MA  02110-1301  USA
 
 #include "g_local.h"
 
-qboolean	G_SpawnString( const char *key, const char *defaultString, char **out ) {
-	int		i;
-
-	if ( !level.spawning ) {
-		*out = (char *)defaultString;
-//		G_Error( "G_SpawnString() called while not spawning" );
-	}
-
-	for ( i = 0 ; i < level.numSpawnVars ; i++ ) {
-		if ( !Q_stricmp( key, level.spawnVars[i][0] ) ) {
-			*out = level.spawnVars[i][1];
-			return qtrue;
-		}
-	}
-
-	*out = (char *)defaultString;
-	return qfalse;
-}
+// spawn variables
+static int		numSpawnVars;
+static char		*spawnVars[MAX_SPAWN_VARS][2];	// key / value pairs
+static int		numSpawnVarChars;
+static char		spawnVarChars[MAX_SPAWN_VARS_CHARS];
 
 /*
 =============
@@ -97,9 +84,9 @@ void G_SpawnGEntityFromSpawnVars( void ) {
 
 	edict = ED_Alloc ();
 
-	for ( i = 0 ; i < level.numSpawnVars ; i++ ) {
-		strcpy(keyname, level.spawnVars[i][0]);
-		strcpy(value, level.spawnVars[i][1]);
+	for ( i = 0 ; i < numSpawnVars ; i++ ) {
+		strcpy(keyname, spawnVars[i][0]);
+		strcpy(value, spawnVars[i][1]);
 
 		// anglehack is to allow QuakeEd to write single scalar angles
 		// and allow them to be turned into vectors. (FIXME...)
@@ -184,14 +171,14 @@ char *G_AddSpawnVarToken( const char *string ) {
 	char	*dest;
 
 	l = strlen( string );
-	if ( level.numSpawnVarChars + l + 1 > MAX_SPAWN_VARS_CHARS ) {
+	if ( numSpawnVarChars + l + 1 > MAX_SPAWN_VARS_CHARS ) {
 		G_Error( "G_AddSpawnVarToken: MAX_SPAWN_VARS_CHARS" );
 	}
 
-	dest = level.spawnVarChars + level.numSpawnVarChars;
+	dest = spawnVarChars + numSpawnVarChars;
 	memcpy( dest, string, l+1 );
 
-	level.numSpawnVarChars += l + 1;
+	numSpawnVarChars += l + 1;
 
 	return dest;
 }
@@ -210,8 +197,8 @@ qboolean G_ParseSpawnVars( void ) {
 	char		keyname[MAX_TOKEN_CHARS];
 	char		com_token[MAX_TOKEN_CHARS];
 
-	level.numSpawnVars = 0;
-	level.numSpawnVarChars = 0;
+	numSpawnVars = 0;
+	numSpawnVarChars = 0;
 
 	// parse the opening brace
 	if ( !trap_GetEntityToken( com_token, sizeof( com_token ) ) ) {
@@ -241,44 +228,16 @@ qboolean G_ParseSpawnVars( void ) {
 		if ( com_token[0] == '}' ) {
 			G_Error( "G_ParseSpawnVars: closing brace without data" );
 		}
-		if ( level.numSpawnVars == MAX_SPAWN_VARS ) {
+		if ( numSpawnVars == MAX_SPAWN_VARS ) {
 			G_Error( "G_ParseSpawnVars: MAX_SPAWN_VARS" );
 		}
-		level.spawnVars[ level.numSpawnVars ][0] = G_AddSpawnVarToken( keyname );
-		level.spawnVars[ level.numSpawnVars ][1] = G_AddSpawnVarToken( com_token );
-		level.numSpawnVars++;
+		spawnVars[ numSpawnVars ][0] = G_AddSpawnVarToken( keyname );
+		spawnVars[ numSpawnVars ][1] = G_AddSpawnVarToken( com_token );
+		numSpawnVars++;
 	}
 
 	return qtrue;
 }
-
-
-
-/*QUAKED worldspawn (0 0 0) ?
-
-Every map should have exactly one worldspawn.
-"music"		music wav file
-"gravity"	800 is default gravity
-"message"	Text to print during connection process
-*/
-void SP_worldspawn( void ) {
-	char	*s;
-
-	G_SpawnString( "classname", "", &s );
-	if ( Q_stricmp( s, "worldspawn" ) ) {
-		G_Error( "SP_worldspawn: The first entity isn't 'worldspawn'" );
-	}
-
-	// PANZER TODO - remove this?
-	/*
-	g_entities[ENTITYNUM_WORLD].s.number = ENTITYNUM_WORLD;
-	g_entities[ENTITYNUM_WORLD].r.ownerNum = ENTITYNUM_NONE;
-
-	g_entities[ENTITYNUM_NONE].s.number = ENTITYNUM_NONE;
-	g_entities[ENTITYNUM_NONE].r.ownerNum = ENTITYNUM_NONE;
-	*/
-}
-
 
 /*
 ==============
@@ -293,9 +252,7 @@ void G_SpawnEntitiesFromString( void ) {
 	sv.edicts = G_Alloc (sv.max_edicts*pr_edict_size);
 	memset(sv.edicts, 0, sv.max_edicts*pr_edict_size);
 
-	// allow calls to G_Spawn*()
-	level.spawning = qtrue;
-	level.numSpawnVars = 0;
+	numSpawnVars = 0;
 
 	// the worldspawn is not an actual entity, but it still
 	// has a "spawn" function to perform any global setup
@@ -303,13 +260,10 @@ void G_SpawnEntitiesFromString( void ) {
 	if ( !G_ParseSpawnVars() ) {
 		G_Error( "SpawnEntities: no entities" );
 	}
-	SP_worldspawn();
 
 	// parse ents
 	while( G_ParseSpawnVars() ) {
 		G_SpawnGEntityFromSpawnVars();
 	}	
-
-	level.spawning = qfalse;			// any future calls to G_Spawn*() will be errors
 }
 

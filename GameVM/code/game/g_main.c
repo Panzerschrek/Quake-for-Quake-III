@@ -231,7 +231,6 @@ void G_InitGame( int levelTime, int randomSeed, int restart ) {
 	sv.time = 1.0;
 
 	// initialize all clients for this game
-	level.maxclients = g_maxclients.integer;
 	memset( g_clients, 0, MAX_CLIENTS * sizeof(g_clients[0]) );
 	level.clients = g_clients;
 

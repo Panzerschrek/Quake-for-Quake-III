@@ -73,26 +73,14 @@ struct gclient_s {
 
 typedef struct {
 	struct gclient_s	*clients;		// [maxclients]
-
-	// store latched cvars here that we want to get at often
-	int			maxclients;
-
 	int			time;					// in msec
 	int			startTime;				// level.time the map was started
-
-	// spawn variables
-	qboolean	spawning;				// the G_Spawn*() functions are valid
-	int			numSpawnVars;
-	char		*spawnVars[MAX_SPAWN_VARS][2];	// key / value pairs
-	int			numSpawnVarChars;
-	char		spawnVarChars[MAX_SPAWN_VARS_CHARS];
 } level_locals_t;
 
 
 //
 // g_spawn.c
 //
-qboolean	G_SpawnString( const char *key, const char *defaultString, char **out );
 // spawn string returns a temporary reference, you must CopyString() if you want to keep it
 void		G_SpawnEntitiesFromString( void );
 char *G_NewString( const char *string );
