@@ -34,7 +34,6 @@ typedef struct {
 	qboolean	trackChange;	    // track this variable, and announce if changed
 } cvarTable_t;
 
-gentity_t		g_entities[MAX_GENTITIES];
 gclient_t		g_clients[MAX_CLIENTS];
 
 vmCvar_t	g_maxclients;
@@ -231,27 +230,19 @@ void G_InitGame( int levelTime, int randomSeed, int restart ) {
 
 	sv.time = 1.0;
 
-	// initialize all entities for this game
-	memset( g_entities, 0, MAX_GENTITIES * sizeof(g_entities[0]) );
-	level.gentities = g_entities;
-
 	// initialize all clients for this game
 	level.maxclients = g_maxclients.integer;
 	memset( g_clients, 0, MAX_CLIENTS * sizeof(g_clients[0]) );
 	level.clients = g_clients;
 
-	// always leave room for the max number of clients,
-	// even if they aren't all used, so numbers inside that
-	// range are NEVER anything but clients
-	level.num_entities = MAX_CLIENTS;
+	// parse the key/value pairs and spawn gentities
+	G_SpawnEntitiesFromString();
+
 
 	// let the server system know where the entites are
 	trap_LocateGameData(
-		level.gentities, level.num_entities, sizeof( gentity_t ),
+		sv.edicts, sv.max_edicts, pr_edict_size,
 		&level.clients[0].ps, sizeof( level.clients[0] ) );
-
-	// parse the key/value pairs and spawn gentities
-	G_SpawnEntitiesFromString();
 
 	G_SetModelsConfig();
 
@@ -331,31 +322,6 @@ FUNCTIONS CALLED EVERY FRAME
 
 
 /*
-=============
-G_RunThink
-
-Runs thinking code for this frame if necessary
-=============
-*/
-void G_RunThink (gentity_t *ent) {
-	int	thinktime;
-
-	thinktime = ent->nextthink;
-	if (thinktime <= 0) {
-		return;
-	}
-	if (thinktime > level.time) {
-		return;
-	}
-	
-	ent->nextthink = 0;
-	if (!ent->think) {
-		G_Error ( "NULL ent->think");
-	}
-	ent->think (ent);
-}
-
-/*
 ================
 G_RunFrame
 
@@ -364,7 +330,6 @@ Advances the non-player objects in the world
 */
 void G_RunFrame( int levelTime ) {
 	int			i;
-	gentity_t	*ent;
 	edict_t		*edict;
 
 	host_frametime = ( levelTime - level.time ) / 1000.0;
@@ -380,41 +345,17 @@ void G_RunFrame( int levelTime ) {
 	//
 	// go through all allocated objects
 	//
-	ent = &g_entities[0];
-	for (i=0 ; i<level.num_entities ; i++, ent++) {
-		if ( !ent->inuse ) {
+	for (i=0 ; i< sv.num_edicts; i++) {
+		edict = EDICT_NUM(i);
+		if ( edict->free ) {
 			continue;
 		}
-
-		// temporary entities don't think
-		if ( ent->freeAfterEvent ) {
-			continue;
-		}
-
-		G_RunThink( ent );
-
-		edict = EDICT_NUM(ent->q1_edict_number);
 
 		// Update position.
-		VectorCopy(edict->v.origin, ent->s.origin);
-		VectorCopy(edict->v.angles, ent->s.angles);
-		ent->s.frame = edict->v.frame;
+		// TODO - do this only if needed.
+		VectorCopy(edict->v.origin, edict->s.origin);
+		VectorCopy(edict->v.angles, edict->s.angles);
+		edict->s.frame = edict->v.frame;
 
-		// Update models every frame.
-		// TODO - maybe do this only after spawn?
-		if(edict->v.model != 0)
-		{
-			char* model= pr_strings + edict->v.model;
-			if(model[0] == '*')
-			{
-				trap_SetBrushModel(ent, model);
-				// PANZER HACK! This is wrong.
-				// Probably we should instead call "trap_SetBrushModel" in "PR_setmodel" call and update mins/max in this function!
-				VectorCopy(ent->r.mins, edict->v.mins);
-				VectorCopy(ent->r.maxs, edict->v.maxs);
-			}
-			else
-				ent->s.modelindex = edict->v.modelindex;
-		}
 	}
 }

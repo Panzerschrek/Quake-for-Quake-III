@@ -88,7 +88,7 @@ edict_t *ED_Alloc (void)
 	int			i;
 	edict_t		*e;
 
-	for ( i=svs.maxclients+1 ; i<sv.num_edicts ; i++)
+	for ( i=0 ; i<sv.num_edicts ; i++)
 	{
 		e = EDICT_NUM(i);
 		// the first couple seconds of server time can involve a lot of
@@ -106,6 +106,8 @@ edict_t *ED_Alloc (void)
 	sv.num_edicts++;
 	e = EDICT_NUM(i);
 	ED_ClearEdict (e);
+	e->s.number = i;
+	e->r.ownerNum = ENTITYNUM_NONE;
 
 	return e;
 }

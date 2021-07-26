@@ -94,6 +94,7 @@ void CG_AddEntities()
 	refEntity_t		out_ent;
 
 	// Directly take entities from snapshot and add them to scene.
+
 	for ( num = 0 ; num < cg.snap.numEntities ; num++ ) {
 		in_ent = &cg.snap.entities[num];
 

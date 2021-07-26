@@ -87,20 +87,15 @@ level.spawnVars[], then call the class specific spawn function
 */
 void G_SpawnGEntityFromSpawnVars( void ) {
 	int			i;
-	gentity_t	*ent;
 	qboolean	anglehack;
 	char		keyname[256];
 	char		value[256];
 	int			n;
 	ddef_t		*key;
-	dfunction_t	*func;
 	edict_t		*edict;
-
-	// get the next free entity
-	ent = G_Spawn();
+	dfunction_t	*func;
 
 	edict = ED_Alloc ();
-	ent->q1_edict_number = NUM_FOR_EDICT(edict);
 
 	for ( i = 0 ; i < level.numSpawnVars ; i++ ) {
 		strcpy(keyname, level.spawnVars[i][0]);
@@ -155,7 +150,6 @@ void G_SpawnGEntityFromSpawnVars( void ) {
 		G_Printf ("No classname for:\n");
 		ED_Print (edict);
 		ED_Free(edict);
-		G_FreeEntity(ent);
 		return;
 	}
 
@@ -165,7 +159,6 @@ void G_SpawnGEntityFromSpawnVars( void ) {
 		G_Printf ("No spawn function for:\n");
 		ED_Print (edict);
 		ED_Free (edict);
-		G_FreeEntity(ent);
 		return;
 	}
 
@@ -173,11 +166,11 @@ void G_SpawnGEntityFromSpawnVars( void ) {
 	PR_ExecuteProgram (func - pr_functions);
 
 	// move editor origin to pos
-	VectorCopy( edict->v.origin, ent->s.pos.trBase );
-	VectorCopy( edict->v.origin, ent->r.currentOrigin );
-	VectorCopy( edict->v.origin, ent->s.origin );
+	VectorCopy( edict->v.origin, edict->s.pos.trBase );
+	VectorCopy( edict->v.origin, edict->r.currentOrigin );
+	VectorCopy( edict->v.origin, edict->s.origin );
 
-	trap_LinkEntity (ent);
+	trap_LinkEntity (edict);
 }
 
 
@@ -276,11 +269,14 @@ void SP_worldspawn( void ) {
 		G_Error( "SP_worldspawn: The first entity isn't 'worldspawn'" );
 	}
 
+	// PANZER TODO - remove this?
+	/*
 	g_entities[ENTITYNUM_WORLD].s.number = ENTITYNUM_WORLD;
 	g_entities[ENTITYNUM_WORLD].r.ownerNum = ENTITYNUM_NONE;
 
 	g_entities[ENTITYNUM_NONE].s.number = ENTITYNUM_NONE;
 	g_entities[ENTITYNUM_NONE].r.ownerNum = ENTITYNUM_NONE;
+	*/
 }
 
 
@@ -292,20 +288,10 @@ Parses textual entity definitions out of an entstring and spawns gentities.
 ==============
 */
 void G_SpawnEntitiesFromString( void ) {
-
-	edict_t	*edict;
-
 	sv.max_edicts = MAX_EDICTS;
 
 	sv.edicts = G_Alloc (sv.max_edicts*pr_edict_size);
-
-	edict = EDICT_NUM(0);
-	memset (&edict->v, 0, progs->entityfields * 4);
-	edict->free = qfalse;
-	//edict->v.model = ED_NewString (sv.worldmodel->name) - pr_strings;
-	edict->v.modelindex = 1;		// world model
-	edict->v.solid = SOLID_BSP;
-	edict->v.movetype = MOVETYPE_PUSH;
+	memset(sv.edicts, 0, sv.max_edicts*pr_edict_size);
 
 	// allow calls to G_Spawn*()
 	level.spawning = qtrue;

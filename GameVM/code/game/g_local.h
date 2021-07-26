@@ -23,7 +23,6 @@ Foundation, Inc., 51 Franklin St, Fifth Floor, Boston, MA  02110-1301  USA
 // g_local.h -- local definitions for game module
 
 #include "quakedef.h"
-#include "g_public.h"
 #include "bg_public.h"
 
 //==================================================================
@@ -31,30 +30,10 @@ Foundation, Inc., 51 Franklin St, Fifth Floor, Boston, MA  02110-1301  USA
 // the "gameversion" client command will print this plus compile date
 #define	GAMEVERSION	BASEGAME
 
-//============================================================================
-
-typedef struct gentity_s gentity_t;
 typedef struct gclient_s gclient_t;
 
-struct gentity_s {
-	entityState_t	s;				// communicated by server to clients
-	entityShared_t	r;				// shared by both the server system and game
-
-	// DO NOT MODIFY ANYTHING ABOVE THIS, THE SERVER
-	// EXPECTS THE FIELDS IN THAT ORDER!
-	//================================
-	qboolean	inuse;
-
-	int			freetime;			// level.time when the object was freed
-
-	qboolean	freeAfterEvent;
-	qboolean	unlinkAfterEvent;
-
-	int			nextthink;
-	void		(*think)(gentity_t *self);
-
-	int q1_edict_number;
-};
+// Use slightly modified Quake "edict_t" as Quake III entity.
+typedef edict_t gentity_t;
 
 typedef enum {
 	CON_DISCONNECTED,
@@ -68,7 +47,6 @@ typedef struct {
 	clientConnected_t	connected;
 	usercmd_t	cmd;				// we would lose angles if not persistant
 } clientPersistant_t;
-
 
 // this structure is cleared on each ClientSpawn(),
 // except for 'client->pers' and 'client->sess'
@@ -96,9 +74,6 @@ struct gclient_s {
 typedef struct {
 	struct gclient_s	*clients;		// [maxclients]
 
-	struct gentity_s	*gentities;
-	int			num_entities;		// MAX_CLIENTS <= num_entities <= ENTITYNUM_MAX_NORMAL
-
 	// store latched cvars here that we want to get at often
 	int			maxclients;
 
@@ -123,22 +98,12 @@ void		G_SpawnEntitiesFromString( void );
 char *G_NewString( const char *string );
 
 //
-// g_utils.c
-//
-gentity_t *G_Find (gentity_t *from, int fieldofs, const char *match);
-
-void	G_InitGentity( gentity_t *e );
-gentity_t	*G_Spawn (void);
-void	G_FreeEntity( gentity_t *e );
-
-void G_SetOrigin( gentity_t *ent, vec3_t origin );
-
-//
 // g_client.c
 //
 void SetClientViewAngle( gclient_t *client, vec3_t angle );
 void ClientRespawn(gclient_t *ent);
 void ClientSpawn( gclient_t *ent );
+void ClientEndFrame( gclient_t *client );
 
 //
 // g_svcmds.c
@@ -149,7 +114,6 @@ qboolean	ConsoleCommand( void );
 //
 // g_main.c
 //
-void G_RunThink (gentity_t *ent);
 void QDECL G_LogPrintf( const char *fmt, ... ) __attribute__ ((format (printf, 1, 2)));
 void SendScoreboardMessageToAllClients( void );
 void QDECL G_Printf( const char *fmt, ... ) __attribute__ ((format (printf, 1, 2)));
@@ -178,7 +142,6 @@ void G_InitMemory( void );
 void Svcmd_GameMem_f( void );
 
 extern	level_locals_t	level;
-extern	gentity_t		g_entities[MAX_GENTITIES];
 
 #define	FOFS(x) ((size_t)&(((gentity_t *)0)->x))
 

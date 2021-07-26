@@ -253,7 +253,14 @@ void PF_setmodel (void)
 	}
 
 	e->v.model = m - pr_strings;
-	e->v.modelindex = i;
+	e->s.modelindex = e->v.modelindex = i;
+
+	if(m[0] == '*')
+	{
+		trap_SetBrushModel(e, m);
+		VectorCopy(e->r.mins, e->v.mins);
+		VectorCopy(e->r.maxs, e->v.maxs);
+	}
 }
 
 /*
