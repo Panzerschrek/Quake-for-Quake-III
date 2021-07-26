@@ -27,44 +27,6 @@ Foundation, Inc., 51 Franklin St, Fifth Floor, Boston, MA  02110-1301  USA
 static vec3_t	playerMins = {-15, -15, -24};
 static vec3_t	playerMaxs = {15, 15, 32};
 
-/*QUAKED info_player_deathmatch (1 0 1) (-16 -16 -24) (16 16 32) initial
-potential spawning position for deathmatch games.
-The first time a player enters the game, they will be at an 'initial' spot.
-Targets will be fired when someone spawns in on them.
-"nobots" will prevent bots from using this spot.
-"nohumans" will prevent non-bots from using this spot.
-*/
-void SP_info_player_deathmatch( gentity_t *ent ) {
-}
-
-/*QUAKED info_player_start (1 0 0) (-16 -16 -24) (16 16 32)
-equivalent to info_player_deathmatch
-*/
-void SP_info_player_start(gentity_t *ent) {
-	ent->classname = "info_player_deathmatch";
-	SP_info_player_deathmatch( ent );
-}
-
-/*
-===========
-SelectFirstSpawnPoint
-
-Chooses a player start, deathmatch start, etc
-============
-*/
-gentity_t *SelectFirstSpawnPoint ( vec3_t origin, vec3_t angles ) {
-	gentity_t	*spot;
-
-	if((spot = G_Find (spot, FOFS(classname), "info_player_deathmatch")) != NULL)
-	{
-		VectorCopy (spot->s.origin, origin);
-		VectorCopy (spot->s.angles, angles);
-		return spot;
-	}
-	
-	return NULL;
-}
-
 
 /*
 ==================
@@ -150,7 +112,6 @@ void ClientSpawn(gclient_t* client) {
 	int		i;
 	clientPersistant_t	saved;
 	int		persistant[MAX_PERSISTANT];
-	gentity_t	*spawnPoint;
 	int		savedPing;
 	int		eventSequence;
 	char	userinfo[MAX_INFO_STRING];
@@ -158,11 +119,6 @@ void ClientSpawn(gclient_t* client) {
 	index = client - level.clients;
 
 	VectorClear(spawn_origin);
-
-	// find a spawn point
-	// do it before setting health back up, so farthest
-	// ranging doesn't count this client
-	spawnPoint = SelectFirstSpawnPoint (spawn_origin, spawn_angles);
 
 	// clear everything but the persistant data
 

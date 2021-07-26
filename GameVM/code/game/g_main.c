@@ -240,19 +240,10 @@ void G_InitGame( int levelTime, int randomSeed, int restart ) {
 	memset( g_clients, 0, MAX_CLIENTS * sizeof(g_clients[0]) );
 	level.clients = g_clients;
 
-	// set client fields on player ents
-	for ( i=0 ; i<level.maxclients ; i++ ) {
-		g_entities[i].client = level.clients + i;
-	}
-
 	// always leave room for the max number of clients,
 	// even if they aren't all used, so numbers inside that
 	// range are NEVER anything but clients
 	level.num_entities = MAX_CLIENTS;
-
-	for ( i=0 ; i<MAX_CLIENTS ; i++ ) {
-		g_entities[i].classname = "clientslot";
-	}
 
 	// let the server system know where the entites are
 	trap_LocateGameData(
@@ -393,28 +384,6 @@ void G_RunFrame( int levelTime ) {
 	for (i=0 ; i<level.num_entities ; i++, ent++) {
 		if ( !ent->inuse ) {
 			continue;
-		}
-
-		// clear events that are too old
-		if ( level.time - ent->eventTime > EVENT_VALID_MSEC ) {
-			if ( ent->s.event ) {
-				ent->s.event = 0;	// &= EV_EVENT_BITS;
-				if ( ent->client ) {
-					ent->client->ps.externalEvent = 0;
-					// predicted events should never be set to zero
-					//ent->client->ps.events[0] = 0;
-					//ent->client->ps.events[1] = 0;
-				}
-			}
-			if ( ent->freeAfterEvent ) {
-				// tempEntities or dropped items completely go away after their event
-				G_FreeEntity( ent );
-				continue;
-			} else if ( ent->unlinkAfterEvent ) {
-				// items that will respawn will hide themselves after their pickup event
-				ent->unlinkAfterEvent = qfalse;
-				trap_UnlinkEntity( ent );
-			}
 		}
 
 		// temporary entities don't think

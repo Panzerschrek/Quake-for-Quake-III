@@ -28,18 +28,7 @@ ClientCommand
 =================
 */
 void ClientCommand( int clientNum ) {
-	gentity_t *ent;
 	char	cmd[MAX_TOKEN_CHARS];
-
-	ent = g_entities + clientNum;
-	if (!ent->client || ent->client->pers.connected != CON_CONNECTED) {
-		if (ent->client) {
-			// Handle early team command sent by UI when starting a local
-			// team play game.
-			trap_Argv( 0, cmd, sizeof( cmd ) );
-		}
-		return;		// not fully in game yet
-	}
 
 	trap_Argv( 0, cmd, sizeof( cmd ) );
 

@@ -42,92 +42,6 @@ qboolean	G_SpawnString( const char *key, const char *defaultString, char **out )
 	return qfalse;
 }
 
-qboolean	G_SpawnInt( const char *key, const char *defaultString, int *out ) {
-	char		*s;
-	qboolean	present;
-
-	present = G_SpawnString( key, defaultString, &s );
-	*out = atoi( s );
-	return present;
-}
-
-//
-// fields are needed for spawning from the entity string
-//
-typedef enum {
-	F_INT,
-	F_FLOAT,
-	F_STRING,
-	F_VECTOR,
-	F_ANGLEHACK
-} fieldtype_t;
-
-typedef struct
-{
-	char	*name;
-	size_t	ofs;
-	fieldtype_t	type;
-} field_t;
-
-field_t fields[] = {
-	{"classname", FOFS(classname), F_STRING},
-	{"origin", FOFS(s.origin), F_VECTOR},
-	{"model", FOFS(model), F_STRING},
-	{"model2", FOFS(model2), F_STRING},
-	{"spawnflags", FOFS(spawnflags), F_INT},
-	{"angles", FOFS(s.angles), F_VECTOR},
-	{"angle", FOFS(s.angles), F_ANGLEHACK},
-
-	{NULL}
-};
-
-
-typedef struct {
-	char	*name;
-	void	(*spawn)(gentity_t *ent);
-} spawn_t;
-
-void SP_info_player_start (gentity_t *ent);
-void SP_info_player_deathmatch (gentity_t *ent);
-
-
-spawn_t	spawns[] = {
-	// info entities don't do anything at all, but provide positional
-	// information for things controlled by other processes
-	{"info_player_start", SP_info_player_start},
-	{"info_player_deathmatch", SP_info_player_deathmatch},
-
-	{NULL, 0}
-};
-
-/*
-===============
-G_CallSpawn
-
-Finds the spawn function for the entity and calls it,
-returning qfalse if not found
-===============
-*/
-qboolean G_CallSpawn( gentity_t *ent ) {
-	spawn_t	*s;
-
-	if ( !ent->classname ) {
-		G_Printf ("G_CallSpawn: NULL classname\n");
-		return qfalse;
-	}
-
-	// check normal spawn functions
-	for ( s=spawns ; s->name ; s++ ) {
-		if ( !strcmp(s->name, ent->classname) ) {
-			// found it
-			s->spawn(ent);
-			return qtrue;
-		}
-	}
-	G_Printf ("%s doesn't have a spawn function\n", ent->classname);
-	return qfalse;
-}
-
 /*
 =============
 G_NewString
@@ -161,54 +75,6 @@ char *G_NewString( const char *string ) {
 	}
 	
 	return newb;
-}
-
-
-/*
-===============
-G_ParseField
-
-Takes a key/value pair and sets the binary values
-in a gentity
-===============
-*/
-void G_ParseField( const char *key, const char *value, gentity_t *ent ) {
-	field_t	*f;
-	byte	*b;
-	float	v;
-	vec3_t	vec;
-
-	for ( f=fields ; f->name ; f++ ) {
-		if ( !Q_stricmp(f->name, key) ) {
-			// found it
-			b = (byte *)ent;
-
-			switch( f->type ) {
-			case F_STRING:
-				*(char **)(b+f->ofs) = G_NewString (value);
-				break;
-			case F_VECTOR:
-				sscanf (value, "%f %f %f", &vec[0], &vec[1], &vec[2]);
-				((float *)(b+f->ofs))[0] = vec[0];
-				((float *)(b+f->ofs))[1] = vec[1];
-				((float *)(b+f->ofs))[2] = vec[2];
-				break;
-			case F_INT:
-				*(int *)(b+f->ofs) = atoi(value);
-				break;
-			case F_FLOAT:
-				*(float *)(b+f->ofs) = atof(value);
-				break;
-			case F_ANGLEHACK:
-				v = atof(value);
-				((float *)(b+f->ofs))[0] = 0;
-				((float *)(b+f->ofs))[1] = v;
-				((float *)(b+f->ofs))[2] = 0;
-				break;
-			}
-			return;
-		}
-	}
 }
 
 /*
@@ -412,11 +278,9 @@ void SP_worldspawn( void ) {
 
 	g_entities[ENTITYNUM_WORLD].s.number = ENTITYNUM_WORLD;
 	g_entities[ENTITYNUM_WORLD].r.ownerNum = ENTITYNUM_NONE;
-	g_entities[ENTITYNUM_WORLD].classname = "worldspawn";
 
 	g_entities[ENTITYNUM_NONE].s.number = ENTITYNUM_NONE;
 	g_entities[ENTITYNUM_NONE].r.ownerNum = ENTITYNUM_NONE;
-	g_entities[ENTITYNUM_NONE].classname = "nothing";
 }
 
 

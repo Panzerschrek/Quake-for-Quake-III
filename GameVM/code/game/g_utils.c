@@ -61,7 +61,6 @@ gentity_t *G_Find (gentity_t *from, int fieldofs, const char *match)
 
 void G_InitGentity( gentity_t *e ) {
 	e->inuse = qtrue;
-	e->classname = "noclass";
 	e->s.number = e - g_entities;
 	e->r.ownerNum = ENTITYNUM_NONE;
 }
@@ -110,9 +109,6 @@ gentity_t *G_Spawn( void ) {
 		}
 	}
 	if ( level.num_entities == ENTITYNUM_MAX_NORMAL ) {
-		for (i = 0; i < MAX_GENTITIES; i++) {
-			G_Printf("%4i: %s\n", i, g_entities[i].classname);
-		}
 		G_Error( "G_Spawn: no free entities" );
 	}
 
@@ -138,39 +134,10 @@ void G_FreeEntity( gentity_t *ed ) {
 	trap_UnlinkEntity (ed);		// unlink from world
 
 	memset (ed, 0, sizeof(*ed));
-	ed->classname = "freed";
 	ed->freetime = level.time;
 	ed->inuse = qfalse;
 }
 
-/*
-=================
-G_TempEntity
-
-Spawns an event entity that will be auto-removed
-The origin will be snapped to save net bandwidth, so care
-must be taken if the origin is right on a surface (snap towards start vector first)
-=================
-*/
-gentity_t *G_TempEntity( vec3_t origin, int event ) {
-	gentity_t		*e;
-	vec3_t		snapped;
-
-	e = G_Spawn();
-
-	e->classname = "tempEntity";
-	e->eventTime = level.time;
-	e->freeAfterEvent = qtrue;
-
-	VectorCopy( origin, snapped );
-	SnapVector( snapped );		// save network bandwidth
-	G_SetOrigin( e, snapped );
-
-	// find cluster for PVS
-	trap_LinkEntity( e );
-
-	return e;
-}
 
 //==============================================================================
 

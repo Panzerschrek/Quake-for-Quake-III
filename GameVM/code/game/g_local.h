@@ -43,21 +43,10 @@ struct gentity_s {
 	// DO NOT MODIFY ANYTHING ABOVE THIS, THE SERVER
 	// EXPECTS THE FIELDS IN THAT ORDER!
 	//================================
-
-	struct gclient_s	*client;			// NULL if not a client
-
 	qboolean	inuse;
 
-	char		*classname;			// set in QuakeEd
-	int			spawnflags;			// set in QuakeEd
-
-	int			flags;				// FL_* variables
-
-	char		*model;
-	char		*model2;
 	int			freetime;			// level.time when the object was freed
-	
-	int			eventTime;			// events will be cleared EVENT_VALID_MSEC after set
+
 	qboolean	freeAfterEvent;
 	qboolean	unlinkAfterEvent;
 
@@ -122,9 +111,6 @@ typedef struct {
 	char		*spawnVars[MAX_SPAWN_VARS][2];	// key / value pairs
 	int			numSpawnVarChars;
 	char		spawnVarChars[MAX_SPAWN_VARS_CHARS];
-
-	char		*changemap;
-
 } level_locals_t;
 
 
@@ -133,7 +119,6 @@ typedef struct {
 //
 qboolean	G_SpawnString( const char *key, const char *defaultString, char **out );
 // spawn string returns a temporary reference, you must CopyString() if you want to keep it
-qboolean	G_SpawnInt( const char *key, const char *defaultString, int *out );
 void		G_SpawnEntitiesFromString( void );
 char *G_NewString( const char *string );
 
@@ -144,7 +129,6 @@ gentity_t *G_Find (gentity_t *from, int fieldofs, const char *match);
 
 void	G_InitGentity( gentity_t *e );
 gentity_t	*G_Spawn (void);
-gentity_t *G_TempEntity( vec3_t origin, int event );
 void	G_FreeEntity( gentity_t *e );
 
 void G_SetOrigin( gentity_t *ent, vec3_t origin );
