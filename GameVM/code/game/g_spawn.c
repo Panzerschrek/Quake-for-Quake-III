@@ -137,6 +137,23 @@ void G_SpawnGEntityFromSpawnVars( void ) {
 		return;
 	}
 
+	// remove things from different skill levels or deathmatch
+	if (deathmatch.value)
+	{
+		if (((int)edict->v.spawnflags & SPAWNFLAG_NOT_DEATHMATCH))
+		{
+			ED_Free (edict);
+			return;
+		}
+	}
+	else if ((current_skill == 0 && ((int)edict->v.spawnflags & SPAWNFLAG_NOT_EASY))
+			|| (current_skill == 1 && ((int)edict->v.spawnflags & SPAWNFLAG_NOT_MEDIUM))
+			|| (current_skill >= 2 && ((int)edict->v.spawnflags & SPAWNFLAG_NOT_HARD)) )
+	{
+		ED_Free (edict);
+		return;
+	}
+
 	func = ED_FindFunction ( pr_strings + edict->v.classname );
 	if (!func)
 	{
