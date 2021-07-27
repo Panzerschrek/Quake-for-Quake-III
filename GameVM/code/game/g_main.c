@@ -211,6 +211,11 @@ void G_SetModelsConfig()
 
 void SV_SpawnServer()
 {
+	edict_t		*ent;
+	char		mapname[MAX_OSPATH];
+
+	trap_Cvar_VariableStringBuffer("mapname", mapname, sizeof(mapname));
+
 	//
 	// make cvars consistant
 	//
@@ -242,6 +247,15 @@ void SV_SpawnServer()
 	sv.state = ss_loading;
 
 	sv.time = 1.0;
+
+	//
+	// load the rest of the entities
+	//
+	ent = EDICT_NUM(0);
+	memset (&ent->v, 0, progs->entityfields * 4);
+	ent->v.model = ED_NewString (mapname) - pr_strings;
+	ent->v.solid = SOLID_BSP;
+	ent->v.movetype = MOVETYPE_PUSH;
 
 	if (coop.value)
 		pr_global_struct->coop = coop.value;
