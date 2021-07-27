@@ -42,6 +42,13 @@ vmCvar_t	g_debugAlloc;
 vmCvar_t	pmove_fixed;
 vmCvar_t	pmove_msec;
 
+vmCvar_t	teamplay;
+vmCvar_t	skill;
+vmCvar_t	deathmatch;
+vmCvar_t	coop;
+vmCvar_t	fraglimit;
+vmCvar_t	timelimit;
+
 static cvarTable_t		gameCvarTable[] = {
 	// noset vars
 	{ NULL, "gamename", GAMEVERSION , CVAR_SERVERINFO | CVAR_ROM, 0, qfalse  },
@@ -55,6 +62,14 @@ static cvarTable_t		gameCvarTable[] = {
 
 	{ &pmove_fixed, "pmove_fixed", "0", CVAR_SYSTEMINFO, 0 },
 	{ &pmove_msec, "pmove_msec", "8", CVAR_SYSTEMINFO, 0 },
+
+	// TODO - set proper flags.
+	{ &teamplay, "teamplay", "0", CVAR_SERVERINFO | CVAR_LATCH | CVAR_ARCHIVE, 0 },
+	{ &skill, "skill", "1", CVAR_SERVERINFO | CVAR_ARCHIVE, 0 },
+	{ &deathmatch, "deathmatch", "0", CVAR_SERVERINFO | CVAR_LATCH | CVAR_ARCHIVE, 0 },
+	{ &coop, "coop", "0", CVAR_SERVERINFO | CVAR_LATCH | CVAR_ARCHIVE, 0 },
+	{ &fraglimit, "fraglimit", "0", CVAR_SERVERINFO  | CVAR_ARCHIVE, 0 },
+	{ &timelimit, "timelimit", "0", CVAR_SERVERINFO  | CVAR_ARCHIVE, 0 },
 };
 
 static int gameCvarTableSize = ARRAY_LEN( gameCvarTable );
@@ -196,6 +211,24 @@ void G_SetModelsConfig()
 
 void SV_SpawnServer()
 {
+	//
+	// make cvars consistant
+	//
+	if (coop.value)
+		trap_Cvar_Set ("deathmatch", "0");
+	current_skill = (int)(skill.value + 0.5);
+	if (current_skill < 0)
+		current_skill = 0;
+	if (current_skill > 3)
+		current_skill = 3;
+
+	{
+		char skill_value_str[2];
+		skill_value_str[0] = '0' + current_skill;
+		skill_value_str[1]= 0;
+		trap_Cvar_Set ("skill", skill_value_str);
+	}
+
 	memset (&sv, 0, sizeof(sv));
 
 	// load progs to get entity field count

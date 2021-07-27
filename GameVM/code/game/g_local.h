@@ -140,6 +140,13 @@ extern	vmCvar_t	g_debugAlloc;
 extern	vmCvar_t	pmove_fixed;
 extern	vmCvar_t	pmove_msec;
 
+extern	vmCvar_t	teamplay;
+extern	vmCvar_t	skill;
+extern	vmCvar_t	deathmatch;
+extern	vmCvar_t	coop;
+extern	vmCvar_t	fraglimit;
+extern	vmCvar_t	timelimit;
+
 void	trap_Print( const char *text );
 void	trap_Error( const char *text ) __attribute__((noreturn));
 int		trap_Milliseconds( void );
