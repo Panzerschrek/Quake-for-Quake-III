@@ -256,21 +256,13 @@ qboolean G_ParseSpawnVars( void ) {
 /*
 ==============
 G_SpawnEntitiesFromString
-
-Parses textual entity definitions out of an entstring and spawns gentities.
 ==============
 */
 void G_SpawnEntitiesFromString( void ) {
 	numSpawnVars = 0;
 
-	// the worldspawn is not an actual entity, but it still
-	// has a "spawn" function to perform any global setup
-	// needed by a level (setting configstrings or cvars, etc)
-	if ( !G_ParseSpawnVars() ) {
-		G_Error( "SpawnEntities: no entities" );
-	}
-
 	// parse and spawn edicts.
+	// Edict #0 is always worldspawm. So, parse it as normal edict (populating variables, like worldtype, mapname, etc.).
 	while( G_ParseSpawnVars() ) {
 		G_SpawnGEntityFromSpawnVars();
 	}
