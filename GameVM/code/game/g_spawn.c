@@ -67,9 +67,6 @@ char *G_NewString( const char *string ) {
 /*
 ===================
 G_SpawnGEntityFromSpawnVars
-
-Spawn an entity and fill in all of the level fields from
-level.spawnVars[], then call the class specific spawn function
 ===================
 */
 void G_SpawnGEntityFromSpawnVars( void ) {
@@ -247,11 +244,6 @@ Parses textual entity definitions out of an entstring and spawns gentities.
 ==============
 */
 void G_SpawnEntitiesFromString( void ) {
-	sv.max_edicts = MAX_EDICTS;
-
-	sv.edicts = G_Alloc (sv.max_edicts*pr_edict_size);
-	memset(sv.edicts, 0, sv.max_edicts*pr_edict_size);
-
 	numSpawnVars = 0;
 
 	// the worldspawn is not an actual entity, but it still
@@ -261,9 +253,8 @@ void G_SpawnEntitiesFromString( void ) {
 		G_Error( "SpawnEntities: no entities" );
 	}
 
-	// parse ents
+	// parse and spawn edicts.
 	while( G_ParseSpawnVars() ) {
 		G_SpawnGEntityFromSpawnVars();
-	}	
+	}
 }
-

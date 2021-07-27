@@ -194,6 +194,44 @@ void G_SetModelsConfig()
 	}
 }
 
+void SV_SpawnServer()
+{
+	memset (&sv, 0, sizeof(sv));
+
+	// load progs to get entity field count
+	PR_LoadProgs ();
+
+	// allocate server memory
+	sv.max_edicts = MAX_EDICTS;
+
+	sv.edicts = G_Alloc (sv.max_edicts*pr_edict_size);
+
+	sv.state = ss_loading;
+
+	sv.time = 1.0;
+
+	if (coop.value)
+		pr_global_struct->coop = coop.value;
+	else
+		pr_global_struct->deathmatch = deathmatch.value;
+
+	// PANZER TODO - set mapname
+
+	G_SpawnEntitiesFromString();
+	pr_global_struct->world = 1;
+
+	sv.active = qtrue;
+
+	// all setup is completed, any further precache statements are errors
+	sv.state = ss_active;
+
+	// PANZER TODO - fix it
+	// run two frames to allow everything to settle
+	host_frametime = 0.1;
+	//SV_Physics ();
+	//SV_Physics ();
+}
+
 /*
 ============
 G_InitGame
@@ -214,29 +252,17 @@ void G_InitGame( int levelTime, int randomSeed, int restart ) {
 	G_InitMemory();
 
 	PR_Init();
-	PR_LoadProgs();
-
-	// TODO - move to another place.
-	{
-		pr_global_struct->world = 1;
-		pr_global_struct->coop = 0;
-		pr_global_struct->deathmatch = 0;
-	}
 
 	// set some level globals
 	memset( &level, 0, sizeof( level ) );
 	level.time = levelTime;
 	level.startTime = levelTime;
 
-	sv.time = 1.0;
+	SV_SpawnServer();
 
 	// initialize all clients for this game
 	memset( g_clients, 0, MAX_CLIENTS * sizeof(g_clients[0]) );
 	level.clients = g_clients;
-
-	// parse the key/value pairs and spawn gentities
-	G_SpawnEntitiesFromString();
-
 
 	// let the server system know where the entites are
 	trap_LocateGameData(
@@ -341,20 +367,16 @@ void G_RunFrame( int levelTime ) {
 	// Run Quake1 physics (for all entities)
 	SV_Physics();
 
-	//
-	// go through all allocated objects
-	//
+	// Update client data struct for every edict.
 	for (i=0 ; i< sv.num_edicts; i++) {
 		edict = EDICT_NUM(i);
 		if ( edict->free ) {
 			continue;
 		}
 
-		// Update position.
-		// TODO - do this only if needed.
 		VectorCopy(edict->v.origin, edict->s.origin);
 		VectorCopy(edict->v.angles, edict->s.angles);
+		edict->s.modelindex= edict->v.modelindex;
 		edict->s.frame = edict->v.frame;
-
 	}
 }

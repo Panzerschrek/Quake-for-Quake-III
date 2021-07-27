@@ -246,20 +246,20 @@ void PF_setmodel (void)
 		if (!strcmp(*check, m))
 			break;
 
-	if(qfalse) // PANZER - disabled for brush models. TODO - fix this.
-	{
-		if (!*check)
-			PR_RunError ("no precache: %s\n", m);
-	}
-
 	e->v.model = m - pr_strings;
-	e->s.modelindex = e->v.modelindex = i;
 
 	if(m[0] == '*')
 	{
 		trap_SetBrushModel(e, m);
 		VectorCopy(e->r.mins, e->v.mins);
 		VectorCopy(e->r.maxs, e->v.maxs);
+		e->v.modelindex= e->s.modelindex;
+	}
+	else
+	{
+		if (!*check)
+			PR_RunError ("no precache: %s\n", m);
+		e->v.modelindex = i;
 	}
 }
 
