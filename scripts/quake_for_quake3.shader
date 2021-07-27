@@ -1,3 +1,14 @@
+textures/CLIP
+{
+	qer_trans 0.40
+	surfaceparm nolightmap
+	surfaceparm nomarks
+	surfaceparm nodraw
+	surfaceparm nonsolid
+	surfaceparm playerclip
+	surfaceparm noimpact
+}
+
 "textures/*LAVA1"
 {
 	q3map_globaltexture
