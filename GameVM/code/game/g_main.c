@@ -236,6 +236,7 @@ void SV_SpawnServer()
 {
 	edict_t		*ent;
 	char		mapname[MAX_OSPATH];
+	int			i;
 
 	trap_Cvar_VariableStringBuffer("mapname", mapname, sizeof(mapname));
 
@@ -268,6 +269,14 @@ void SV_SpawnServer()
 	sv.edicts = G_Alloc (sv.max_edicts*pr_edict_size);
 
 	sv.state = ss_loading;
+
+	// leave slots at start for clients only
+	sv.num_edicts = svs.maxclients+1;
+	for (i=0 ; i<svs.maxclients ; i++)
+	{
+		ent = EDICT_NUM(i+1);
+		svs.clients[i].edict = ent;
+	}
 
 	sv.time = 1.0;
 
@@ -330,6 +339,9 @@ void G_InitGame( int levelTime, int randomSeed, int restart ) {
 	// initialize all clients for this game
 	memset( g_clients, 0, MAX_CLIENTS * sizeof(g_clients[0]) );
 	level.clients = g_clients;
+
+	svs.maxclientslimit = svs.maxclients = 8;
+	svs.clients = G_Alloc (svs.maxclientslimit*sizeof(client_t));
 
 	G_RegisterCvars();
 

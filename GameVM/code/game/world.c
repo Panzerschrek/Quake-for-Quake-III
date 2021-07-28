@@ -94,6 +94,7 @@ SV_PointContents
 */
 int SV_PointContents (vec3_t p)
 {
+	// TODO - probably we should translate Q3 contents into Q1 contents here.
 	return trap_PointContents(p, 0);
 }
 
@@ -136,12 +137,10 @@ trace_t SV_ClipMoveToEntity (edict_t *ent /*clipping entity*/, vec3_t start, vec
 	trace.allsolid = qtrue;
 	VectorCopy (end, trace.endpos);
 
-
 	VectorSubtract (start, offset, start_l);
 	VectorSubtract (end, offset, end_l);
 
 	// PANZER TODO - check contents mask
-	// PANZER TODO - use clipping entity
 	trap_Trace(&trace, start, mins, maxs, end, NUM_FOR_EDICT(ent), CONTENTS_SOLID);
 
 // fix trace up by the offset

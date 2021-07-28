@@ -1157,14 +1157,11 @@ void SV_Physics (void)
 			SV_LinkEdict (ent, qtrue);	// force retouch even for stationary
 		}
 
-#if 0 // PANZER TODO - add players physics
 		if (i > 0 && i <= svs.maxclients)
 		{
 			SV_Physics_Client (ent, i);
 		}
-		else
-#endif
-			 if (ent->v.movetype == MOVETYPE_PUSH)
+		else if (ent->v.movetype == MOVETYPE_PUSH)
 			SV_Physics_Pusher (ent);
 		else if (ent->v.movetype == MOVETYPE_NONE)
 			SV_Physics_None (ent);
