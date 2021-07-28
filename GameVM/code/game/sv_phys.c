@@ -79,7 +79,6 @@ void SV_CheckAllEnts (void)
 	}
 }
 
-#if 0 // PANZER TODO - fix it
 /*
 ================
 SV_CheckVelocity
@@ -110,7 +109,6 @@ void SV_CheckVelocity (edict_t *ent)
 			ent->v.velocity[i] = -sv_maxvelocity.value;
 	}
 }
-#endif
 
 /*
 =============
@@ -211,8 +209,6 @@ int ClipVelocity (vec3_t in, vec3_t normal, vec3_t out, float overbounce)
 	return blocked;
 }
 
-
-#if 0 // PANZER TODO - fix it
 /*
 ============
 SV_FlyMove
@@ -239,6 +235,7 @@ int SV_FlyMove (edict_t *ent, float time, trace_t *steptrace)
 	vec3_t		end;
 	float		time_left;
 	int			blocked;
+	edict_t		*trace_ent;
 	
 	numbumps = 4;
 	
@@ -275,16 +272,21 @@ int SV_FlyMove (edict_t *ent, float time, trace_t *steptrace)
 		if (trace.fraction == 1)
 			 break;		// moved the entire distance
 
-		if (!trace.ent)
+		if (!trace.entityNum)
+		{
 			G_Printf ("SV_FlyMove: !trace.ent");
+			trace_ent = NULL;
+		}
+		else
+			trace_ent = EDICT_NUM(trace.entityNum);
 
 		if (trace.plane.normal[2] > 0.7)
 		{
 			blocked |= 1;		// floor
-			if (trace.ent->v.solid == SOLID_BSP)
+			if (trace_ent != NULL && trace_ent->v.solid == SOLID_BSP)
 			{
 				ent->v.flags =	(int)ent->v.flags | FL_ONGROUND;
-				ent->v.groundentity = EDICT_TO_PROG(trace.ent);
+				ent->v.groundentity = EDICT_TO_PROG(trace_ent);
 			}
 		}
 		if (!trace.plane.normal[2])
@@ -297,7 +299,7 @@ int SV_FlyMove (edict_t *ent, float time, trace_t *steptrace)
 //
 // run the impact function
 //
-		SV_Impact (ent, trace.ent);
+		SV_Impact (ent, trace_ent);
 		if (ent->free)
 			break;		// removed by the impact function
 
@@ -360,7 +362,6 @@ int SV_FlyMove (edict_t *ent, float time, trace_t *steptrace)
 
 	return blocked;
 }
-# endif
 
 /*
 ============
@@ -1002,7 +1003,6 @@ TOSS / BOUNCE
 ==============================================================================
 */
 
-#if 0 // PANZER TODO - fix it
 /*
 =============
 SV_CheckWaterTransition
@@ -1012,6 +1012,7 @@ SV_CheckWaterTransition
 void SV_CheckWaterTransition (edict_t *ent)
 {
 	int		cont;
+	#if 0 // PANZER TODO - fix it
 	cont = SV_PointContents (ent->v.origin);
 	if (!ent->v.watertype)
 	{	// just spawned here
@@ -1038,8 +1039,8 @@ void SV_CheckWaterTransition (edict_t *ent)
 		ent->v.watertype = CONTENTS_EMPTY;
 		ent->v.waterlevel = cont;
 	}
+	#endif
 }
-#endif
 
 #if 0 // PANZER TODO - fix it
 /*
@@ -1112,7 +1113,6 @@ STEPPING MOVEMENT
 ===============================================================================
 */
 
-#if 0 // PANZER TODO - fix it
 /*
 =============
 SV_Physics_Step
@@ -1139,7 +1139,7 @@ void SV_Physics_Step (edict_t *ent)
 		SV_AddGravity (ent);
 		SV_CheckVelocity (ent);
 		SV_FlyMove (ent, host_frametime, NULL);
-		SV_LinkEdict (ent, true);
+		SV_LinkEdict (ent, qtrue);
 
 		if ( (int)ent->v.flags & FL_ONGROUND )	// just hit ground
 		{
@@ -1153,7 +1153,6 @@ void SV_Physics_Step (edict_t *ent)
 	
 	SV_CheckWaterTransition (ent);
 }
-#endif
 
 //============================================================================
 
@@ -1196,6 +1195,8 @@ void SV_Physics (void)
 			SV_Physics_None (ent);
 		else if (ent->v.movetype == MOVETYPE_NOCLIP)
 			SV_Physics_Noclip (ent);
+		else if (ent->v.movetype == MOVETYPE_STEP)
+			SV_Physics_Step (ent);
 
 
 #if 0 // PANZER TODO - fix it
