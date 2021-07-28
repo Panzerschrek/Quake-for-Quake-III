@@ -125,7 +125,7 @@ trace_t SV_ClipMoveToEntity (edict_t *ent, vec3_t start, vec3_t mins, vec3_t max
 // fill in a default trace
 	memset (&trace, 0, sizeof(trace_t));
 	trace.fraction = 1;
-	trace.allsolid = true;
+	trace.allsolid = qtrue;
 	VectorCopy (end, trace.endpos);
 
 // get the clipping hull
@@ -134,58 +134,8 @@ trace_t SV_ClipMoveToEntity (edict_t *ent, vec3_t start, vec3_t mins, vec3_t max
 	VectorSubtract (start, offset, start_l);
 	VectorSubtract (end, offset, end_l);
 
-#ifdef QUAKE2
-	// rotate start and end into the models frame of reference
-	if (ent->v.solid == SOLID_BSP &&
-	(ent->v.angles[0] || ent->v.angles[1] || ent->v.angles[2]) )
-	{
-		vec3_t	a;
-		vec3_t	forward, right, up;
-		vec3_t	temp;
-
-		AngleVectors (ent->v.angles, forward, right, up);
-
-		VectorCopy (start_l, temp);
-		start_l[0] = DotProduct (temp, forward);
-		start_l[1] = -DotProduct (temp, right);
-		start_l[2] = DotProduct (temp, up);
-
-		VectorCopy (end_l, temp);
-		end_l[0] = DotProduct (temp, forward);
-		end_l[1] = -DotProduct (temp, right);
-		end_l[2] = DotProduct (temp, up);
-	}
-#endif
-
 // trace a line through the apropriate clipping hull
 	SV_RecursiveHullCheck (hull, hull->firstclipnode, 0, 1, start_l, end_l, &trace);
-
-#ifdef QUAKE2
-	// rotate endpos back to world frame of reference
-	if (ent->v.solid == SOLID_BSP &&
-	(ent->v.angles[0] || ent->v.angles[1] || ent->v.angles[2]) )
-	{
-		vec3_t	a;
-		vec3_t	forward, right, up;
-		vec3_t	temp;
-
-		if (trace.fraction != 1)
-		{
-			VectorSubtract (vec3_origin, ent->v.angles, a);
-			AngleVectors (a, forward, right, up);
-
-			VectorCopy (trace.endpos, temp);
-			trace.endpos[0] = DotProduct (temp, forward);
-			trace.endpos[1] = -DotProduct (temp, right);
-			trace.endpos[2] = DotProduct (temp, up);
-
-			VectorCopy (trace.plane.normal, temp);
-			trace.plane.normal[0] = DotProduct (temp, forward);
-			trace.plane.normal[1] = -DotProduct (temp, right);
-			trace.plane.normal[2] = DotProduct (temp, up);
-		}
-	}
-#endif
 
 // fix trace up by the offset
 	if (trace.fraction != 1)
@@ -288,11 +238,6 @@ SV_MoveBounds
 */
 void SV_MoveBounds (vec3_t start, vec3_t mins, vec3_t maxs, vec3_t end, vec3_t boxmins, vec3_t boxmaxs)
 {
-#if 0
-// debug to test against everything
-boxmins[0] = boxmins[1] = boxmins[2] = -9999;
-boxmaxs[0] = boxmaxs[1] = boxmaxs[2] = 9999;
-#else
 	int		i;
 
 	for (i=0 ; i<3 ; i++)
@@ -308,7 +253,6 @@ boxmaxs[0] = boxmaxs[1] = boxmaxs[2] = 9999;
 			boxmaxs[i] = start[i] + maxs[i] + 1;
 		}
 	}
-#endif
 }
 
 /*
