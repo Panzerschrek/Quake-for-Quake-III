@@ -462,7 +462,6 @@ void SV_PushMove (edict_t *pusher, float movetime)
 	pusher->v.ltime += movetime;
 	SV_LinkEdict (pusher, qfalse);
 
-#if 0 // PANZER TODO - fix this.
 // see if any solid entities are inside the final position
 	num_moved = 0;
 	check = NEXT_EDICT(sv.edicts);
@@ -544,7 +543,6 @@ void SV_PushMove (edict_t *pusher, float movetime)
 			return;
 		}
 	}
-#endif
 }
 
 /*
