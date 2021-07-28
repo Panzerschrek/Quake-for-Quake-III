@@ -381,9 +381,7 @@ void SV_AddGravity (edict_t *ent)
 	else
 		ent_gravity = 1.0;
 
-#if 0 // PANZER TODO - fix it
 	ent->v.velocity[2] -= ent_gravity * sv_gravity.value * host_frametime;
-#endif
 }
 
 
@@ -395,7 +393,6 @@ PUSHMOVE
 ===============================================================================
 */
 
-#if 0 // PANZER TODO - fix it
 /*
 ============
 SV_PushEntity
@@ -421,12 +418,11 @@ trace_t SV_PushEntity (edict_t *ent, vec3_t push)
 	VectorCopy (trace.endpos, ent->v.origin);
 	SV_LinkEdict (ent, qtrue);
 
-	if (trace.ent)
-		SV_Impact (ent, trace.ent);		
+	if (trace.entityNum)
+		SV_Impact (ent, EDICT_NUM(trace.entityNum));
 
 	return trace;
 }					
-#endif
 
 
 /*
@@ -649,7 +645,6 @@ void SV_CheckStuck (edict_t *ent)
 	G_DPrintf ("player is stuck.\n");
 }
 
-#if 0 // PANZER TODO - fix it
 /*
 =============
 SV_CheckWater
@@ -665,7 +660,7 @@ qboolean SV_CheckWater (edict_t *ent)
 	point[2] = ent->v.origin[2] + ent->v.mins[2] + 1;	
 	
 	ent->v.waterlevel = 0;
-	ent->v.watertype = CONTENTS_EMPTY;
+	ent->v.watertype = 0;
 	cont = SV_PointContents (point);
 	if (cont <= CONTENTS_WATER)
 	{
@@ -685,7 +680,6 @@ qboolean SV_CheckWater (edict_t *ent)
 	
 	return ent->v.waterlevel > 1;
 }
-#endif
 
 /*
 ============
@@ -715,7 +709,6 @@ void SV_WallFriction (edict_t *ent, trace_t *trace)
 	ent->v.velocity[1] = side[1] * (1 + d);
 }
 
-#if 0 // PANZER TODO - fix it
 /*
 =====================
 SV_TryUnstick
@@ -776,9 +769,7 @@ int SV_TryUnstick (edict_t *ent, vec3_t oldvel)
 	VectorCopy (vec3_origin, ent->v.velocity);
 	return 7;		// still not moving
 }
-#endif
 
-#if 0 // PANZER TODO - fix it
 /*
 =====================
 SV_WalkMove
@@ -816,13 +807,13 @@ void SV_WalkMove (edict_t *ent)
 	if (ent->v.movetype != MOVETYPE_WALK)
 		return;		// gibbed by a trigger
 	
-#if 0 // PANZER TODO - fix it
 	if (sv_nostep.value)
 		return;
-#endif
 	
+#if 0 // PANZER TODO - fix this
 	if ( (int)sv_player->v.flags & FL_WATERJUMP )
 		return;
+#endif
 
 	VectorCopy (ent->v.origin, nosteporg);
 	VectorCopy (ent->v.velocity, nostepvel);
@@ -869,7 +860,7 @@ void SV_WalkMove (edict_t *ent)
 		if (ent->v.solid == SOLID_BSP)
 		{
 			ent->v.flags =	(int)ent->v.flags | FL_ONGROUND;
-			ent->v.groundentity = EDICT_TO_PROG(downtrace.ent);
+			ent->v.groundentity = EDICT_TO_PROG(EDICT_NUM(downtrace.entityNum));
 		}
 	}
 	else
@@ -881,10 +872,8 @@ void SV_WalkMove (edict_t *ent)
 		VectorCopy (nostepvel, ent->v.velocity);
 	}
 }
-#endif
 
 
-#if 0 // PANZER TODO - fix it
 /*
 ================
 SV_Physics_Client
@@ -959,7 +948,6 @@ void SV_Physics_Client (edict_t	*ent, int num)
 	pr_global_struct->self = EDICT_TO_PROG(ent);
 	PR_ExecuteProgram (pr_global_struct->PlayerPostThink);
 }
-#endif
 
 //============================================================================
 
@@ -1042,7 +1030,6 @@ void SV_CheckWaterTransition (edict_t *ent)
 	#endif
 }
 
-#if 0 // PANZER TODO - fix it
 /*
 =============
 SV_Physics_Toss
@@ -1094,7 +1081,7 @@ void SV_Physics_Toss (edict_t *ent)
 		if (ent->v.velocity[2] < 60 || ent->v.movetype != MOVETYPE_BOUNCE)
 		{
 			ent->v.flags = (int)ent->v.flags | FL_ONGROUND;
-			ent->v.groundentity = EDICT_TO_PROG(trace.ent);
+			ent->v.groundentity = EDICT_TO_PROG(EDICT_NUM(trace.entityNum));
 			VectorCopy (vec3_origin, ent->v.velocity);
 			VectorCopy (vec3_origin, ent->v.avelocity);
 		}
@@ -1103,7 +1090,6 @@ void SV_Physics_Toss (edict_t *ent)
 // check for in water
 	SV_CheckWaterTransition (ent);
 }
-#endif
 
 /*
 ===============================================================================
@@ -1189,20 +1175,14 @@ void SV_Physics (void)
 			SV_LinkEdict (ent, qtrue);	// force retouch even for stationary
 		}
 
-		if (ent->v.movetype == MOVETYPE_PUSH)
-			SV_Physics_Pusher (ent);
-		else if (ent->v.movetype == MOVETYPE_NONE)
-			SV_Physics_None (ent);
-		else if (ent->v.movetype == MOVETYPE_NOCLIP)
-			SV_Physics_Noclip (ent);
-		else if (ent->v.movetype == MOVETYPE_STEP)
-			SV_Physics_Step (ent);
-
-
-#if 0 // PANZER TODO - fix it
+#if 0 // PANZER TODO - add players physics
 		if (i > 0 && i <= svs.maxclients)
+		{
 			SV_Physics_Client (ent, i);
-		else if (ent->v.movetype == MOVETYPE_PUSH)
+		}
+		else
+#endif
+			 if (ent->v.movetype == MOVETYPE_PUSH)
 			SV_Physics_Pusher (ent);
 		else if (ent->v.movetype == MOVETYPE_NONE)
 			SV_Physics_None (ent);
@@ -1210,14 +1190,13 @@ void SV_Physics (void)
 			SV_Physics_Noclip (ent);
 		else if (ent->v.movetype == MOVETYPE_STEP)
 			SV_Physics_Step (ent);
-		else if (ent->v.movetype == MOVETYPE_TOSS 
+		else if (ent->v.movetype == MOVETYPE_TOSS
 		|| ent->v.movetype == MOVETYPE_BOUNCE
 		|| ent->v.movetype == MOVETYPE_FLY
 		|| ent->v.movetype == MOVETYPE_FLYMISSILE)
 			SV_Physics_Toss (ent);
 		else
 			G_Printf ("SV_Physics: bad movetype %i", (int)ent->v.movetype);
-#endif
 	}
 	
 	if (pr_global_struct->force_retouch)

@@ -87,6 +87,17 @@ void SV_LinkEdict (edict_t *ent, qboolean touch_triggers)
 
 
 /*
+==================
+SV_PointContents
+
+==================
+*/
+int SV_PointContents (vec3_t p)
+{
+	return trap_PointContents(p, 0);
+}
+
+/*
 ============
 SV_TestEntityPosition
 
