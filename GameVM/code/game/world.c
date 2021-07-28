@@ -112,6 +112,7 @@ edict_t	*SV_TestEntityPosition (edict_t *ent)
 
 	if (trace.startsolid)
 		return sv.edicts;
+	return EDICT_NUM(trace.entityNum);
 }
 
 
