@@ -34,8 +34,6 @@ typedef struct {
 	qboolean	trackChange;	    // track this variable, and announce if changed
 } cvarTable_t;
 
-gclient_t		g_clients[MAX_CLIENTS];
-
 vmCvar_t	g_maxclients;
 vmCvar_t	g_speed;
 vmCvar_t	g_debugAlloc;
@@ -283,7 +281,7 @@ void SV_SpawnServer()
 	// let the server system know where the entites are
 	trap_LocateGameData(
 		sv.edicts, sv.max_edicts, pr_edict_size,
-		&level.clients[0].ps, sizeof( level.clients[0] ) );
+		&svs.clients[0].ps, sizeof( svs.clients[0] ) );
 
 	//
 	// load the rest of the entities
@@ -337,11 +335,9 @@ void G_InitGame( int levelTime, int randomSeed, int restart ) {
 	level.startTime = levelTime;
 
 	// initialize all clients for this game
-	memset( g_clients, 0, MAX_CLIENTS * sizeof(g_clients[0]) );
-	level.clients = g_clients;
-
 	svs.maxclientslimit = svs.maxclients = 8;
 	svs.clients = G_Alloc (svs.maxclientslimit*sizeof(client_t));
+	memset( svs.clients, 0, svs.maxclientslimit * sizeof(svs.clients[0]) );
 
 	G_RegisterCvars();
 

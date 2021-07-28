@@ -42,7 +42,7 @@ void SetClientViewAngle( gclient_t *client, vec3_t angle ) {
 		int		cmdAngle;
 
 		cmdAngle = ANGLE2SHORT(angle[i]);
-		client->ps.delta_angles[i] = cmdAngle - client->pers.cmd.angles[i];
+		client->ps.delta_angles[i] = cmdAngle - client->cmd.angles[i];
 	}
 	VectorCopy (angle, client->ps.viewangles);
 }
@@ -51,16 +51,18 @@ void ClientUserinfoChanged( int clientNum ) {
 }
 
 char *ClientConnect( int clientNum, qboolean firstTime, qboolean isBot ) {
-	gclient_t	*client;
 
-	client = level.clients + clientNum;
-	memset( client, 0, sizeof(*client) );
-
-	client->pers.connected = CON_CONNECTING;
+	host_client = svs.clients + clientNum;
+	sv_player = host_client->edict;
+	memset( host_client, 0, sizeof(*host_client) );
 
 	// get and distribute relevant parameters
 	G_LogPrintf( "ClientConnect: %i\n", clientNum );
 	ClientUserinfoChanged( clientNum );
+
+	pr_global_struct->time = sv.time;
+	pr_global_struct->self = EDICT_TO_PROG(sv_player);
+	PR_ExecuteProgram (pr_global_struct->ClientConnect);
 
 	return NULL;
 }
@@ -78,9 +80,9 @@ void ClientBegin( int clientNum ) {
 	gclient_t	*client;
 	int			flags;
 
-	client = level.clients + clientNum;
+	client = svs.clients + clientNum;
 
-	client->pers.connected = CON_CONNECTED;
+	client->active = qtrue;
 
 	// save eflags around this, because changing teams will
 	// cause this to happen with a valid entity, and we
@@ -110,21 +112,16 @@ void ClientSpawn(gclient_t* client) {
 	int		index;
 	vec3_t	spawn_origin, spawn_angles;
 	int		i;
-	clientPersistant_t	saved;
 	int		persistant[MAX_PERSISTANT];
-	int		savedPing;
 	int		eventSequence;
 	char	userinfo[MAX_INFO_STRING];
 
-	index = client - level.clients;
+	index = client - svs.clients;
 
 	VectorClear(spawn_origin);
 
 	// clear everything but the persistant data
 
-	saved = client->pers;
-	savedPing = client->ps.ping;
-//	savedAreaBits = client->areabits;
 	for ( i = 0 ; i < MAX_PERSISTANT ; i++ ) {
 		persistant[i] = client->ps.persistant[i];
 	}
@@ -132,8 +129,7 @@ void ClientSpawn(gclient_t* client) {
 
 	Com_Memset (client, 0, sizeof(*client));
 
-	client->pers = saved;
-	client->ps.ping = savedPing;
+	client->ps.ping = 0;
 //	client->areabits = savedAreaBits;
 
 	for ( i = 0 ; i < MAX_PERSISTANT ; i++ ) {
@@ -150,7 +146,7 @@ void ClientSpawn(gclient_t* client) {
 
 	VectorCopy( spawn_origin, client->ps.origin );
 
-	trap_GetUsercmd( client - level.clients, &client->pers.cmd );
+	trap_GetUsercmd( client - svs.clients, &client->cmd );
 	SetClientViewAngle( client, spawn_angles );
 	// don't allow full run speed for a bit
 	client->ps.pm_time = 100;
@@ -167,10 +163,10 @@ void ClientSpawn(gclient_t* client) {
 void ClientDisconnect( int clientNum ) {
 	gclient_t	*client;
 
-	client = level.clients + clientNum;
+	client = svs.clients + clientNum;
 	G_LogPrintf( "ClientDisconnect: %i\n", clientNum );
 
-	client->pers.connected = CON_DISCONNECTED;
+	client->active = qtrue;
 }
 
 

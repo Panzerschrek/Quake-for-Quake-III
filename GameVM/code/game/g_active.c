@@ -41,12 +41,12 @@ void ClientThink_real( gclient_t *client ) {
 	usercmd_t	*ucmd;
 
 	// don't think if the client is not yet connected (and thus not yet spawned in)
-	if (client->pers.connected != CON_CONNECTED) {
+	if (!client->active) {
 		return;
 	}
 
 	// mark the time, so the connection sprite can be removed
-	ucmd = &client->pers.cmd;
+	ucmd = &client->cmd;
 
 	msec = ucmd->serverTime - client->ps.commandTime;
 	// following others may result in bad times, but we still want
@@ -89,9 +89,6 @@ void ClientThink_real( gclient_t *client ) {
 	pm.pmove_msec = pmove_msec.integer;
 
 	Pmove (&pm);
-
-	// swap and latch button actions
-	client->buttons = ucmd->buttons;
 }
 
 /*
@@ -104,12 +101,12 @@ A new command has arrived from the client
 void ClientThink( int clientNum ) {
 	gclient_t *client;
 
-	client = level.clients + clientNum;
-	trap_GetUsercmd( clientNum, &client->pers.cmd );
+	client = svs.clients + clientNum;
+	trap_GetUsercmd( clientNum, &client->cmd );
 
 	// mark the time we got info, so we can display the
 	// phone jack if they don't get any for a while
-	client->lastCmdTime = level.time;
+	//client->ps.lastCmdTime = level.time;
 
 	ClientThink_real( client );
 }
