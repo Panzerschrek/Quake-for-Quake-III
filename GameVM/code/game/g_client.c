@@ -27,44 +27,6 @@ Foundation, Inc., 51 Franklin St, Fifth Floor, Boston, MA  02110-1301  USA
 static vec3_t	playerMins = {-15, -15, -24};
 static vec3_t	playerMaxs = {15, 15, 32};
 
-/*QUAKED info_player_deathmatch (1 0 1) (-16 -16 -24) (16 16 32) initial
-potential spawning position for deathmatch games.
-The first time a player enters the game, they will be at an 'initial' spot.
-Targets will be fired when someone spawns in on them.
-"nobots" will prevent bots from using this spot.
-"nohumans" will prevent non-bots from using this spot.
-*/
-void SP_info_player_deathmatch( gentity_t *ent ) {
-}
-
-/*QUAKED info_player_start (1 0 0) (-16 -16 -24) (16 16 32)
-equivalent to info_player_deathmatch
-*/
-void SP_info_player_start(gentity_t *ent) {
-	ent->classname = "info_player_deathmatch";
-	SP_info_player_deathmatch( ent );
-}
-
-/*
-===========
-SelectFirstSpawnPoint
-
-Chooses a player start, deathmatch start, etc
-============
-*/
-gentity_t *SelectFirstSpawnPoint ( vec3_t origin, vec3_t angles ) {
-	gentity_t	*spot;
-
-	if((spot = G_Find (spot, FOFS(classname), "info_player_deathmatch")) != NULL)
-	{
-		VectorCopy (spot->s.origin, origin);
-		VectorCopy (spot->s.angles, angles);
-		return spot;
-	}
-	
-	return NULL;
-}
-
 
 /*
 ==================
@@ -72,7 +34,7 @@ SetClientViewAngle
 
 ==================
 */
-void SetClientViewAngle( gentity_t *ent, vec3_t angle ) {
+void SetClientViewAngle( gclient_t *client, vec3_t angle ) {
 	int			i;
 
 	// set the delta angle
@@ -80,42 +42,18 @@ void SetClientViewAngle( gentity_t *ent, vec3_t angle ) {
 		int		cmdAngle;
 
 		cmdAngle = ANGLE2SHORT(angle[i]);
-		ent->client->ps.delta_angles[i] = cmdAngle - ent->client->pers.cmd.angles[i];
+		client->ps.delta_angles[i] = cmdAngle - client->pers.cmd.angles[i];
 	}
-	VectorCopy( angle, ent->s.angles );
-	VectorCopy (ent->s.angles, ent->client->ps.viewangles);
-}
-
-/*
-================
-ClientRespawn
-================
-*/
-void ClientRespawn( gentity_t *ent ) {
-
-	ClientSpawn(ent);
+	VectorCopy (angle, client->ps.viewangles);
 }
 
 void ClientUserinfoChanged( int clientNum ) {
 }
 
 char *ClientConnect( int clientNum, qboolean firstTime, qboolean isBot ) {
-//	char		*areabits;
 	gclient_t	*client;
-	gentity_t	*ent;
 
-	ent = &g_entities[ clientNum ];
-
-	// if a player reconnects quickly after a disconnect, the client disconnect may never be called, thus flag can get lost in the ether
-	if (ent->inuse) {
-		G_LogPrintf("Forcing disconnect on active client: %i\n", clientNum);
-		// so lets just fix up anything that should happen on a disconnect
-		ClientDisconnect(clientNum);
-	}
-	// they can connect
-	ent->client = level.clients + clientNum;
-	client = ent->client;
-
+	client = level.clients + clientNum;
 	memset( client, 0, sizeof(*client) );
 
 	client->pers.connected = CON_CONNECTING;
@@ -137,19 +75,10 @@ and on transition between teams, but doesn't happen on respawns
 ============
 */
 void ClientBegin( int clientNum ) {
-	gentity_t	*ent;
 	gclient_t	*client;
 	int			flags;
 
-	ent = g_entities + clientNum;
-
 	client = level.clients + clientNum;
-
-	if ( ent->r.linked ) {
-		trap_UnlinkEntity( ent );
-	}
-	G_InitGentity( ent );
-	ent->client = client;
 
 	client->pers.connected = CON_CONNECTED;
 
@@ -163,7 +92,7 @@ void ClientBegin( int clientNum ) {
 	client->ps.eFlags = flags;
 
 	// locate ent at a spawn point
-	ClientSpawn( ent );
+	ClientSpawn( client );
 
 	G_LogPrintf( "ClientBegin: %i\n", clientNum );
 }
@@ -177,28 +106,19 @@ after the first ClientBegin, and after each respawn
 Initializes all non-persistant parts of playerState
 ============
 */
-void ClientSpawn(gentity_t *ent) {
+void ClientSpawn(gclient_t* client) {
 	int		index;
 	vec3_t	spawn_origin, spawn_angles;
-	gclient_t	*client;
 	int		i;
 	clientPersistant_t	saved;
 	int		persistant[MAX_PERSISTANT];
-	gentity_t	*spawnPoint;
 	int		savedPing;
-//	char	*savedAreaBits;
 	int		eventSequence;
 	char	userinfo[MAX_INFO_STRING];
 
-	index = ent - g_entities;
-	client = ent->client;
+	index = client - level.clients;
 
 	VectorClear(spawn_origin);
-
-	// find a spawn point
-	// do it before setting health back up, so farthest
-	// ranging doesn't count this client
-	spawnPoint = SelectFirstSpawnPoint (spawn_origin, spawn_angles);
 
 	// clear everything but the persistant data
 
@@ -222,58 +142,35 @@ void ClientSpawn(gentity_t *ent) {
 	client->ps.eventSequence = eventSequence;
 
 	trap_GetUserinfo( index, userinfo, sizeof(userinfo) );
-	// clear entity value
-	ent->s.groundEntityNum = ENTITYNUM_NONE;
-	ent->client = &level.clients[index];
-	ent->inuse = qtrue;
-	ent->classname = "player";
-	ent->r.contents = CONTENTS_BODY;
-	ent->flags = 0;
-	
-	VectorCopy (playerMins, ent->r.mins);
-	VectorCopy (playerMaxs, ent->r.maxs);
 
 	client->ps.clientNum = index;
 
 	// health will count down towards max_health
 	client->ps.stats[STAT_HEALTH] = 125;
 
-	G_SetOrigin( ent, spawn_origin );
 	VectorCopy( spawn_origin, client->ps.origin );
 
-	trap_GetUsercmd( client - level.clients, &ent->client->pers.cmd );
-	SetClientViewAngle( ent, spawn_angles );
+	trap_GetUsercmd( client - level.clients, &client->pers.cmd );
+	SetClientViewAngle( client, spawn_angles );
 	// don't allow full run speed for a bit
 	client->ps.pm_time = 100;
-
-	client->respawnTime = level.time;
 
 	// run a client frame to drop exactly to the floor,
 	// initialize animations and other things
 	client->ps.commandTime = level.time - 100;
-	ent->client->pers.cmd.serverTime = level.time;
-	ClientThink( ent-g_entities );
+
 	// run the presend to set anything else, follow spectators wait
 	// until all clients have been reconnected after map_restart
-	ClientEndFrame( ent );
+	ClientEndFrame( client );
 }
 
-
 void ClientDisconnect( int clientNum ) {
-	gentity_t	*ent;
+	gclient_t	*client;
 
-	ent = g_entities + clientNum;
-	if (!ent->client || ent->client->pers.connected == CON_DISCONNECTED) {
-		return;
-	}
-
+	client = level.clients + clientNum;
 	G_LogPrintf( "ClientDisconnect: %i\n", clientNum );
 
-	trap_UnlinkEntity (ent);
-	ent->s.modelindex = 0;
-	ent->inuse = qfalse;
-	ent->classname = "disconnected";
-	ent->client->pers.connected = CON_DISCONNECTED;
+	client->pers.connected = CON_DISCONNECTED;
 }
 
 

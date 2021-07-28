@@ -34,31 +34,19 @@ If "g_synchronousClients 1" is set, this will be called exactly
 once for each server frame, which makes for smooth demo recording.
 ==============
 */
-void ClientThink_real( gentity_t *ent ) {
-	gclient_t	*client;
+void ClientThink_real( gclient_t *client ) {
 	pmove_t		pm;
 	int			oldEventSequence;
 	int			msec;
 	usercmd_t	*ucmd;
 
-	client = ent->client;
-
 	// don't think if the client is not yet connected (and thus not yet spawned in)
 	if (client->pers.connected != CON_CONNECTED) {
 		return;
 	}
-	// mark the time, so the connection sprite can be removed
-	ucmd = &ent->client->pers.cmd;
 
-	// sanity check the command time to prevent speedup cheating
-	if ( ucmd->serverTime > level.time + 200 ) {
-		ucmd->serverTime = level.time + 200;
-//		G_Printf("serverTime <<<<<\n" );
-	}
-	if ( ucmd->serverTime < level.time - 1000 ) {
-		ucmd->serverTime = level.time - 1000;
-//		G_Printf("serverTime >>>>>\n" );
-	} 
+	// mark the time, so the connection sprite can be removed
+	ucmd = &client->pers.cmd;
 
 	msec = ucmd->serverTime - client->ps.commandTime;
 	// following others may result in bad times, but we still want
@@ -102,41 +90,8 @@ void ClientThink_real( gentity_t *ent ) {
 
 	Pmove (&pm);
 
-	// save results of pmove
-	if ( ent->client->ps.eventSequence != oldEventSequence ) {
-		ent->eventTime = level.time;
-	}
-
-	// use the snapped origin for linking so it matches client predicted versions
-	VectorCopy( ent->s.pos.trBase, ent->r.currentOrigin );
-
-	// link entity now, after any personal teleporters have been used
-	trap_LinkEntity (ent);
-
-	// NOTE: now copy the exact origin over otherwise clients can be snapped into solid
-	VectorCopy( ent->client->ps.origin, ent->r.currentOrigin );
-
-
-	// save results of triggers and client events
-	if (ent->client->ps.eventSequence != oldEventSequence) {
-		ent->eventTime = level.time;
-	}
-
 	// swap and latch button actions
 	client->buttons = ucmd->buttons;
-
-	// check for respawning
-	if ( client->ps.stats[STAT_HEALTH] <= 0 ) {
-		// wait for the attack button to be pressed
-		if ( level.time > client->respawnTime ) {
-
-			// pressing attack or use is the normal respawn method
-			if ( ucmd->buttons & ( BUTTON_ATTACK | BUTTON_USE_HOLDABLE ) ) {
-				ClientRespawn( ent );
-			}
-		}
-		return;
-	}
 }
 
 /*
@@ -147,20 +102,16 @@ A new command has arrived from the client
 ==================
 */
 void ClientThink( int clientNum ) {
-	gentity_t *ent;
+	gclient_t *client;
 
-	ent = g_entities + clientNum;
-	trap_GetUsercmd( clientNum, &ent->client->pers.cmd );
+	client = level.clients + clientNum;
+	trap_GetUsercmd( clientNum, &client->pers.cmd );
 
 	// mark the time we got info, so we can display the
 	// phone jack if they don't get any for a while
-	ent->client->lastCmdTime = level.time;
+	client->lastCmdTime = level.time;
 
-	ClientThink_real( ent );
-}
-
-
-void G_RunClient( gentity_t *ent ) {
+	ClientThink_real( client );
 }
 
 
@@ -173,13 +124,13 @@ A fast client will have multiple ClientThink for each ClientEdFrame,
 while a slow client may have multiple ClientEndFrame between ClientThink.
 ==============
 */
-void ClientEndFrame( gentity_t *ent ) {
+void ClientEndFrame( gclient_t *client ) {
 	int			i;
 
 	// turn off any expired powerups
 	for ( i = 0 ; i < MAX_POWERUPS ; i++ ) {
-		if ( ent->client->ps.powerups[ i ] < level.time ) {
-			ent->client->ps.powerups[ i ] = 0;
+		if ( client->ps.powerups[ i ] < level.time ) {
+			client->ps.powerups[ i ] = 0;
 		}
 	}
 }

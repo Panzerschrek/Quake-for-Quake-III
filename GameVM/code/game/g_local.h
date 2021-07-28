@@ -22,48 +22,18 @@ Foundation, Inc., 51 Franklin St, Fifth Floor, Boston, MA  02110-1301  USA
 //
 // g_local.h -- local definitions for game module
 
-#include "../qcommon/q_shared.h"
+#include "quakedef.h"
 #include "bg_public.h"
-#include "g_public.h"
 
 //==================================================================
 
 // the "gameversion" client command will print this plus compile date
 #define	GAMEVERSION	BASEGAME
 
-//============================================================================
-
-typedef struct gentity_s gentity_t;
 typedef struct gclient_s gclient_t;
 
-struct gentity_s {
-	entityState_t	s;				// communicated by server to clients
-	entityShared_t	r;				// shared by both the server system and game
-
-	// DO NOT MODIFY ANYTHING ABOVE THIS, THE SERVER
-	// EXPECTS THE FIELDS IN THAT ORDER!
-	//================================
-
-	struct gclient_s	*client;			// NULL if not a client
-
-	qboolean	inuse;
-
-	char		*classname;			// set in QuakeEd
-	int			spawnflags;			// set in QuakeEd
-
-	int			flags;				// FL_* variables
-
-	char		*model;
-	char		*model2;
-	int			freetime;			// level.time when the object was freed
-	
-	int			eventTime;			// events will be cleared EVENT_VALID_MSEC after set
-	qboolean	freeAfterEvent;
-	qboolean	unlinkAfterEvent;
-
-	int			nextthink;
-	void		(*think)(gentity_t *self);
-};
+// Use slightly modified Quake "edict_t" as Quake III entity.
+typedef edict_t gentity_t;
 
 typedef enum {
 	CON_DISCONNECTED,
@@ -77,7 +47,6 @@ typedef struct {
 	clientConnected_t	connected;
 	usercmd_t	cmd;				// we would lose angles if not persistant
 } clientPersistant_t;
-
 
 // this structure is cleared on each ClientSpawn(),
 // except for 'client->pers' and 'client->sess'
@@ -93,9 +62,6 @@ struct gclient_s {
 									// of the g_sycronousclients case
 	int			buttons;
 
-	// timers
-	int			respawnTime;		// can respawn when time > this, force after g_forcerespwan
-
 	char		*areabits;
 };
 
@@ -107,55 +73,25 @@ struct gclient_s {
 
 typedef struct {
 	struct gclient_s	*clients;		// [maxclients]
-
-	struct gentity_s	*gentities;
-	int			num_entities;		// MAX_CLIENTS <= num_entities <= ENTITYNUM_MAX_NORMAL
-
-	// store latched cvars here that we want to get at often
-	int			maxclients;
-
 	int			time;					// in msec
 	int			startTime;				// level.time the map was started
-
-	// spawn variables
-	qboolean	spawning;				// the G_Spawn*() functions are valid
-	int			numSpawnVars;
-	char		*spawnVars[MAX_SPAWN_VARS][2];	// key / value pairs
-	int			numSpawnVarChars;
-	char		spawnVarChars[MAX_SPAWN_VARS_CHARS];
-
-	char		*changemap;
-
 } level_locals_t;
 
 
 //
 // g_spawn.c
 //
-qboolean	G_SpawnString( const char *key, const char *defaultString, char **out );
 // spawn string returns a temporary reference, you must CopyString() if you want to keep it
-qboolean	G_SpawnInt( const char *key, const char *defaultString, int *out );
 void		G_SpawnEntitiesFromString( void );
 char *G_NewString( const char *string );
 
 //
-// g_utils.c
-//
-gentity_t *G_Find (gentity_t *from, int fieldofs, const char *match);
-
-void	G_InitGentity( gentity_t *e );
-gentity_t	*G_Spawn (void);
-gentity_t *G_TempEntity( vec3_t origin, int event );
-void	G_FreeEntity( gentity_t *e );
-
-void G_SetOrigin( gentity_t *ent, vec3_t origin );
-
-//
 // g_client.c
 //
-void SetClientViewAngle( gentity_t *ent, vec3_t angle );
-void ClientRespawn(gentity_t *ent);
-void ClientSpawn( gentity_t *ent );
+void SetClientViewAngle( gclient_t *client, vec3_t angle );
+void ClientRespawn(gclient_t *ent);
+void ClientSpawn( gclient_t *ent );
+void ClientEndFrame( gclient_t *client );
 
 //
 // g_svcmds.c
@@ -166,10 +102,10 @@ qboolean	ConsoleCommand( void );
 //
 // g_main.c
 //
-void G_RunThink (gentity_t *ent);
 void QDECL G_LogPrintf( const char *fmt, ... ) __attribute__ ((format (printf, 1, 2)));
 void SendScoreboardMessageToAllClients( void );
 void QDECL G_Printf( const char *fmt, ... ) __attribute__ ((format (printf, 1, 2)));
+void QDECL G_DPrintf( const char *fmt, ... ) __attribute__ ((format (printf, 1, 2)));
 void QDECL G_Error( const char *fmt, ... ) __attribute__ ((noreturn, format (printf, 1, 2)));
 
 //
@@ -185,8 +121,6 @@ void ClientCommand( int clientNum );
 // g_active.c
 //
 void ClientThink( int clientNum );
-void ClientEndFrame( gentity_t *ent );
-void G_RunClient( gentity_t *ent );
 
 //
 // g_mem.c
@@ -196,7 +130,6 @@ void G_InitMemory( void );
 void Svcmd_GameMem_f( void );
 
 extern	level_locals_t	level;
-extern	gentity_t		g_entities[MAX_GENTITIES];
 
 #define	FOFS(x) ((size_t)&(((gentity_t *)0)->x))
 
@@ -206,6 +139,13 @@ extern	vmCvar_t	g_speed;
 extern	vmCvar_t	g_debugAlloc;
 extern	vmCvar_t	pmove_fixed;
 extern	vmCvar_t	pmove_msec;
+
+extern	vmCvar_t	teamplay;
+extern	vmCvar_t	skill;
+extern	vmCvar_t	deathmatch;
+extern	vmCvar_t	coop;
+extern	vmCvar_t	fraglimit;
+extern	vmCvar_t	timelimit;
 
 void	trap_Print( const char *text );
 void	trap_Error( const char *text ) __attribute__((noreturn));

@@ -87,7 +87,36 @@ static void CG_CalcViewValues( void ) {
 	CG_CalcFov();
 }
 
+void CG_AddEntities()
+{
+	int				num;
+	entityState_t*	in_ent;
+	refEntity_t		out_ent;
+
+	// Directly take entities from snapshot and add them to scene.
+
+	for ( num = 0 ; num < cg.snap.numEntities ; num++ ) {
+		in_ent = &cg.snap.entities[num];
+
+		memset (&out_ent, 0, sizeof(out_ent));
+		VectorCopy( in_ent->origin, out_ent.origin);
+		VectorCopy( in_ent->origin, out_ent.oldorigin);
+		AnglesToAxis( in_ent->angles, out_ent.axis );
+
+		if ( in_ent->solid == SOLID_BMODEL )
+			out_ent.hModel = cgs.inlineDrawModel[in_ent->modelindex];
+		else
+		{
+			out_ent.hModel= cgs.gameModels[in_ent->modelindex];
+			out_ent.frame = out_ent.oldframe = in_ent->frame;
+		}
+
+		trap_R_AddRefEntityToScene(&out_ent);
+	}
+}
+
 void CG_DrawActiveFrame( int serverTime, stereoFrame_t stereoView, qboolean demoPlayback ) {
+
 	cg.time = serverTime;
 
 	// update cvars
@@ -99,6 +128,8 @@ void CG_DrawActiveFrame( int serverTime, stereoFrame_t stereoView, qboolean demo
 
 	// clear all the render lists
 	trap_R_ClearScene();
+
+	CG_AddEntities();
 
 	// set up cg.snap and possibly cg.nextSnap
 	CG_ProcessSnapshots();

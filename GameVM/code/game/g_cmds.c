@@ -24,36 +24,13 @@ Foundation, Inc., 51 Franklin St, Fifth Floor, Boston, MA  02110-1301  USA
 
 /*
 =================
-Cmd_Kill_f
-=================
-*/
-void Cmd_Kill_f( gentity_t *ent ) {
-	ent->client->ps.stats[STAT_HEALTH] = -999;
-}
-
-/*
-=================
 ClientCommand
 =================
 */
 void ClientCommand( int clientNum ) {
-	gentity_t *ent;
 	char	cmd[MAX_TOKEN_CHARS];
-
-	ent = g_entities + clientNum;
-	if (!ent->client || ent->client->pers.connected != CON_CONNECTED) {
-		if (ent->client) {
-			// Handle early team command sent by UI when starting a local
-			// team play game.
-			trap_Argv( 0, cmd, sizeof( cmd ) );
-		}
-		return;		// not fully in game yet
-	}
 
 	trap_Argv( 0, cmd, sizeof( cmd ) );
 
-	if (Q_stricmp (cmd, "kill") == 0)
-		Cmd_Kill_f (ent);
-	else
-		trap_SendServerCommand( clientNum, va("print \"unknown cmd %s\n\"", cmd ) );
+	trap_SendServerCommand( clientNum, va("print \"unknown cmd %s\n\"", cmd ) );
 }

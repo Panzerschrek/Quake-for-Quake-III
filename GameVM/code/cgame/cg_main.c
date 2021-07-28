@@ -190,11 +190,53 @@ This function may execute for a couple of minutes with a slow disk.
 =================
 */
 static void CG_RegisterGraphics( void ) {
+	int		i, j;
+
 	// clear any references to old media
 	memset( &cg.refdef, 0, sizeof( cg.refdef ) );
 	trap_R_ClearScene();
 
 	trap_R_LoadWorldMap( cgs.mapname );
+
+	// register the inline models
+	cgs.numInlineModels = trap_CM_NumInlineModels();
+	for ( i = 1 ; i < cgs.numInlineModels ; i++ ) {
+		char	name[10];
+		vec3_t			mins, maxs;
+		int				j;
+
+		Com_sprintf( name, sizeof(name), "*%i", i );
+		cgs.inlineDrawModel[i] = trap_R_RegisterModel( name );
+		trap_R_ModelBounds( cgs.inlineDrawModel[i], mins, maxs );
+		//for ( j = 0 ; j < 3 ; j++ ) {
+		//	cgs.inlineModelMidpoints[i][j] = mins[j] + 0.5 * ( maxs[j] - mins[j] );
+		//}
+	}
+
+	// register all the server specified models
+	for (i=1 ; i<MAX_MODELS ; i++) {
+		char	modelName[MAX_OSPATH];
+		int n;
+
+		strcpy(modelName, CG_ConfigString( CS_MODELS+i ));
+		if ( !modelName[0] ) {
+			break;
+		}
+
+		// Fix model names - replace "mdl" extension with "md3" - native Quake3 model format.
+		n= strlen(modelName);
+		if(
+			(n >= 4 && modelName[n-4] == '.' && modelName[n-3] == 'm' && modelName[n-2] == 'd' && modelName[n-1] == 'l') ||
+			(n >= 4 && modelName[n-4] == '.' && modelName[n-3] == 'b' && modelName[n-2] == 's' && modelName[n-1] == 'p'))
+		{
+			modelName[n-3]= 'm';
+			modelName[n-2]= 'd';
+			modelName[n-1]= '3';
+			modelName[n-4] = 0;
+		}
+
+		cgs.gameModels[i] = trap_R_RegisterModel( modelName );
+	}
 }
 
 //===========================================================================

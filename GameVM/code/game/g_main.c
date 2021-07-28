@@ -34,7 +34,6 @@ typedef struct {
 	qboolean	trackChange;	    // track this variable, and announce if changed
 } cvarTable_t;
 
-gentity_t		g_entities[MAX_GENTITIES];
 gclient_t		g_clients[MAX_CLIENTS];
 
 vmCvar_t	g_maxclients;
@@ -42,6 +41,13 @@ vmCvar_t	g_speed;
 vmCvar_t	g_debugAlloc;
 vmCvar_t	pmove_fixed;
 vmCvar_t	pmove_msec;
+
+vmCvar_t	teamplay;
+vmCvar_t	skill;
+vmCvar_t	deathmatch;
+vmCvar_t	coop;
+vmCvar_t	fraglimit;
+vmCvar_t	timelimit;
 
 static cvarTable_t		gameCvarTable[] = {
 	// noset vars
@@ -56,10 +62,19 @@ static cvarTable_t		gameCvarTable[] = {
 
 	{ &pmove_fixed, "pmove_fixed", "0", CVAR_SYSTEMINFO, 0 },
 	{ &pmove_msec, "pmove_msec", "8", CVAR_SYSTEMINFO, 0 },
+
+	// TODO - set proper flags.
+	{ &teamplay, "teamplay", "0", CVAR_SERVERINFO | CVAR_LATCH | CVAR_ARCHIVE, 0 },
+	{ &skill, "skill", "1", CVAR_SERVERINFO | CVAR_ARCHIVE, 0 },
+	{ &deathmatch, "deathmatch", "0", CVAR_SERVERINFO | CVAR_LATCH | CVAR_ARCHIVE, 0 },
+	{ &coop, "coop", "0", CVAR_SERVERINFO | CVAR_LATCH | CVAR_ARCHIVE, 0 },
+	{ &fraglimit, "fraglimit", "0", CVAR_SERVERINFO  | CVAR_ARCHIVE, 0 },
+	{ &timelimit, "timelimit", "0", CVAR_SERVERINFO  | CVAR_ARCHIVE, 0 },
 };
 
 static int gameCvarTableSize = ARRAY_LEN( gameCvarTable );
 
+double host_frametime;
 
 void G_InitGame( int levelTime, int randomSeed, int restart );
 void G_RunFrame( int levelTime );
@@ -123,6 +138,10 @@ void QDECL G_Printf( const char *fmt, ... ) {
 	trap_Print( text );
 }
 
+void QDECL G_DPrintf( const char *fmt, ... ) {
+	// TODO - implement it
+}
+
 void QDECL G_Error( const char *fmt, ... ) {
 	va_list		argptr;
 	char		text[1024];
@@ -178,6 +197,88 @@ void G_UpdateCvars( void ) {
 	}
 }
 
+void G_SetModelsConfig()
+{
+	int		i;
+	for (i=0 ; i<MAX_MODELS ; i++)
+	{
+		if (!sv.model_precache[i])
+			continue;
+
+		trap_SetConfigstring(CS_MODELS + i, sv.model_precache[i]);
+	}
+}
+
+void SV_SpawnServer()
+{
+	edict_t		*ent;
+	char		mapname[MAX_OSPATH];
+
+	trap_Cvar_VariableStringBuffer("mapname", mapname, sizeof(mapname));
+
+	//
+	// make cvars consistant
+	//
+	if (coop.value)
+		trap_Cvar_Set ("deathmatch", "0");
+	current_skill = (int)(skill.value + 0.5);
+	if (current_skill < 0)
+		current_skill = 0;
+	if (current_skill > 3)
+		current_skill = 3;
+
+	{
+		char skill_value_str[2];
+		skill_value_str[0] = '0' + current_skill;
+		skill_value_str[1]= 0;
+		trap_Cvar_Set ("skill", skill_value_str);
+	}
+
+	memset (&sv, 0, sizeof(sv));
+
+	// load progs to get entity field count
+	PR_LoadProgs ();
+
+	// allocate server memory
+	sv.max_edicts = MAX_EDICTS;
+
+	sv.edicts = G_Alloc (sv.max_edicts*pr_edict_size);
+
+	sv.state = ss_loading;
+
+	sv.time = 1.0;
+
+	//
+	// load the rest of the entities
+	//
+	ent = EDICT_NUM(0);
+	memset (&ent->v, 0, progs->entityfields * 4);
+	ent->v.model = ED_NewString (mapname) - pr_strings;
+	ent->v.solid = SOLID_BSP;
+	ent->v.movetype = MOVETYPE_PUSH;
+
+	if (coop.value)
+		pr_global_struct->coop = coop.value;
+	else
+		pr_global_struct->deathmatch = deathmatch.value;
+
+	// PANZER TODO - set mapname
+
+	G_SpawnEntitiesFromString();
+	pr_global_struct->world = 1;
+
+	sv.active = qtrue;
+
+	// all setup is completed, any further precache statements are errors
+	sv.state = ss_active;
+
+	// PANZER TODO - fix it
+	// run two frames to allow everything to settle
+	host_frametime = 0.1;
+	//SV_Physics ();
+	//SV_Physics ();
+}
+
 /*
 ============
 G_InitGame
@@ -197,42 +298,25 @@ void G_InitGame( int levelTime, int randomSeed, int restart ) {
 
 	G_InitMemory();
 
+	PR_Init();
+
 	// set some level globals
 	memset( &level, 0, sizeof( level ) );
 	level.time = levelTime;
 	level.startTime = levelTime;
 
-	// initialize all entities for this game
-	memset( g_entities, 0, MAX_GENTITIES * sizeof(g_entities[0]) );
-	level.gentities = g_entities;
+	SV_SpawnServer();
 
 	// initialize all clients for this game
-	level.maxclients = g_maxclients.integer;
 	memset( g_clients, 0, MAX_CLIENTS * sizeof(g_clients[0]) );
 	level.clients = g_clients;
 
-	// set client fields on player ents
-	for ( i=0 ; i<level.maxclients ; i++ ) {
-		g_entities[i].client = level.clients + i;
-	}
-
-	// always leave room for the max number of clients,
-	// even if they aren't all used, so numbers inside that
-	// range are NEVER anything but clients
-	level.num_entities = MAX_CLIENTS;
-
-	for ( i=0 ; i<MAX_CLIENTS ; i++ ) {
-		g_entities[i].classname = "clientslot";
-	}
-
 	// let the server system know where the entites are
-	trap_LocateGameData( level.gentities, level.num_entities, sizeof( gentity_t ), 
+	trap_LocateGameData(
+		sv.edicts, sv.max_edicts, pr_edict_size,
 		&level.clients[0].ps, sizeof( level.clients[0] ) );
 
-
-	// parse the key/value pairs and spawn gentities
-	G_SpawnEntitiesFromString();
-
+	G_SetModelsConfig();
 
 	G_Printf ("-----------------------------------\n");
 }
@@ -310,31 +394,6 @@ FUNCTIONS CALLED EVERY FRAME
 
 
 /*
-=============
-G_RunThink
-
-Runs thinking code for this frame if necessary
-=============
-*/
-void G_RunThink (gentity_t *ent) {
-	int	thinktime;
-
-	thinktime = ent->nextthink;
-	if (thinktime <= 0) {
-		return;
-	}
-	if (thinktime > level.time) {
-		return;
-	}
-	
-	ent->nextthink = 0;
-	if (!ent->think) {
-		G_Error ( "NULL ent->think");
-	}
-	ent->think (ent);
-}
-
-/*
 ================
 G_RunFrame
 
@@ -343,62 +402,28 @@ Advances the non-player objects in the world
 */
 void G_RunFrame( int levelTime ) {
 	int			i;
-	gentity_t	*ent;
+	edict_t		*edict;
 
+	host_frametime = ( levelTime - level.time ) / 1000.0;
+	pr_global_struct->frametime = host_frametime;
 	level.time = levelTime;
 
 	// get any cvar changes
 	G_UpdateCvars();
 
-	//
-	// go through all allocated objects
-	//
-	ent = &g_entities[0];
-	for (i=0 ; i<level.num_entities ; i++, ent++) {
-		if ( !ent->inuse ) {
+	// Run Quake1 physics (for all entities)
+	SV_Physics();
+
+	// Update client data struct for every edict.
+	for (i=0 ; i< sv.num_edicts; i++) {
+		edict = EDICT_NUM(i);
+		if ( edict->free ) {
 			continue;
 		}
 
-		// clear events that are too old
-		if ( level.time - ent->eventTime > EVENT_VALID_MSEC ) {
-			if ( ent->s.event ) {
-				ent->s.event = 0;	// &= EV_EVENT_BITS;
-				if ( ent->client ) {
-					ent->client->ps.externalEvent = 0;
-					// predicted events should never be set to zero
-					//ent->client->ps.events[0] = 0;
-					//ent->client->ps.events[1] = 0;
-				}
-			}
-			if ( ent->freeAfterEvent ) {
-				// tempEntities or dropped items completely go away after their event
-				G_FreeEntity( ent );
-				continue;
-			} else if ( ent->unlinkAfterEvent ) {
-				// items that will respawn will hide themselves after their pickup event
-				ent->unlinkAfterEvent = qfalse;
-				trap_UnlinkEntity( ent );
-			}
-		}
-
-		// temporary entities don't think
-		if ( ent->freeAfterEvent ) {
-			continue;
-		}
-
-		if ( i < MAX_CLIENTS ) {
-			G_RunClient( ent );
-			continue;
-		}
-
-		G_RunThink( ent );
-	}
-
-	// perform final fixups on the players
-	ent = &g_entities[0];
-	for (i=0 ; i < level.maxclients ; i++, ent++ ) {
-		if ( ent->inuse ) {
-			ClientEndFrame( ent );
-		}
+		VectorCopy(edict->v.origin, edict->s.origin);
+		VectorCopy(edict->v.angles, edict->s.angles);
+		edict->s.modelindex= edict->v.modelindex;
+		edict->s.frame = edict->v.frame;
 	}
 }

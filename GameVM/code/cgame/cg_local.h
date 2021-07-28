@@ -63,6 +63,16 @@ typedef struct {
 
 	// parsed from serverinfo
 	char			mapname[MAX_QPATH];
+
+	// Resources.
+
+	// Inline (brush) models.
+	int				numInlineModels;
+	qhandle_t		inlineDrawModel[MAX_MODELS];
+
+	// Separate models.
+	qhandle_t		gameModels[MAX_MODELS];
+
 } cgs_t;
 
 //==============================================================================
