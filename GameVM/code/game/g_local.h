@@ -147,6 +147,17 @@ extern	vmCvar_t	coop;
 extern	vmCvar_t	fraglimit;
 extern	vmCvar_t	timelimit;
 
+extern	vmCvar_t	sv_maxvelocity;
+extern	vmCvar_t	sv_gravity;
+extern	vmCvar_t	sv_nostep;
+extern	vmCvar_t	sv_friction;
+extern	vmCvar_t	sv_edgefriction;
+extern	vmCvar_t	sv_stopspeed;
+extern	vmCvar_t	sv_maxspeed;
+extern	vmCvar_t	sv_accelerate;
+extern	vmCvar_t	sv_idealpitchscale;
+extern	vmCvar_t	sv_aim;
+
 void	trap_Print( const char *text );
 void	trap_Error( const char *text ) __attribute__((noreturn));
 int		trap_Milliseconds( void );

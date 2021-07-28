@@ -49,6 +49,17 @@ vmCvar_t	coop;
 vmCvar_t	fraglimit;
 vmCvar_t	timelimit;
 
+vmCvar_t	sv_maxvelocity;
+vmCvar_t	sv_gravity;
+vmCvar_t	sv_nostep;
+vmCvar_t	sv_friction;
+vmCvar_t	sv_edgefriction;
+vmCvar_t	sv_stopspeed;
+vmCvar_t	sv_maxspeed;
+vmCvar_t	sv_accelerate;
+vmCvar_t	sv_idealpitchscale;
+vmCvar_t	sv_aim;
+
 static cvarTable_t		gameCvarTable[] = {
 	// noset vars
 	{ NULL, "gamename", GAMEVERSION , CVAR_SERVERINFO | CVAR_ROM, 0, qfalse  },
@@ -68,8 +79,20 @@ static cvarTable_t		gameCvarTable[] = {
 	{ &skill, "skill", "1", CVAR_SERVERINFO | CVAR_ARCHIVE, 0 },
 	{ &deathmatch, "deathmatch", "0", CVAR_SERVERINFO | CVAR_LATCH | CVAR_ARCHIVE, 0 },
 	{ &coop, "coop", "0", CVAR_SERVERINFO | CVAR_LATCH | CVAR_ARCHIVE, 0 },
-	{ &fraglimit, "fraglimit", "0", CVAR_SERVERINFO  | CVAR_ARCHIVE, 0 },
-	{ &timelimit, "timelimit", "0", CVAR_SERVERINFO  | CVAR_ARCHIVE, 0 },
+	{ &fraglimit, "fraglimit", "0", CVAR_SERVERINFO | CVAR_ARCHIVE, 0 },
+	{ &timelimit, "timelimit", "0", CVAR_SERVERINFO | CVAR_ARCHIVE, 0 },
+
+	{ &sv_maxvelocity, "sv_maxvelocity", "2000", CVAR_SERVERINFO | CVAR_ARCHIVE, 0 },
+	{ &sv_gravity, "sv_gravity", "800", CVAR_SERVERINFO | CVAR_ARCHIVE, 0 },
+	{ &sv_nostep, "sv_nostep", "0", CVAR_SERVERINFO | CVAR_ARCHIVE, 0 },
+	{ &sv_friction, "sv_friction", "4", CVAR_SERVERINFO | CVAR_ARCHIVE, 0 },
+	{ &sv_edgefriction, "sv_edgefriction", "2", CVAR_SERVERINFO | CVAR_ARCHIVE, 0 },
+	{ &sv_stopspeed, "sv_stopspeed", "100", CVAR_SERVERINFO | CVAR_ARCHIVE, 0 },
+	{ &sv_maxspeed, "sv_maxspeed", "320", CVAR_SERVERINFO | CVAR_ARCHIVE, 0 },
+	{ &sv_accelerate, "sv_accelerate", "10", CVAR_SERVERINFO | CVAR_ARCHIVE, 0 },
+	{ &sv_idealpitchscale, "sv_idealpitchscale", "0.8", CVAR_SERVERINFO | CVAR_ARCHIVE, 0 },
+	{ &sv_aim, "sv_aim", "0.93", CVAR_SERVERINFO | CVAR_ARCHIVE, 0 },
+
 };
 
 static int gameCvarTableSize = ARRAY_LEN( gameCvarTable );
