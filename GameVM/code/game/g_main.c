@@ -448,5 +448,9 @@ void G_RunFrame( int levelTime ) {
 		VectorCopy(edict->v.angles, edict->s.angles);
 		edict->s.modelindex= edict->v.modelindex;
 		edict->s.frame = edict->v.frame;
+
+		// TODO - maybe copy bbox before call to trace_* functions?
+		VectorCopy(edict->v.absmin, edict->r.absmin);
+		VectorCopy(edict->v.absmax, edict->r.absmax);
 	}
 }

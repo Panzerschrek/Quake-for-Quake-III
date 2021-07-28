@@ -142,7 +142,7 @@ trace_t SV_ClipMoveToEntity (edict_t *ent /*clipping entity*/, vec3_t start, vec
 
 	// PANZER TODO - check contents mask
 	// PANZER TODO - use clipping entity
-	trap_Trace(&trace, start, mins, maxs, end, 0 /* no pass entity */, CONTENTS_SOLID);
+	trap_Trace(&trace, start, mins, maxs, end, NUM_FOR_EDICT(ent), CONTENTS_SOLID);
 
 // fix trace up by the offset
 	if (trace.fraction != 1)

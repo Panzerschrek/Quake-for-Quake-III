@@ -264,18 +264,12 @@ int SV_FlyMove (edict_t *ent, float time, trace_t *steptrace)
 		if (trace.fraction == 1)
 			 break;		// moved the entire distance
 
-		if (!trace.entityNum)
-		{
-			G_Printf ("SV_FlyMove: !trace.ent");
-			trace_ent = NULL;
-		}
-		else
-			trace_ent = EDICT_NUM(trace.entityNum);
+		trace_ent = EDICT_NUM(trace.entityNum);
 
 		if (trace.plane.normal[2] > 0.7)
 		{
 			blocked |= 1;		// floor
-			if (trace_ent != NULL && trace_ent->v.solid == SOLID_BSP)
+			if (trace_ent->v.solid == SOLID_BSP)
 			{
 				ent->v.flags =	(int)ent->v.flags | FL_ONGROUND;
 				ent->v.groundentity = EDICT_TO_PROG(trace_ent);

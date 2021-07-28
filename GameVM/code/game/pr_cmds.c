@@ -767,6 +767,7 @@ c_notvis++;
 c_invis++;
 	RETURN_EDICT(ent);
 #endif
+	RETURN_EDICT(sv.edicts);
 }
 
 //============================================================================
