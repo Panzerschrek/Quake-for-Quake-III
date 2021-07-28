@@ -49,6 +49,17 @@ vmCvar_t	coop;
 vmCvar_t	fraglimit;
 vmCvar_t	timelimit;
 
+vmCvar_t	sv_maxvelocity;
+vmCvar_t	sv_gravity;
+vmCvar_t	sv_nostep;
+vmCvar_t	sv_friction;
+vmCvar_t	sv_edgefriction;
+vmCvar_t	sv_stopspeed;
+vmCvar_t	sv_maxspeed;
+vmCvar_t	sv_accelerate;
+vmCvar_t	sv_idealpitchscale;
+vmCvar_t	sv_aim;
+
 static cvarTable_t		gameCvarTable[] = {
 	// noset vars
 	{ NULL, "gamename", GAMEVERSION , CVAR_SERVERINFO | CVAR_ROM, 0, qfalse  },
@@ -68,8 +79,20 @@ static cvarTable_t		gameCvarTable[] = {
 	{ &skill, "skill", "1", CVAR_SERVERINFO | CVAR_ARCHIVE, 0 },
 	{ &deathmatch, "deathmatch", "0", CVAR_SERVERINFO | CVAR_LATCH | CVAR_ARCHIVE, 0 },
 	{ &coop, "coop", "0", CVAR_SERVERINFO | CVAR_LATCH | CVAR_ARCHIVE, 0 },
-	{ &fraglimit, "fraglimit", "0", CVAR_SERVERINFO  | CVAR_ARCHIVE, 0 },
-	{ &timelimit, "timelimit", "0", CVAR_SERVERINFO  | CVAR_ARCHIVE, 0 },
+	{ &fraglimit, "fraglimit", "0", CVAR_SERVERINFO | CVAR_ARCHIVE, 0 },
+	{ &timelimit, "timelimit", "0", CVAR_SERVERINFO | CVAR_ARCHIVE, 0 },
+
+	{ &sv_maxvelocity, "sv_maxvelocity", "2000", CVAR_SERVERINFO | CVAR_ARCHIVE, 0 },
+	{ &sv_gravity, "sv_gravity", "800", CVAR_SERVERINFO | CVAR_ARCHIVE, 0 },
+	{ &sv_nostep, "sv_nostep", "0", CVAR_SERVERINFO | CVAR_ARCHIVE, 0 },
+	{ &sv_friction, "sv_friction", "4", CVAR_SERVERINFO | CVAR_ARCHIVE, 0 },
+	{ &sv_edgefriction, "sv_edgefriction", "2", CVAR_SERVERINFO | CVAR_ARCHIVE, 0 },
+	{ &sv_stopspeed, "sv_stopspeed", "100", CVAR_SERVERINFO | CVAR_ARCHIVE, 0 },
+	{ &sv_maxspeed, "sv_maxspeed", "320", CVAR_SERVERINFO | CVAR_ARCHIVE, 0 },
+	{ &sv_accelerate, "sv_accelerate", "10", CVAR_SERVERINFO | CVAR_ARCHIVE, 0 },
+	{ &sv_idealpitchscale, "sv_idealpitchscale", "0.8", CVAR_SERVERINFO | CVAR_ARCHIVE, 0 },
+	{ &sv_aim, "sv_aim", "0.93", CVAR_SERVERINFO | CVAR_ARCHIVE, 0 },
+
 };
 
 static int gameCvarTableSize = ARRAY_LEN( gameCvarTable );
@@ -213,6 +236,7 @@ void SV_SpawnServer()
 {
 	edict_t		*ent;
 	char		mapname[MAX_OSPATH];
+	int			i;
 
 	trap_Cvar_VariableStringBuffer("mapname", mapname, sizeof(mapname));
 
@@ -246,7 +270,20 @@ void SV_SpawnServer()
 
 	sv.state = ss_loading;
 
+	// leave slots at start for clients only
+	sv.num_edicts = svs.maxclients+1;
+	for (i=0 ; i<svs.maxclients ; i++)
+	{
+		ent = EDICT_NUM(i+1);
+		svs.clients[i].edict = ent;
+	}
+
 	sv.time = 1.0;
+
+	// let the server system know where the entites are
+	trap_LocateGameData(
+		sv.edicts, sv.max_edicts, pr_edict_size,
+		&level.clients[0].ps, sizeof( level.clients[0] ) );
 
 	//
 	// load the rest of the entities
@@ -294,27 +331,25 @@ void G_InitGame( int levelTime, int randomSeed, int restart ) {
 
 	srand( randomSeed );
 
+	// set some level globals
+	memset( &level, 0, sizeof( level ) );
+	level.time = levelTime;
+	level.startTime = levelTime;
+
+	// initialize all clients for this game
+	memset( g_clients, 0, MAX_CLIENTS * sizeof(g_clients[0]) );
+	level.clients = g_clients;
+
+	svs.maxclientslimit = svs.maxclients = 8;
+	svs.clients = G_Alloc (svs.maxclientslimit*sizeof(client_t));
+
 	G_RegisterCvars();
 
 	G_InitMemory();
 
 	PR_Init();
 
-	// set some level globals
-	memset( &level, 0, sizeof( level ) );
-	level.time = levelTime;
-	level.startTime = levelTime;
-
 	SV_SpawnServer();
-
-	// initialize all clients for this game
-	memset( g_clients, 0, MAX_CLIENTS * sizeof(g_clients[0]) );
-	level.clients = g_clients;
-
-	// let the server system know where the entites are
-	trap_LocateGameData(
-		sv.edicts, sv.max_edicts, pr_edict_size,
-		&level.clients[0].ps, sizeof( level.clients[0] ) );
 
 	G_SetModelsConfig();
 
@@ -425,5 +460,9 @@ void G_RunFrame( int levelTime ) {
 		VectorCopy(edict->v.angles, edict->s.angles);
 		edict->s.modelindex= edict->v.modelindex;
 		edict->s.frame = edict->v.frame;
+
+		// TODO - maybe copy bbox before call to trace_* functions?
+		VectorCopy(edict->v.absmin, edict->r.absmin);
+		VectorCopy(edict->v.absmax, edict->r.absmax);
 	}
 }

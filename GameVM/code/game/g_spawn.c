@@ -69,7 +69,7 @@ char *G_NewString( const char *string ) {
 G_SpawnGEntityFromSpawnVars
 ===================
 */
-void G_SpawnGEntityFromSpawnVars( void ) {
+void G_SpawnGEntityFromSpawnVars( qboolean is_worldspawn ) {
 	int			i;
 	qboolean	anglehack;
 	char		keyname[256];
@@ -79,7 +79,7 @@ void G_SpawnGEntityFromSpawnVars( void ) {
 	edict_t		*edict;
 	dfunction_t	*func;
 
-	edict = ED_Alloc ();
+	edict = is_worldspawn ? EDICT_NUM(0) : ED_Alloc ();
 
 	for ( i = 0 ; i < numSpawnVars ; i++ ) {
 		strcpy(keyname, spawnVars[i][0]);
@@ -261,9 +261,12 @@ G_SpawnEntitiesFromString
 void G_SpawnEntitiesFromString( void ) {
 	numSpawnVars = 0;
 
-	// parse and spawn edicts.
-	// Edict #0 is always worldspawm. So, parse it as normal edict (populating variables, like worldtype, mapname, etc.).
+	// Worldspawn.
+	G_ParseSpawnVars();
+	G_SpawnGEntityFromSpawnVars(qtrue);
+
+	// Other entities.
 	while( G_ParseSpawnVars() ) {
-		G_SpawnGEntityFromSpawnVars();
+		G_SpawnGEntityFromSpawnVars(qfalse);
 	}
 }

@@ -610,7 +610,6 @@ traceline (vector1, vector2, tryents)
 */
 void PF_traceline (void)
 {
-#if 0 // PANZER TODO - fix it
 	float	*v1, *v2;
 	trace_t	trace;
 	int		nomonsters;
@@ -626,16 +625,16 @@ void PF_traceline (void)
 	pr_global_struct->trace_allsolid = trace.allsolid;
 	pr_global_struct->trace_startsolid = trace.startsolid;
 	pr_global_struct->trace_fraction = trace.fraction;
-	pr_global_struct->trace_inwater = trace.inwater;
-	pr_global_struct->trace_inopen = trace.inopen;
+	// PANZER TODO - check flags
+	pr_global_struct->trace_inwater = trace.surfaceFlags & CONTENTS_WATER;
+	pr_global_struct->trace_inopen = trace.surfaceFlags == 0;
 	VectorCopy (trace.endpos, pr_global_struct->trace_endpos);
 	VectorCopy (trace.plane.normal, pr_global_struct->trace_plane_normal);
 	pr_global_struct->trace_plane_dist =  trace.plane.dist;	
-	if (trace.ent)
-		pr_global_struct->trace_ent = EDICT_TO_PROG(trace.ent);
+	if (trace.entityNum)
+		pr_global_struct->trace_ent = EDICT_TO_PROG(EDICT_NUM(trace.entityNum));
 	else
 		pr_global_struct->trace_ent = EDICT_TO_PROG(sv.edicts);
-#endif
 }
 
 
@@ -768,6 +767,7 @@ c_notvis++;
 c_invis++;
 	RETURN_EDICT(ent);
 #endif
+	RETURN_EDICT(sv.edicts);
 }
 
 //============================================================================
@@ -1045,16 +1045,12 @@ void PF_coredump (void)
 
 void PF_traceon (void)
 {
-#if 0 // PANZER TODO - fix it
-	pr_trace = true;
-#endif
+	pr_trace = qtrue;
 }
 
 void PF_traceoff (void)
 {
-#if 0 // PANZER TODO - fix it
-	pr_trace = false;
-#endif
+	pr_trace = qfalse;
 }
 
 void PF_eprint (void)
@@ -1114,7 +1110,6 @@ void() droptofloor
 */
 void PF_droptofloor (void)
 {
-#if 0 // PANZER TODO - fix it
 	edict_t		*ent;
 	vec3_t		end;
 	trace_t		trace;
@@ -1124,19 +1119,18 @@ void PF_droptofloor (void)
 	VectorCopy (ent->v.origin, end);
 	end[2] -= 256;
 	
-	trace = SV_Move (ent->v.origin, ent->v.mins, ent->v.maxs, end, false, ent);
+	trace = SV_Move (ent->v.origin, ent->v.mins, ent->v.maxs, end, qfalse, ent);
 
 	if (trace.fraction == 1 || trace.allsolid)
 		G_FLOAT(OFS_RETURN) = 0;
 	else
 	{
 		VectorCopy (trace.endpos, ent->v.origin);
-		SV_LinkEdict (ent, false);
+		SV_LinkEdict (ent, qfalse);
 		ent->v.flags = (int)ent->v.flags | FL_ONGROUND;
-		ent->v.groundentity = EDICT_TO_PROG(trace.ent);
+		ent->v.groundentity = EDICT_TO_PROG(EDICT_NUM(trace.entityNum));
 		G_FLOAT(OFS_RETURN) = 1;
 	}
-#endif
 }
 
 /*
@@ -1198,13 +1192,11 @@ PF_checkbottom
 */
 void PF_checkbottom (void)
 {
-#if 0 // PANZER TODO - fix it
 	edict_t	*ent;
 	
 	ent = G_EDICT(OFS_PARM0);
 
 	G_FLOAT(OFS_RETURN) = SV_CheckBottom (ent);
-#endif
 }
 
 /*
@@ -1214,13 +1206,11 @@ PF_pointcontents
 */
 void PF_pointcontents (void)
 {
-#if 0 // PANZER TODO - fix it
 	float	*v;
 	
 	v = G_VECTOR(OFS_PARM0);
 
 	G_FLOAT(OFS_RETURN) = SV_PointContents (v);	
-#endif
 }
 
 /*
@@ -1261,7 +1251,6 @@ Pick a vector for the player to shoot along
 vector aim(entity, missilespeed)
 =============
 */
-cvar_t	sv_aim = {"sv_aim", "0.93"};
 void PF_aim (void)
 {
 #if 0 // PANZER TODO - fix it
