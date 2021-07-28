@@ -115,12 +115,11 @@ Handles selection or creation of a clipping hull, and offseting (and
 eventually rotation) of the end points
 ==================
 */
-trace_t SV_ClipMoveToEntity (edict_t *ent, vec3_t start, vec3_t mins, vec3_t maxs, vec3_t end)
+trace_t SV_ClipMoveToEntity (edict_t *ent /*clipping entity*/, vec3_t start, vec3_t mins, vec3_t maxs, vec3_t end)
 {
 	trace_t		trace;
 	vec3_t		offset;
 	vec3_t		start_l, end_l;
-	hull_t		*hull;
 
 // fill in a default trace
 	memset (&trace, 0, sizeof(trace_t));
@@ -128,14 +127,13 @@ trace_t SV_ClipMoveToEntity (edict_t *ent, vec3_t start, vec3_t mins, vec3_t max
 	trace.allsolid = qtrue;
 	VectorCopy (end, trace.endpos);
 
-// get the clipping hull
-	hull = SV_HullForEntity (ent, mins, maxs, offset);
 
 	VectorSubtract (start, offset, start_l);
 	VectorSubtract (end, offset, end_l);
 
-// trace a line through the apropriate clipping hull
-	SV_RecursiveHullCheck (hull, hull->firstclipnode, 0, 1, start_l, end_l, &trace);
+	// PANZER TODO - check contents mask
+	// PANZER TODO - use clipping entity
+	trap_Trace(&trace, start, mins, maxs, end, 0 /* no pass entity */, CONTENTS_SOLID);
 
 // fix trace up by the offset
 	if (trace.fraction != 1)
@@ -143,7 +141,7 @@ trace_t SV_ClipMoveToEntity (edict_t *ent, vec3_t start, vec3_t mins, vec3_t max
 
 // did we clip the move?
 	if (trace.fraction < 1 || trace.startsolid  )
-		trace.ent = ent;
+		trace.entityNum = NUM_FOR_EDICT(ent);
 
 	return trace;
 }
@@ -157,12 +155,13 @@ SV_ClipToLinks
 Mins and maxs enclose the entire area swept by the move
 ====================
 */
-void SV_ClipToLinks ( areanode_t *node, moveclip_t *clip )
+void SV_ClipToLinks ( moveclip_t *clip )
 {
 	link_t		*l, *next;
 	edict_t		*touch;
 	trace_t		trace;
 
+#if 0 // PANZER TODO - fix it
 // touch linked edicts
 	for (l = node->solid_edicts.next ; l != &node->solid_edicts ; l = next)
 	{
@@ -228,6 +227,7 @@ void SV_ClipToLinks ( areanode_t *node, moveclip_t *clip )
 		SV_ClipToLinks ( node->children[0], clip );
 	if ( clip->boxmins[node->axis] < node->dist )
 		SV_ClipToLinks ( node->children[1], clip );
+#endif
 }
 
 
@@ -295,7 +295,7 @@ trace_t SV_Move (vec3_t start, vec3_t mins, vec3_t maxs, vec3_t end, int type, e
 	SV_MoveBounds ( start, clip.mins2, clip.maxs2, end, clip.boxmins, clip.boxmaxs );
 
 // clip to entities
-	SV_ClipToLinks ( sv_areanodes, &clip );
+	SV_ClipToLinks ( &clip );
 
 	return clip.trace;
 }
