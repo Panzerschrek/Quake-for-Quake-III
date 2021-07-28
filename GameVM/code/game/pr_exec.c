@@ -354,6 +354,7 @@ int PR_LeaveFunction (void)
 }
 
 
+#define PARANOID
 /*
 ====================
 PR_ExecuteProgram
@@ -575,7 +576,9 @@ while (1)
 	case OP_LOAD_S:
 	case OP_LOAD_FNC:
 		ed = PROG_TO_EDICT(a->edict);
+#ifdef PARANOID
 		NUM_FOR_EDICT(ed);		// make sure it's in range
+#endif
 		a = (eval_t *)((int *)&ed->v + b->_int);
 		c->_int = a->_int;
 		break;
