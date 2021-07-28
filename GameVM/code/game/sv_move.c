@@ -110,7 +110,6 @@ pr_global_struct->trace_normal is set to the normal of the blocking wall
 */
 qboolean SV_movestep (edict_t *ent, vec3_t move, qboolean relink)
 {
-#if 0 // PANZER TODO - fix it
 	float		dz;
 	vec3_t		oldorg, neworg, end;
 	trace_t		trace;
@@ -141,7 +140,7 @@ qboolean SV_movestep (edict_t *ent, vec3_t move, qboolean relink)
 	
 			if (trace.fraction == 1)
 			{
-				if ( ((int)ent->v.flags & FL_SWIM) && SV_PointContents(trace.endpos) == CONTENTS_EMPTY )
+				if ( ((int)ent->v.flags & FL_SWIM) && SV_PointContents(trace.endpos) == 0 )
 					return qfalse;	// swim monster left water
 	
 				VectorCopy (trace.endpos, ent->v.origin);
@@ -211,14 +210,12 @@ qboolean SV_movestep (edict_t *ent, vec3_t move, qboolean relink)
 //		G_Printf ("back on ground\n");
 		ent->v.flags = (int)ent->v.flags & ~FL_PARTIALGROUND;
 	}
-	ent->v.groundentity = EDICT_TO_PROG(trace.ent);
+	ent->v.groundentity = EDICT_TO_PROG(EDICT_NUM(trace.entityNum));
 
 // the move is ok
 	if (relink)
 		SV_LinkEdict (ent, qtrue);
 	return qtrue;
-#endif
-	return qfalse;
 }
 
 
@@ -362,10 +359,8 @@ void SV_NewChaseDir (edict_t *actor, edict_t *enemy, float dist)
 
 // if a bridge was pulled out from underneath a monster, it may not have
 // a valid standing position at all
-#if 0 // PANZER TODO - fix it
 	if (!SV_CheckBottom (actor))
 		SV_FixCheckBottom (actor);
-#endif
 }
 
 /*

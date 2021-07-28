@@ -40,14 +40,6 @@ solid_edge items only clip against bsp models.
 
 */
 
-#if 0 // PANZER TODO - fix it
-cvar_t	sv_friction = {"sv_friction","4",false,true};
-cvar_t	sv_stopspeed = {"sv_stopspeed","100"};
-cvar_t	sv_gravity = {"sv_gravity","800",false,true};
-cvar_t	sv_maxvelocity = {"sv_maxvelocity","2000"};
-cvar_t	sv_nostep = {"sv_nostep","0"};
-#endif
-
 
 #define	MOVE_EPSILON	0.01
 
@@ -998,7 +990,6 @@ SV_CheckWaterTransition
 void SV_CheckWaterTransition (edict_t *ent)
 {
 	int		cont;
-	#if 0 // PANZER TODO - fix it
 	cont = SV_PointContents (ent->v.origin);
 	if (!ent->v.watertype)
 	{	// just spawned here
@@ -1009,7 +1000,7 @@ void SV_CheckWaterTransition (edict_t *ent)
 	
 	if (cont <= CONTENTS_WATER)
 	{
-		if (ent->v.watertype == CONTENTS_EMPTY)
+		if (ent->v.watertype == 0)
 		{	// just crossed into water
 			SV_StartSound (ent, 0, "misc/h2ohit1.wav", 255, 1);
 		}		
@@ -1018,14 +1009,13 @@ void SV_CheckWaterTransition (edict_t *ent)
 	}
 	else
 	{
-		if (ent->v.watertype != CONTENTS_EMPTY)
+		if (ent->v.watertype != 0)
 		{	// just crossed into water
 			SV_StartSound (ent, 0, "misc/h2ohit1.wav", 255, 1);
 		}		
-		ent->v.watertype = CONTENTS_EMPTY;
+		ent->v.watertype = 0;
 		ent->v.waterlevel = cont;
 	}
-	#endif
 }
 
 /*
