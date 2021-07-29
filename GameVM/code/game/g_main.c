@@ -330,6 +330,8 @@ void G_InitGame( int levelTime, int randomSeed, int restart ) {
 
 	srand( randomSeed );
 
+	G_InitMemory();
+
 	// set some level globals
 	memset( &level, 0, sizeof( level ) );
 	level.time = levelTime;
@@ -341,8 +343,6 @@ void G_InitGame( int levelTime, int randomSeed, int restart ) {
 	memset( svs.clients, 0, svs.maxclientslimit * sizeof(svs.clients[0]) );
 
 	G_RegisterCvars();
-
-	G_InitMemory();
 
 	PR_Init();
 

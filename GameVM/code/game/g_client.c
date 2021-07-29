@@ -82,26 +82,26 @@ and on transition between teams, but doesn't happen on respawns
 ============
 */
 void ClientBegin( int clientNum ) {
-	client_t		*client;
-	int				edictnum;
 
-	client = svs.clients + clientNum;
+	host_client = svs.clients + clientNum;
+	sv_player = host_client->edict;
 
-	G_Printf ("Client %d entered\n", clientNum);
+	strcpy (host_client->name, "SomeClient");
 
-	edictnum = clientNum+1;
+	// set up the edict
+	memset (&sv_player->v, 0, progs->entityfields * 4);
+	sv_player->v.colormap = NUM_FOR_EDICT(sv_player);
+	sv_player->v.team = (host_client->colors & 15) + 1;
+	sv_player->v.netname = ED_NewString (host_client->name) - pr_strings;
 
-	strcpy (client->name, "SomeClient");
-
-	sv_player = EDICT_NUM(edictnum);
-
+	// copy spawn parms out of the client_t
 	pr_global_struct->time = sv.time;
 	pr_global_struct->self = EDICT_TO_PROG(sv_player);
 	PR_ExecuteProgram (pr_global_struct->ClientConnect);
 
 	PR_ExecuteProgram (pr_global_struct->PutClientInServer);
 
-	client->spawned = qtrue;
+	host_client->spawned = qtrue;
 }
 
 void ClientDisconnect( int clientNum ) {
