@@ -1158,9 +1158,7 @@ void SV_Physics (void)
 		}
 
 		if (i > 0 && i <= svs.maxclients)
-		{
 			SV_Physics_Client (ent, i);
-		}
 		else if (ent->v.movetype == MOVETYPE_PUSH)
 			SV_Physics_Pusher (ent);
 		else if (ent->v.movetype == MOVETYPE_NONE)

@@ -274,6 +274,7 @@ void SV_SpawnServer()
 	{
 		ent = EDICT_NUM(i+1);
 		svs.clients[i].edict = ent;
+		ent->s.number = i+1;
 	}
 
 	sv.time = 1.0;
@@ -460,5 +461,18 @@ void G_RunFrame( int levelTime ) {
 		// TODO - maybe copy bbox before call to trace_* functions?
 		VectorCopy(edict->v.absmin, edict->r.absmin);
 		VectorCopy(edict->v.absmax, edict->r.absmax);
+	}
+
+	for(i = 0; i < svs.maxclients; i++){
+		if(!svs.clients[i].active || svs.clients[i].edict == NULL) {
+			continue;
+		}
+		G_Printf("Client %d pos: %f %f %f\n", i,
+			svs.clients[i].edict->v.origin[0],
+			svs.clients[i].edict->v.origin[1],
+			svs.clients[i].edict->v.origin[2]);
+		VectorCopy(svs.clients[i].edict->v.origin, svs.clients[i].ps.origin);
+		VectorCopy(svs.clients[i].edict->v.angles, svs.clients[i].ps.viewangles);
+		break;
 	}
 }

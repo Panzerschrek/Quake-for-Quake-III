@@ -51,18 +51,23 @@ void ClientUserinfoChanged( int clientNum ) {
 }
 
 char *ClientConnect( int clientNum, qboolean firstTime, qboolean isBot ) {
+	edict_t			*ent;
+	client_t		*client;
+	int				edictnum;
 
-	host_client = svs.clients + clientNum;
-	sv_player = host_client->edict;
-	memset( host_client, 0, sizeof(*host_client) );
+	G_Printf ("Client %d connected\n", clientNum);
 
-	// get and distribute relevant parameters
-	G_LogPrintf( "ClientConnect: %i\n", clientNum );
-	ClientUserinfoChanged( clientNum );
+	edictnum = clientNum+1;
 
-	pr_global_struct->time = sv.time;
-	pr_global_struct->self = EDICT_TO_PROG(sv_player);
-	PR_ExecuteProgram (pr_global_struct->ClientConnect);
+	ent = EDICT_NUM(edictnum);
+
+	client = svs.clients + clientNum;
+	memset(client, 0, sizeof(*client));
+	strcpy (client->name, "unconnected");
+	client->active = qtrue;
+	client->spawned = qfalse;
+	client->edict = ent;
+	client->ps.clientNum = clientNum;
 
 	return NULL;
 }
@@ -77,96 +82,28 @@ and on transition between teams, but doesn't happen on respawns
 ============
 */
 void ClientBegin( int clientNum ) {
-	gclient_t	*client;
-	int			flags;
+	client_t		*client;
+	int				edictnum;
 
 	client = svs.clients + clientNum;
 
-	client->active = qtrue;
+	G_Printf ("Client %d entered\n", clientNum);
 
-	// save eflags around this, because changing teams will
-	// cause this to happen with a valid entity, and we
-	// want to make sure the teleport bit is set right
-	// so the viewpoint doesn't interpolate through the
-	// world to the new position
-	flags = client->ps.eFlags;
-	memset( &client->ps, 0, sizeof( client->ps ) );
-	client->ps.eFlags = flags;
+	edictnum = clientNum+1;
 
-	// locate ent at a spawn point
-	ClientSpawn( client );
+	strcpy (client->name, "SomeClient");
 
-	G_LogPrintf( "ClientBegin: %i\n", clientNum );
-}
+	sv_player = EDICT_NUM(edictnum);
 
-/*
-===========
-ClientSpawn
+	pr_global_struct->time = sv.time;
+	pr_global_struct->self = EDICT_TO_PROG(sv_player);
+	PR_ExecuteProgram (pr_global_struct->ClientConnect);
 
-Called every time a client is placed fresh in the world:
-after the first ClientBegin, and after each respawn
-Initializes all non-persistant parts of playerState
-============
-*/
-void ClientSpawn(gclient_t* client) {
-	int		index;
-	vec3_t	spawn_origin, spawn_angles;
-	int		i;
-	int		persistant[MAX_PERSISTANT];
-	int		eventSequence;
-	char	userinfo[MAX_INFO_STRING];
+	PR_ExecuteProgram (pr_global_struct->PutClientInServer);
 
-	index = client - svs.clients;
-
-	VectorClear(spawn_origin);
-
-	// clear everything but the persistant data
-
-	for ( i = 0 ; i < MAX_PERSISTANT ; i++ ) {
-		persistant[i] = client->ps.persistant[i];
-	}
-	eventSequence = client->ps.eventSequence;
-
-	Com_Memset (client, 0, sizeof(*client));
-
-	client->ps.ping = 0;
-//	client->areabits = savedAreaBits;
-
-	for ( i = 0 ; i < MAX_PERSISTANT ; i++ ) {
-		client->ps.persistant[i] = persistant[i];
-	}
-	client->ps.eventSequence = eventSequence;
-
-	trap_GetUserinfo( index, userinfo, sizeof(userinfo) );
-
-	client->ps.clientNum = index;
-
-	// health will count down towards max_health
-	client->ps.stats[STAT_HEALTH] = 125;
-
-	VectorCopy( spawn_origin, client->ps.origin );
-
-	trap_GetUsercmd( client - svs.clients, &client->cmd );
-	SetClientViewAngle( client, spawn_angles );
-	// don't allow full run speed for a bit
-	client->ps.pm_time = 100;
-
-	// run a client frame to drop exactly to the floor,
-	// initialize animations and other things
-	client->ps.commandTime = level.time - 100;
-
-	// run the presend to set anything else, follow spectators wait
-	// until all clients have been reconnected after map_restart
-	ClientEndFrame( client );
+	client->spawned = qtrue;
 }
 
 void ClientDisconnect( int clientNum ) {
-	gclient_t	*client;
-
-	client = svs.clients + clientNum;
-	G_LogPrintf( "ClientDisconnect: %i\n", clientNum );
-
-	client->active = qtrue;
+	// PANZER TODO
 }
-
-
