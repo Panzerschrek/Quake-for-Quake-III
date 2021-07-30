@@ -91,6 +91,8 @@ typedef struct client_s
 	struct qsocket_s *netconnection;	// communications handle
 
 	usercmd_t		cmd;				// movement
+	int				lastCmdTime;		// level.time of last usercmd_t, for EF_CONNECTION
+
 	vec3_t			wishdir;			// intended motion calced from cmd
 
 	sizebuf_t		message;			// can be added to at any time,

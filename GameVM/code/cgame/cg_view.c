@@ -43,14 +43,6 @@ static void CG_OffsetFirstPersonView( void ) {
 	origin = cg.refdef.vieworg;
 	angles = cg.refdefViewAngles;
 
-	// if dead, fix the angle and don't add any kick
-	if ( cg.snap.ps.stats[STAT_HEALTH] <= 0 ) {
-		angles[ROLL] = 40;
-		angles[PITCH] = -15;
-		origin[2] += cg.snap.ps.viewheight;
-		return;
-	}
-
 	// add view height
 	origin[2] += cg.snap.ps.viewheight;
 }

@@ -58,6 +58,9 @@ vmCvar_t	sv_accelerate;
 vmCvar_t	sv_idealpitchscale;
 vmCvar_t	sv_aim;
 
+vmCvar_t	cl_rollspeed;
+vmCvar_t	cl_rollangle;
+
 static cvarTable_t		gameCvarTable[] = {
 	// noset vars
 	{ NULL, "gamename", GAMEVERSION , CVAR_SERVERINFO | CVAR_ROM, 0, qfalse  },
@@ -90,6 +93,9 @@ static cvarTable_t		gameCvarTable[] = {
 	{ &sv_accelerate, "sv_accelerate", "10", CVAR_SERVERINFO | CVAR_ARCHIVE, 0 },
 	{ &sv_idealpitchscale, "sv_idealpitchscale", "0.8", CVAR_SERVERINFO | CVAR_ARCHIVE, 0 },
 	{ &sv_aim, "sv_aim", "0.93", CVAR_SERVERINFO | CVAR_ARCHIVE, 0 },
+
+	{ &cl_rollspeed, "cl_rollspeed", "200", CVAR_SERVERINFO | CVAR_ARCHIVE, 0 },
+	{ &cl_rollangle, "cl_rollangle", "2.0", CVAR_SERVERINFO | CVAR_ARCHIVE, 0 },
 
 };
 
@@ -467,12 +473,7 @@ void G_RunFrame( int levelTime ) {
 		if(!svs.clients[i].active || svs.clients[i].edict == NULL) {
 			continue;
 		}
-		G_Printf("Client %d pos: %f %f %f\n", i,
-			svs.clients[i].edict->v.origin[0],
-			svs.clients[i].edict->v.origin[1],
-			svs.clients[i].edict->v.origin[2]);
 		VectorCopy(svs.clients[i].edict->v.origin, svs.clients[i].ps.origin);
 		VectorCopy(svs.clients[i].edict->v.angles, svs.clients[i].ps.viewangles);
-		break;
 	}
 }

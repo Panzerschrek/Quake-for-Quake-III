@@ -127,6 +127,9 @@ extern	vmCvar_t	sv_accelerate;
 extern	vmCvar_t	sv_idealpitchscale;
 extern	vmCvar_t	sv_aim;
 
+extern	vmCvar_t	cl_rollspeed;
+extern	vmCvar_t	cl_rollangle;
+
 void	trap_Print( const char *text );
 void	trap_Error( const char *text ) __attribute__((noreturn));
 int		trap_Milliseconds( void );

@@ -8,7 +8,6 @@ server_static_t	svs;
 int	current_skill;
 
 client_t	*host_client;			// current client
-edict_t	*sv_player;
 
 /*
 =============================================================================

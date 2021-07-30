@@ -20,13 +20,9 @@ Foundation, Inc., 59 Temple Place - Suite 330, Boston, MA  02111-1307, USA.
 */
 // sv_user.c -- server code for moving users
 
-#include "quakedef.h"
+#include "g_local.h"
 
 edict_t	*sv_player;
-
-extern	cvar_t	sv_friction;
-cvar_t	sv_edgefriction = {"edgefriction", "2"};
-extern	cvar_t	sv_stopspeed;
 
 static	vec3_t		forward, right, up;
 
@@ -41,9 +37,6 @@ float	*velocity;
 qboolean	onground;
 
 usercmd_t	cmd;
-
-cvar_t	sv_idealpitchscale = {"sv_idealpitchscale","0.8"};
-
 
 /*
 ===============
@@ -140,7 +133,7 @@ void SV_UserFriction (void)
 	start[2] = origin[2] + sv_player->v.mins[2];
 	stop[2] = start[2] - 34;
 
-	trace = SV_Move (start, vec3_origin, vec3_origin, stop, true, sv_player);
+	trace = SV_Move (start, vec3_origin, vec3_origin, stop, qtrue, sv_player);
 
 	if (trace.fraction == 1.0)
 		friction = sv_friction.value*sv_edgefriction.value;
@@ -165,29 +158,6 @@ void SV_UserFriction (void)
 SV_Accelerate
 ==============
 */
-cvar_t	sv_maxspeed = {"sv_maxspeed", "320", false, true};
-cvar_t	sv_accelerate = {"sv_accelerate", "10"};
-#if 0
-void SV_Accelerate (vec3_t wishvel)
-{
-	int			i;
-	float		addspeed, accelspeed;
-	vec3_t		pushvec;
-
-	if (wishspeed == 0)
-		return;
-
-	VectorSubtract (wishvel, velocity, pushvec);
-	addspeed = VectorNormalize (pushvec);
-
-	accelspeed = sv_accelerate.value*host_frametime*addspeed;
-	if (accelspeed > addspeed)
-		accelspeed = addspeed;
-
-	for (i=0 ; i<3 ; i++)
-		velocity[i] += accelspeed*pushvec[i];
-}
-#endif
 void SV_Accelerate (void)
 {
 	int			i;
@@ -257,14 +227,14 @@ void SV_WaterMove (void)
 	AngleVectors (sv_player->v.v_angle, forward, right, up);
 
 	for (i=0 ; i<3 ; i++)
-		wishvel[i] = forward[i]*cmd.forwardmove + right[i]*cmd.sidemove;
+		wishvel[i] = forward[i]*cmd.forwardmove + right[i]*cmd.rightmove;
 
-	if (!cmd.forwardmove && !cmd.sidemove && !cmd.upmove)
+	if (!cmd.forwardmove && !cmd.rightmove && !cmd.upmove)
 		wishvel[2] -= 60;		// drift towards bottom
 	else
 		wishvel[2] += cmd.upmove;
 
-	wishspeed = Length(wishvel);
+	wishspeed = VectorLength(wishvel);
 	if (wishspeed > sv_maxspeed.value)
 	{
 		VectorScale (wishvel, sv_maxspeed.value/wishspeed, wishvel);
@@ -275,7 +245,7 @@ void SV_WaterMove (void)
 //
 // water friction
 //
-	speed = Length (velocity);
+	speed = VectorLength (velocity);
 	if (speed)
 	{
 		newspeed = speed - host_frametime * speed * sv_friction.value;
@@ -333,7 +303,7 @@ void SV_AirMove (void)
 	AngleVectors (sv_player->v.angles, forward, right, up);
 
 	fmove = cmd.forwardmove;
-	smove = cmd.sidemove;
+	smove = cmd.rightmove;
 
 // hack to not let you back into teleporter
 	if (sv.time < sv_player->v.teleport_time && fmove < 0)
@@ -396,7 +366,10 @@ void SV_ClientThink (void)
 // if dead, behave differently
 //
 	if (sv_player->v.health <= 0)
-		return;
+	{
+		// PANZER TODO - fix this.
+		//G_Printf("Client is dead\n");
+	}
 
 //
 // angles
@@ -429,202 +402,3 @@ void SV_ClientThink (void)
 
 	SV_AirMove ();
 }
-
-
-/*
-===================
-SV_ReadClientMove
-===================
-*/
-void SV_ReadClientMove (usercmd_t *move)
-{
-	int		i;
-	vec3_t	angle;
-	int		bits;
-
-// read ping time
-	host_client->ping_times[host_client->num_pings%NUM_PING_TIMES]
-		= sv.time - MSG_ReadFloat ();
-	host_client->num_pings++;
-
-// read current angles
-	for (i=0 ; i<3 ; i++)
-		angle[i] = MSG_ReadAngle ();
-
-	VectorCopy (angle, host_client->edict->v.v_angle);
-
-// read movement
-	move->forwardmove = MSG_ReadShort ();
-	move->sidemove = MSG_ReadShort ();
-	move->upmove = MSG_ReadShort ();
-
-// read buttons
-	bits = MSG_ReadByte ();
-	host_client->edict->v.button0 = bits & 1;
-	host_client->edict->v.button2 = (bits & 2)>>1;
-
-	i = MSG_ReadByte ();
-	if (i)
-		host_client->edict->v.impulse = i;
-
-#ifdef QUAKE2
-// read light level
-	host_client->edict->v.light_level = MSG_ReadByte ();
-#endif
-}
-
-/*
-===================
-SV_ReadClientMessage
-
-Returns false if the client should be killed
-===================
-*/
-qboolean SV_ReadClientMessage (void)
-{
-	int		ret;
-	int		cmd;
-	char		*s;
-
-	do
-	{
-nextmsg:
-		ret = NET_GetMessage (host_client->netconnection);
-		if (ret == -1)
-		{
-			Sys_Printf ("SV_ReadClientMessage: NET_GetMessage failed\n");
-			return false;
-		}
-		if (!ret)
-			return true;
-
-		MSG_BeginReading ();
-
-		while (1)
-		{
-			if (!host_client->active)
-				return false;	// a command caused an error
-
-			if (msg_badread)
-			{
-				Sys_Printf ("SV_ReadClientMessage: badread\n");
-				return false;
-			}
-
-			cmd = MSG_ReadChar ();
-
-			switch (cmd)
-			{
-			case -1:
-				goto nextmsg;		// end of message
-
-			default:
-				Sys_Printf ("SV_ReadClientMessage: unknown command char\n");
-				return false;
-
-			case clc_nop:
-//				Sys_Printf ("clc_nop\n");
-				break;
-
-			case clc_stringcmd:
-				s = MSG_ReadString ();
-				if (host_client->privileged)
-					ret = 2;
-				else
-					ret = 0;
-				if (Q_strncasecmp(s, "status", 6) == 0)
-					ret = 1;
-				else if (Q_strncasecmp(s, "god", 3) == 0)
-					ret = 1;
-				else if (Q_strncasecmp(s, "notarget", 8) == 0)
-					ret = 1;
-				else if (Q_strncasecmp(s, "fly", 3) == 0)
-					ret = 1;
-				else if (Q_strncasecmp(s, "name", 4) == 0)
-					ret = 1;
-				else if (Q_strncasecmp(s, "noclip", 6) == 0)
-					ret = 1;
-				else if (Q_strncasecmp(s, "say", 3) == 0)
-					ret = 1;
-				else if (Q_strncasecmp(s, "say_team", 8) == 0)
-					ret = 1;
-				else if (Q_strncasecmp(s, "tell", 4) == 0)
-					ret = 1;
-				else if (Q_strncasecmp(s, "color", 5) == 0)
-					ret = 1;
-				else if (Q_strncasecmp(s, "kill", 4) == 0)
-					ret = 1;
-				else if (Q_strncasecmp(s, "pause", 5) == 0)
-					ret = 1;
-				else if (Q_strncasecmp(s, "spawn", 5) == 0)
-					ret = 1;
-				else if (Q_strncasecmp(s, "begin", 5) == 0)
-					ret = 1;
-				else if (Q_strncasecmp(s, "prespawn", 8) == 0)
-					ret = 1;
-				else if (Q_strncasecmp(s, "kick", 4) == 0)
-					ret = 1;
-				else if (Q_strncasecmp(s, "ping", 4) == 0)
-					ret = 1;
-				else if (Q_strncasecmp(s, "give", 4) == 0)
-					ret = 1;
-				else if (Q_strncasecmp(s, "ban", 3) == 0)
-					ret = 1;
-				if (ret == 2)
-					Cbuf_InsertText (s);
-				else if (ret == 1)
-					Cmd_ExecuteString (s, src_client);
-				else
-					Con_DPrintf("%s tried to %s\n", host_client->name, s);
-				break;
-
-			case clc_disconnect:
-//				Sys_Printf ("SV_ReadClientMessage: client disconnected\n");
-				return false;
-
-			case clc_move:
-				SV_ReadClientMove (&host_client->cmd);
-				break;
-			}
-		}
-	} while (ret == 1);
-
-	return true;
-}
-
-
-/*
-==================
-SV_RunClients
-==================
-*/
-void SV_RunClients (void)
-{
-	int				i;
-
-	for (i=0, host_client = svs.clients ; i<svs.maxclients ; i++, host_client++)
-	{
-		if (!host_client->active)
-			continue;
-
-		sv_player = host_client->edict;
-
-		if (!SV_ReadClientMessage ())
-		{
-			SV_DropClient (false);	// client misbehaved...
-			continue;
-		}
-
-		if (!host_client->spawned)
-		{
-		// clear client movement until a new packet is received
-			memset (&host_client->cmd, 0, sizeof(host_client->cmd));
-			continue;
-		}
-
-// always pause in single player if in console or menus
-		if (!sv.paused && (svs.maxclients > 1 || key_dest == key_game) )
-			SV_ClientThink ();
-	}
-}
-

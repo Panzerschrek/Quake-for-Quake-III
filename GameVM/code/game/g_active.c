@@ -35,8 +35,6 @@ once for each server frame, which makes for smooth demo recording.
 ==============
 */
 void ClientThink_real( gclient_t *client ) {
-	pmove_t		pm;
-	int			oldEventSequence;
 	int			msec;
 	usercmd_t	*ucmd;
 
@@ -58,37 +56,11 @@ void ClientThink_real( gclient_t *client ) {
 		msec = 200;
 	}
 
-	if ( pmove_msec.integer < 8 ) {
-		trap_Cvar_Set("pmove_msec", "8");
-		trap_Cvar_Update(&pmove_msec);
-	}
-	else if (pmove_msec.integer > 33) {
-		trap_Cvar_Set("pmove_msec", "33");
-		trap_Cvar_Update(&pmove_msec);
-	}
+	host_client = client;
+	sv_player = host_client->edict;
+	host_frametime = msec / 1000.0;
 
-	if ( pmove_fixed.integer ) {
-		ucmd->serverTime = ((ucmd->serverTime + pmove_msec.integer-1) / pmove_msec.integer) * pmove_msec.integer;
-		//if (ucmd->serverTime - client->ps.commandTime <= 0)
-		//	return;
-	}
-
-	client->ps.gravity = 0;
-
-	// set speed
-	client->ps.speed = g_speed.value;
-
-	// set up for pmove
-	oldEventSequence = client->ps.eventSequence;
-
-	memset (&pm, 0, sizeof(pm));
-
-	pm.ps = &client->ps;
-	pm.cmd = *ucmd;
-	pm.pmove_fixed = pmove_fixed.integer;
-	pm.pmove_msec = pmove_msec.integer;
-
-	Pmove (&pm);
+	SV_ClientThink();
 }
 
 /*
@@ -106,9 +78,10 @@ void ClientThink( int clientNum ) {
 
 	// mark the time we got info, so we can display the
 	// phone jack if they don't get any for a while
-	//client->ps.lastCmdTime = level.time;
+	client->lastCmdTime = level.time;
 
 	ClientThink_real( client );
+	client->cmd.serverTime = level.time;
 }
 
 
