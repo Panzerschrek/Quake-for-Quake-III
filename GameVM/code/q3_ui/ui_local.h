@@ -324,11 +324,6 @@ extern void UI_UpdateCvars( void );
 //
 extern void UI_CreditMenu( void );
 
-//
-// ui_ingame.c
-//
-extern void InGame_Cache( void );
-extern void UI_InGameMenu(void);
 
 //
 // ui_confirm.c
@@ -344,22 +339,11 @@ extern void UI_Message( const char **lines );
 extern void UI_SetupMenu_Cache( void );
 extern void UI_SetupMenu(void);
 
-//
-// ui_team.c
-//
-extern void UI_TeamMainMenu( void );
-extern void TeamMain_Cache( void );
 
 //
 // ui_connect.c
 //
 extern void UI_DrawConnectScreen( qboolean overlay );
-
-//
-// ui_controls2.c
-//
-extern void UI_ControlsMenu( void );
-extern void Controls_Cache( void );
 
 //
 // ui_demo2.c
@@ -368,36 +352,10 @@ extern void UI_DemosMenu( void );
 extern void Demos_Cache( void );
 
 //
-// ui_cinematics.c
-//
-extern void UI_CinematicsMenu( void );
-extern void UI_CinematicsMenu_f( void );
-extern void UI_CinematicsMenu_Cache( void );
-
-//
 // ui_mods.c
 //
 extern void UI_ModsMenu( void );
 extern void UI_ModsMenu_Cache( void );
-
-//
-// ui_cdkey.c
-//
-extern void UI_CDKeyMenu( void );
-extern void UI_CDKeyMenu_Cache( void );
-extern void UI_CDKeyMenu_f( void );
-
-//
-// ui_playermodel.c
-//
-extern void UI_PlayerModelMenu( void );
-extern void PlayerModel_Cache( void );
-
-//
-// ui_playersettings.c
-//
-extern void UI_PlayerSettingsMenu( void );
-extern void PlayerSettings_Cache( void );
 
 //
 // ui_preferences.c
@@ -406,33 +364,12 @@ extern void UI_PreferencesMenu( void );
 extern void Preferences_Cache( void );
 
 //
-// ui_specifyleague.c
-//
-extern void UI_SpecifyLeagueMenu( void );
-extern void SpecifyLeague_Cache( void );
-
-//
-// ui_specifyserver.c
-//
-extern void UI_SpecifyServerMenu( void );
-extern void SpecifyServer_Cache( void );
-
-//
 // ui_servers2.c
 //
 #define MAX_FAVORITESERVERS 16
 
 extern void UI_ArenaServersMenu( void );
 extern void ArenaServers_Cache( void );
-
-//
-// ui_startserver.c
-//
-extern void UI_StartServerMenu( qboolean multiplayer );
-extern void StartServer_Cache( void );
-extern void ServerOptions_Cache( void );
-extern void UI_BotSelectMenu( char *bot );
-extern void UI_BotSelectMenu_Cache( void );
 
 //
 // ui_serverinfo.c
@@ -514,31 +451,6 @@ extern qboolean		m_entersound;
 extern uiStatic_t	uis;
 
 //
-// ui_spLevel.c
-//
-void UI_SPLevelMenu_Cache( void );
-void UI_SPLevelMenu( void );
-void UI_SPLevelMenu_f( void );
-void UI_SPLevelMenu_ReInit( void );
-
-//
-// ui_spArena.c
-//
-void UI_SPArena_Start( const char *arenaInfo );
-
-//
-// ui_spPostgame.c
-//
-void UI_SPPostgameMenu_Cache( void );
-void UI_SPPostgameMenu_f( void );
-
-//
-// ui_spSkill.c
-//
-void UI_SPSkillMenu( const char *arenaInfo );
-void UI_SPSkillMenu_Cache( void );
-
-//
 // ui_syscalls.c
 //
 void			trap_Print( const char *string );
@@ -606,18 +518,6 @@ qboolean               trap_VerifyCDKey( const char *key, const char *chksum);
 void			trap_SetPbClStatus( int status );
 
 //
-// ui_addbots.c
-//
-void UI_AddBots_Cache( void );
-void UI_AddBotsMenu( void );
-
-//
-// ui_removebots.c
-//
-void UI_RemoveBots_Cache( void );
-void UI_RemoveBotsMenu( void );
-
-//
 // ui_teamorders.c
 //
 extern void UI_TeamOrdersMenu( void );
@@ -683,7 +583,6 @@ int UI_TierCompleted( int levelWon );
 qboolean UI_ShowTierVideo( int tier );
 qboolean UI_CanShowTierVideo( int tier );
 int  UI_GetCurrentGame( void );
-void UI_NewGame( void );
 void UI_LogAwardData( int award, int data );
 int UI_GetAwardLevel( int award );
 
@@ -692,16 +591,6 @@ void UI_SPUnlockMedals_f( void );
 
 void UI_InitGameinfo( void );
 
-//GRank
-
-//
-// ui_rankings.c
-//
-void Rankings_DrawText( void* self );
-void Rankings_DrawName( void* self );
-void Rankings_DrawPassword( void* self );
-void Rankings_Cache( void );
-void UI_RankingsMenu( void );
 
 //
 // ui_login.c
@@ -715,10 +604,5 @@ void UI_LoginMenu( void );
 void Signup_Cache( void );
 void UI_SignupMenu( void );
 
-//
-// ui_rankstatus.c
-//
-void RankStatus_Cache( void );
-void UI_RankStatusMenu( void );
 
 #endif

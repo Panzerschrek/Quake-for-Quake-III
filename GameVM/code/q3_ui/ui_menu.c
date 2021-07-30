@@ -97,7 +97,6 @@ void Main_MenuEvent (void* ptr, int event) {
 
 	switch( ((menucommon_s*)ptr)->id ) {
 	case ID_SINGLEPLAYER:
-		UI_SPLevelMenu();
 		break;
 
 	case ID_MULTIPLAYER:
@@ -113,7 +112,6 @@ void Main_MenuEvent (void* ptr, int event) {
 		break;
 
 	case ID_CINEMATICS:
-		UI_CinematicsMenu();
 		break;
 
 	case ID_MODS:
@@ -272,16 +270,6 @@ void UI_MainMenu( void ) {
 	int		style = UI_CENTER | UI_DROPSHADOW;
 
 	trap_Cvar_Set( "sv_killserver", "1" );
-
-	if( !uis.demoversion && !ui_cdkeychecked.integer ) {
-		char	key[17];
-
-		trap_GetCDKey( key, sizeof(key) );
-		if( trap_VerifyCDKey( key, NULL ) == qfalse ) {
-			UI_CDKeyMenu();
-			return;
-		}
-	}
 	
 	memset( &s_main, 0 ,sizeof(mainmenu_t) );
 	memset( &s_errorMessage, 0 ,sizeof(errorMessage_t) );

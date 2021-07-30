@@ -108,11 +108,9 @@ static void UI_SetupMenu_Event( void *ptr, int event ) {
 
 	switch( ((menucommon_s*)ptr)->id ) {
 	case ID_CUSTOMIZEPLAYER:
-		UI_PlayerSettingsMenu();
 		break;
 
 	case ID_CUSTOMIZECONTROLS:
-		UI_ControlsMenu();
 		break;
 
 	case ID_SYSTEMCONFIG:
@@ -124,7 +122,6 @@ static void UI_SetupMenu_Event( void *ptr, int event ) {
 		break;
 
 	case ID_CDKEY:
-		UI_CDKeyMenu();
 		break;
 
 //	case ID_LOAD:

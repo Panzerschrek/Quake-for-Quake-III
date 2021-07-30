@@ -43,6 +43,17 @@ file(GLOB CLIENT_SOURCES_VM_ASM code/cgame/cg_syscalls.asm)
 add_library(cgame${LIB_SUFFIX} SHARED ${CLIENT_SOURCES} ${CLIENT_SOURCES_MAIN} ${CLIENT_HEADERS})
 target_link_libraries(cgame${LIB_SUFFIX} qcommon)
 
+# UI
+file(GLOB Q3_UI_SOURCES code/q3_ui/*.c)
+file(GLOB Q3_UI_SOURCES_MAIN code/q3_ui/ui_main.c)
+list(REMOVE_ITEM Q3_UI_SOURCES ${SERVER_SOURCES_MAIN})
+file(GLOB Q3_UI_HEADERS code/q3_ui/*.h)
+file(GLOB Q3_UI_SOURCES_NATIVE code/ui/ui_syscalls.c)
+file(GLOB Q3_UI_SOURCES_VM_ASM code/ui/ui_syscalls.asm)
+add_library(ui${LIB_SUFFIX} SHARED ${Q3_UI_SOURCES} ${Q3_UI_SOURCES_MAIN} ${Q3_UI_HEADERS} ${Q3_UI_SOURCES_NATIVE})
+target_link_libraries(ui${LIB_SUFFIX} qcommon)
+
+
 set(Q3_LCC q3lcc)
 set(Q3_ASM q3asm)
 

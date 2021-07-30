@@ -830,7 +830,6 @@ void UI_SetActiveMenu( uiMenuCommand_t menu ) {
 		return;
 		*/
 		trap_Cvar_Set( "cl_paused", "1" );
-		UI_InGameMenu();
 		return;
 		
 	case UIMENU_TEAM:
@@ -961,35 +960,19 @@ UI_Cache
 */
 void UI_Cache_f( void ) {
 	MainMenu_Cache();
-	InGame_Cache();
 	ConfirmMenu_Cache();
-	PlayerModel_Cache();
-	PlayerSettings_Cache();
-	Controls_Cache();
 	Demos_Cache();
-	UI_CinematicsMenu_Cache();
 	Preferences_Cache();
 	ServerInfo_Cache();
-	SpecifyServer_Cache();
 	ArenaServers_Cache();
-	StartServer_Cache();
-	ServerOptions_Cache();
 	DriverInfo_Cache();
 	GraphicsOptions_Cache();
 	UI_DisplayOptionsMenu_Cache();
 	UI_SoundOptionsMenu_Cache();
 	UI_NetworkOptionsMenu_Cache();
-	UI_SPLevelMenu_Cache();
-	UI_SPSkillMenu_Cache();
-	UI_SPPostgameMenu_Cache();
-	TeamMain_Cache();
-	UI_AddBots_Cache();
-	UI_RemoveBots_Cache();
 	UI_SetupMenu_Cache();
 //	UI_LoadConfig_Cache();
 //	UI_SaveConfigMenu_Cache();
-	UI_BotSelectMenu_Cache();
-	UI_CDKeyMenu_Cache();
 	UI_ModsMenu_Cache();
 
 }
@@ -1012,12 +995,10 @@ qboolean UI_ConsoleCommand( int realTime ) {
 	Menu_Cache();
 
 	if ( Q_stricmp (cmd, "levelselect") == 0 ) {
-		UI_SPLevelMenu_f();
 		return qtrue;
 	}
 
 	if ( Q_stricmp (cmd, "postgame") == 0 ) {
-		UI_SPPostgameMenu_f();
 		return qtrue;
 	}
 
@@ -1027,27 +1008,22 @@ qboolean UI_ConsoleCommand( int realTime ) {
 	}
 
 	if ( Q_stricmp (cmd, "ui_cinematics") == 0 ) {
-		UI_CinematicsMenu_f();
 		return qtrue;
 	}
 
 	if ( Q_stricmp (cmd, "ui_teamOrders") == 0 ) {
-		UI_TeamOrdersMenu_f();
 		return qtrue;
 	}
 
 	if ( Q_stricmp (cmd, "iamacheater") == 0 ) {
-		UI_SPUnlock_f();
 		return qtrue;
 	}
 
 	if ( Q_stricmp (cmd, "iamamonkey") == 0 ) {
-		UI_SPUnlockMedals_f();
 		return qtrue;
 	}
 
 	if ( Q_stricmp (cmd, "ui_cdkey") == 0 ) {
-		UI_CDKeyMenu_f();
 		return qtrue;
 	}
 
@@ -1070,7 +1046,6 @@ UI_Init
 void UI_Init( void ) {
 	UI_RegisterCvars();
 
-	UI_InitGameinfo();
 
 	// cache redundant calulations
 	trap_GetGlconfig( &uis.glconfig );
