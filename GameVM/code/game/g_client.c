@@ -82,6 +82,7 @@ and on transition between teams, but doesn't happen on respawns
 ============
 */
 void ClientBegin( int clientNum ) {
+	int i;
 
 	host_client = svs.clients + clientNum;
 	sv_player = host_client->edict;
@@ -95,12 +96,21 @@ void ClientBegin( int clientNum ) {
 	sv_player->v.netname = ED_NewString (host_client->name) - pr_strings;
 
 	// copy spawn parms out of the client_t
+
+	// call the progs to get default spawn parms for the new client
+	PR_ExecuteProgram (pr_global_struct->SetNewParms);
+	for (i=0 ; i<NUM_SPAWN_PARMS ; i++)
+		host_client->spawn_parms[i] = (&pr_global_struct->parm1)[i];
+
+	// call the spawn function
+
 	pr_global_struct->time = sv.time;
 	pr_global_struct->self = EDICT_TO_PROG(sv_player);
 	PR_ExecuteProgram (pr_global_struct->ClientConnect);
 
 	PR_ExecuteProgram (pr_global_struct->PutClientInServer);
 
+	host_client->active = qtrue;
 	host_client->spawned = qtrue;
 }
 

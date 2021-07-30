@@ -367,8 +367,8 @@ void SV_ClientThink (void)
 //
 	if (sv_player->v.health <= 0)
 	{
-		// PANZER TODO - fix this.
-		//G_Printf("Client is dead\n");
+		G_Printf("Client is dead\n");
+		return;
 	}
 
 //
