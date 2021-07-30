@@ -59,8 +59,13 @@ void ClientThink_real( gclient_t *client ) {
 	host_client = client;
 	sv_player = host_client->edict;
 	host_frametime = msec / 1000.0;
+	G_Printf("Move f: %d, r: %d\n", ucmd->forwardmove, ucmd->rightmove);
+
+	VectorCopy (client->ps.viewangles, host_client->edict->v.v_angle);
+
 
 	SV_ClientThink();
+
 }
 
 /*
