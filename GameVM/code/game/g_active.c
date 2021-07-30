@@ -36,6 +36,7 @@ once for each server frame, which makes for smooth demo recording.
 */
 void ClientThink_real( gclient_t *client ) {
 	int			msec;
+	int			i;
 	usercmd_t	*ucmd;
 
 	// don't think if the client is not yet connected (and thus not yet spawned in)
@@ -52,17 +53,17 @@ void ClientThink_real( gclient_t *client ) {
 	if ( msec < 1 ) {
 		return;
 	}
-	if ( msec > 200 ) {
-		msec = 200;
+	if ( msec > 20 ) {
+		msec = 20;
 	}
 
 	host_client = client;
 	sv_player = host_client->edict;
 	host_frametime = msec / 1000.0;
-	G_Printf("Move f: %d, r: %d\n", ucmd->forwardmove, ucmd->rightmove);
 
-	VectorCopy (client->ps.viewangles, host_client->edict->v.v_angle);
-
+	VectorCopy (ucmd->angles, host_client->edict->v.v_angle);
+	for(i= 0; i < 3; ++i)
+		host_client->edict->v.v_angle[i]= ((float)ucmd->angles[i]) * (360.0f / 65536.0f);
 
 	SV_ClientThink();
 

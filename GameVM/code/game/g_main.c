@@ -474,6 +474,6 @@ void G_RunFrame( int levelTime ) {
 			continue;
 		}
 		VectorCopy(svs.clients[i].edict->v.origin, svs.clients[i].ps.origin);
-		VectorCopy(svs.clients[i].edict->v.angles, svs.clients[i].ps.viewangles);
+		VectorCopy(svs.clients[i].edict->v.v_angle, svs.clients[i].ps.viewangles);
 	}
 }
