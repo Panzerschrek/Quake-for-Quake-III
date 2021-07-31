@@ -66,25 +66,6 @@ Foundation, Inc., 51 Franklin St, Fifth Floor, Boston, MA  02110-1301  USA
 
 #define CS_MAX					(CS_PARTICLES+MAX_LOCATIONS)
 
-typedef struct {
-	// state (in / out)
-	playerState_t	*ps;
-
-	// command (in)
-	usercmd_t	cmd;
-
-	int			framecount;
-
-	// for fixed msec Pmove
-	int			pmove_fixed;
-	int			pmove_msec;
-} pmove_t;
-
-// if a full pmove isn't done on the client, you can just update the angles
-void PM_UpdateViewAngles( playerState_t *ps, const usercmd_t *cmd );
-void Pmove (pmove_t *pmove);
-
-
 // player_state->stats[] indexes
 // NOTE: may not have more than 16
 typedef enum {
