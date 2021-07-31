@@ -631,7 +631,7 @@ void PF_traceline (void)
 	VectorCopy (trace.endpos, pr_global_struct->trace_endpos);
 	VectorCopy (trace.plane.normal, pr_global_struct->trace_plane_normal);
 	pr_global_struct->trace_plane_dist =  trace.plane.dist;	
-	if (trace.entityNum)
+	if (trace.entityNum && trace.fraction < 1.0)
 		pr_global_struct->trace_ent = EDICT_TO_PROG(EDICT_NUM(trace.entityNum));
 	else
 		pr_global_struct->trace_ent = EDICT_TO_PROG(sv.edicts);

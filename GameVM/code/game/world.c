@@ -32,6 +32,48 @@ void SV_UnlinkEdict (edict_t *ent)
 	trap_UnlinkEntity(ent);
 }
 
+
+/*
+====================
+SV_TouchLinks
+====================
+*/
+void SV_TouchLinks ( edict_t *ent )
+{
+	edict_t		*touch;
+	int			old_self, old_other;
+
+	int i, numEntities;
+	int entitiesList[64];
+	numEntities = trap_EntitiesInBox( ent->v.absmin, ent->v.absmax, entitiesList, 64);
+	for( i = 0; i < numEntities; ++i )
+	{
+		touch = EDICT_NUM(entitiesList[i]);
+
+		if (touch == ent)
+			continue;
+		if (!touch->v.touch || touch->v.solid != SOLID_TRIGGER)
+			continue;
+		if (ent->v.absmin[0] > touch->v.absmax[0]
+		|| ent->v.absmin[1] > touch->v.absmax[1]
+		|| ent->v.absmin[2] > touch->v.absmax[2]
+		|| ent->v.absmax[0] < touch->v.absmin[0]
+		|| ent->v.absmax[1] < touch->v.absmin[1]
+		|| ent->v.absmax[2] < touch->v.absmin[2] )
+			continue;
+		old_self = pr_global_struct->self;
+		old_other = pr_global_struct->other;
+
+		pr_global_struct->self = EDICT_TO_PROG(touch);
+		pr_global_struct->other = EDICT_TO_PROG(ent);
+		pr_global_struct->time = sv.time;
+		PR_ExecuteProgram (touch->v.touch);
+
+		pr_global_struct->self = old_self;
+		pr_global_struct->other = old_other;
+	}
+}
+
 /*
 ===============
 SV_LinkEdict
@@ -69,13 +111,10 @@ void SV_LinkEdict (edict_t *ent, qboolean touch_triggers)
 	VectorCopy(ent->v.absmax, ent->r.absmax);
 	trap_LinkEntity(ent);
 
-#if 0 // PANZER TODO - touch triggers
 // if touch_triggers, touch all entities at this node and decend for more
 	if (touch_triggers)
-		SV_TouchLinks ( ent, sv_areanodes );
-#endif
+		SV_TouchLinks ( ent );
 }
-
 
 /*
 ==================
@@ -132,7 +171,7 @@ trace_t SV_ClipMoveToEntity (edict_t *ent /*clipping entity*/, vec3_t start, vec
 	VectorSubtract (end, offset, end_l);
 
 	// PANZER TODO - check contents mask
-	trap_Trace(&trace, start, mins, maxs, end, NUM_FOR_EDICT(ent), CONTENTS_SOLID);
+	trap_Trace(&trace, start, mins, maxs, end, ENTITYNUM_NONE, CONTENTS_SOLID);
 
 // fix trace up by the offset
 	if (trace.fraction != 1)
@@ -156,7 +195,6 @@ Mins and maxs enclose the entire area swept by the move
 */
 void SV_ClipToLinks ( moveclip_t *clip )
 {
-	link_t		*l, *next;
 	edict_t		*touch;
 	trace_t		trace;
 
