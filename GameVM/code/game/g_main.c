@@ -475,9 +475,13 @@ void G_RunFrame( int levelTime ) {
 		if(!svs.clients[i].active || svs.clients[i].edict == NULL) {
 			continue;
 		}
+		edict = svs.clients[i].edict;
 
-		VectorCopy(svs.clients[i].edict->v.origin, svs.clients[i].ps.origin);
-		VectorCopy(svs.clients[i].edict->v.angles, svs.clients[i].ps.viewangles);
-		svs.clients[i].ps.viewheight = svs.clients[i].edict->v.view_ofs[2];
+		//G_Printf("Client pos: %f %f %f\n", edict->v.origin[0], edict->v.origin[1], edict->v.origin[2]);
+		VectorCopy(edict->v.origin, svs.clients[i].ps.origin);
+		VectorCopy(edict->v.angles, svs.clients[i].ps.viewangles);
+		svs.clients[i].ps.viewheight = edict->v.view_ofs[2];
+		svs.clients[i].ps.weapon = SV_ModelIndex(pr_strings + edict->v.weaponmodel);
+		svs.clients[i].ps.weaponstate = edict->v.weaponframe; // Put weapon frame into "weaponstate" field.
 	}
 }

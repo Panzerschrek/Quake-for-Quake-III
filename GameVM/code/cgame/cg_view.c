@@ -107,6 +107,35 @@ void CG_AddEntities()
 	}
 }
 
+/*
+==============
+CG_AddViewWeapon
+
+Add the weapon, and flash for the player's view
+==============
+*/
+void CG_AddViewWeapon( playerState_t *ps ) {
+	refEntity_t	hand;
+	float		fovOffset;
+
+	// TODO - add FOV offset, bobbing.
+	fovOffset = 0;
+
+	memset (&hand, 0, sizeof(hand));
+	VectorCopy( ps->origin, hand.origin);
+	VectorCopy( ps->origin, hand.oldorigin);
+	hand.origin[2] += ps->viewheight;
+	hand.oldorigin[2] += ps->viewheight;
+	AnglesToAxis( ps->viewangles, hand.axis );
+
+	hand.hModel = cgs.gameModels[ps->weapon];
+	hand.frame= hand.oldframe= ps->weaponstate; // Use "weaponstate" for weapon frame.
+	hand.renderfx = RF_DEPTHHACK | RF_FIRST_PERSON | RF_MINLIGHT;
+
+	trap_R_AddRefEntityToScene(&hand);
+}
+
+
 void CG_DrawActiveFrame( int serverTime, stereoFrame_t stereoView, qboolean demoPlayback ) {
 
 	cg.time = serverTime;
@@ -131,6 +160,8 @@ void CG_DrawActiveFrame( int serverTime, stereoFrame_t stereoView, qboolean demo
 
 	// build cg.refdef
 	CG_CalcViewValues();
+
+	CG_AddViewWeapon( &cg.snap.ps );
 
 	cg.refdef.time = cg.time;
 	memcpy( cg.refdef.areamask, cg.snap.areamask, sizeof( cg.refdef.areamask ) );
