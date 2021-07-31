@@ -655,18 +655,12 @@ void PF_checkpos (void)
 
 //============================================================================
 
-#if 0 // PANZER TODO - fix it
-byte	checkpvs[MAX_MAP_LEAFS/8];
-#endif
 
 int PF_newcheckclient (int check)
 {
-#if 0 // PANZER TODO - fix it
+	// PANZER TODO - check this.
 	int		i;
-	byte	*pvs;
 	edict_t	*ent;
-	mleaf_t	*leaf;
-	vec3_t	org;
 
 // cycle to the next one
 
@@ -701,15 +695,7 @@ int PF_newcheckclient (int check)
 		break;
 	}
 
-// get the PVS for the entity
-	VectorAdd (ent->v.origin, ent->v.view_ofs, org);
-	leaf = Mod_PointInLeaf (org, sv.worldmodel);
-	pvs = Mod_LeafPVS (leaf, sv.worldmodel);
-	memcpy (checkpvs, pvs, (sv.worldmodel->numleafs+7)>>3 );
-
 	return i;
-#endif
-	return 1;
 }
 
 /*
@@ -727,15 +713,10 @@ it is not returned at all.
 name checkclient ()
 =================
 */
-#define	MAX_CHECK	16
-int c_invis, c_notvis;
 void PF_checkclient (void)
 {
-#if 0 // PANZER TODO - fix it
-	edict_t	*ent, *self;
-	mleaf_t	*leaf;
-	int		l;
-	vec3_t	view;
+	edict_t	*ent;
+
 	
 // find a new check if on a new frame
 	if (sv.time - sv.lastchecktime >= 0.1)
@@ -752,23 +733,7 @@ void PF_checkclient (void)
 		return;
 	}
 
-// if current entity can't possibly see the check entity, return 0
-	self = PROG_TO_EDICT(pr_global_struct->self);
-	VectorAdd (self->v.origin, self->v.view_ofs, view);
-	leaf = Mod_PointInLeaf (view, sv.worldmodel);
-	l = (leaf - sv.worldmodel->leafs) - 1;
-	if ( (l<0) || !(checkpvs[l>>3] & (1<<(l&7)) ) )
-	{
-c_notvis++;
-		RETURN_EDICT(sv.edicts);
-		return;
-	}
-
-// might be able to see it
-c_invis++;
 	RETURN_EDICT(ent);
-#endif
-	RETURN_EDICT(sv.edicts);
 }
 
 //============================================================================
