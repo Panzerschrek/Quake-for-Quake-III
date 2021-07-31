@@ -35,20 +35,20 @@ once for each server frame, which makes for smooth demo recording.
 ==============
 */
 void ClientThink_real( gclient_t *client ) {
-	pmove_t		pm;
-	int			oldEventSequence;
 	int			msec;
+	int			i;
 	usercmd_t	*ucmd;
 
 	// don't think if the client is not yet connected (and thus not yet spawned in)
-	if (client->pers.connected != CON_CONNECTED) {
+	if (!client->active) {
 		return;
 	}
 
 	// mark the time, so the connection sprite can be removed
-	ucmd = &client->pers.cmd;
+	ucmd = &client->cmd;
 
 	msec = ucmd->serverTime - client->ps.commandTime;
+	client->ps.commandTime= ucmd->serverTime;
 	// following others may result in bad times, but we still want
 	// to check for follow toggles
 	if ( msec < 1 ) {
@@ -58,40 +58,23 @@ void ClientThink_real( gclient_t *client ) {
 		msec = 200;
 	}
 
-	if ( pmove_msec.integer < 8 ) {
-		trap_Cvar_Set("pmove_msec", "8");
-		trap_Cvar_Update(&pmove_msec);
+	host_client = client;
+	sv_player = host_client->edict;
+	host_frametime = msec / 1000.0;
+
+	// read buttons
+	sv_player->v.button0 = ucmd->buttons & BUTTON_ATTACK;
+	sv_player->v.button2 = ucmd->upmove > 0;
+	sv_player->v.impulse = ucmd->weapon;
+
+	for(i= 0; i < 3; ++i)
+	{
+		host_client->edict->v.angles[i]= ((float)ucmd->angles[i]) * (360.0f / 65536.0f);
+		host_client->edict->v.v_angle[i]= host_client->edict->v.angles[i];
 	}
-	else if (pmove_msec.integer > 33) {
-		trap_Cvar_Set("pmove_msec", "33");
-		trap_Cvar_Update(&pmove_msec);
-	}
 
-	if ( pmove_fixed.integer ) {
-		ucmd->serverTime = ((ucmd->serverTime + pmove_msec.integer-1) / pmove_msec.integer) * pmove_msec.integer;
-		//if (ucmd->serverTime - client->ps.commandTime <= 0)
-		//	return;
-	}
+	SV_ClientThink();
 
-	client->ps.gravity = 0;
-
-	// set speed
-	client->ps.speed = g_speed.value;
-
-	// set up for pmove
-	oldEventSequence = client->ps.eventSequence;
-
-	memset (&pm, 0, sizeof(pm));
-
-	pm.ps = &client->ps;
-	pm.cmd = *ucmd;
-	pm.pmove_fixed = pmove_fixed.integer;
-	pm.pmove_msec = pmove_msec.integer;
-
-	Pmove (&pm);
-
-	// swap and latch button actions
-	client->buttons = ucmd->buttons;
 }
 
 /*
@@ -104,12 +87,8 @@ A new command has arrived from the client
 void ClientThink( int clientNum ) {
 	gclient_t *client;
 
-	client = level.clients + clientNum;
-	trap_GetUsercmd( clientNum, &client->pers.cmd );
-
-	// mark the time we got info, so we can display the
-	// phone jack if they don't get any for a while
-	client->lastCmdTime = level.time;
+	client = svs.clients + clientNum;
+	trap_GetUsercmd( clientNum, &client->cmd );
 
 	ClientThink_real( client );
 }

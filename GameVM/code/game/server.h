@@ -76,6 +76,9 @@ typedef struct
 
 typedef struct client_s
 {
+	// ps MUST be the first element, because the server expects it
+	playerState_t	ps;				// communicated by server to clients
+
 	qboolean		active;				// false = client is free
 	qboolean		spawned;			// false = don't send datagrams
 	qboolean		dropasap;			// has been told to go to another level
@@ -88,6 +91,8 @@ typedef struct client_s
 	struct qsocket_s *netconnection;	// communications handle
 
 	usercmd_t		cmd;				// movement
+	int				lastCmdTime;		// level.time of last usercmd_t, for EF_CONNECTION
+
 	vec3_t			wishdir;			// intended motion calced from cmd
 
 	sizebuf_t		message;			// can be added to at any time,

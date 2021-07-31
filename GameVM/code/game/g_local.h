@@ -30,40 +30,10 @@ Foundation, Inc., 51 Franklin St, Fifth Floor, Boston, MA  02110-1301  USA
 // the "gameversion" client command will print this plus compile date
 #define	GAMEVERSION	BASEGAME
 
-typedef struct gclient_s gclient_t;
+typedef client_t gclient_t;
 
 // Use slightly modified Quake "edict_t" as Quake III entity.
 typedef edict_t gentity_t;
-
-typedef enum {
-	CON_DISCONNECTED,
-	CON_CONNECTING,
-	CON_CONNECTED
-} clientConnected_t;
-
-// client data that stays across multiple respawns, but is cleared
-// on each level change or team change at ClientBegin()
-typedef struct {
-	clientConnected_t	connected;
-	usercmd_t	cmd;				// we would lose angles if not persistant
-} clientPersistant_t;
-
-// this structure is cleared on each ClientSpawn(),
-// except for 'client->pers' and 'client->sess'
-struct gclient_s {
-	// ps MUST be the first element, because the server expects it
-	playerState_t	ps;				// communicated by server to clients
-
-	// the rest of the structure is private to game
-	clientPersistant_t	pers;
-
-	int			lastCmdTime;		// level.time of last usercmd_t, for EF_CONNECTION
-									// we can't just use pers.lastCommand.time, because
-									// of the g_sycronousclients case
-	int			buttons;
-
-	char		*areabits;
-};
 
 //
 // this structure is cleared as each map is entered
@@ -72,7 +42,6 @@ struct gclient_s {
 #define	MAX_SPAWN_VARS_CHARS	4096
 
 typedef struct {
-	struct gclient_s	*clients;		// [maxclients]
 	int			time;					// in msec
 	int			startTime;				// level.time the map was started
 } level_locals_t;
@@ -157,6 +126,9 @@ extern	vmCvar_t	sv_maxspeed;
 extern	vmCvar_t	sv_accelerate;
 extern	vmCvar_t	sv_idealpitchscale;
 extern	vmCvar_t	sv_aim;
+
+extern	vmCvar_t	cl_rollspeed;
+extern	vmCvar_t	cl_rollangle;
 
 void	trap_Print( const char *text );
 void	trap_Error( const char *text ) __attribute__((noreturn));

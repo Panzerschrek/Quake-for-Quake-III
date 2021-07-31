@@ -248,3 +248,4 @@ extern int			current_skill;		// skill level for currently loaded level (in case
 										//  the user changes the cvar while the level is
 										//  running, this reflects the level actually in use)
 
+float V_CalcRoll (vec3_t angles, vec3_t velocity);

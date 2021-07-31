@@ -17,6 +17,9 @@ void SV_BroadcastPrintf (char *fmt, ...)
 	Q_vsnprintf (string, sizeof(string), fmt,argptr);
 	va_end (argptr);
 
+	// PANZER TODO - remove temporary print
+	G_Printf("%s", string);
+
 	for (i=0 ; i<svs.maxclients ; i++)
 		if (svs.clients[i].active && svs.clients[i].spawned)
 		{

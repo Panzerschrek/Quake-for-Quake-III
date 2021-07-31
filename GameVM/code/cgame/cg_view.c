@@ -43,14 +43,6 @@ static void CG_OffsetFirstPersonView( void ) {
 	origin = cg.refdef.vieworg;
 	angles = cg.refdefViewAngles;
 
-	// if dead, fix the angle and don't add any kick
-	if ( cg.snap.ps.stats[STAT_HEALTH] <= 0 ) {
-		angles[ROLL] = 40;
-		angles[PITCH] = -15;
-		origin[2] += cg.snap.ps.viewheight;
-		return;
-	}
-
 	// add view height
 	origin[2] += cg.snap.ps.viewheight;
 }
@@ -115,6 +107,35 @@ void CG_AddEntities()
 	}
 }
 
+/*
+==============
+CG_AddViewWeapon
+
+Add the weapon, and flash for the player's view
+==============
+*/
+void CG_AddViewWeapon( playerState_t *ps ) {
+	refEntity_t	hand;
+	float		fovOffset;
+
+	// TODO - add FOV offset, bobbing.
+	fovOffset = 0;
+
+	memset (&hand, 0, sizeof(hand));
+	VectorCopy( ps->origin, hand.origin);
+	VectorCopy( ps->origin, hand.oldorigin);
+	hand.origin[2] += ps->viewheight;
+	hand.oldorigin[2] += ps->viewheight;
+	AnglesToAxis( ps->viewangles, hand.axis );
+
+	hand.hModel = cgs.gameModels[ps->weapon];
+	hand.frame= hand.oldframe= ps->weaponstate; // Use "weaponstate" for weapon frame.
+	hand.renderfx = RF_DEPTHHACK | RF_FIRST_PERSON | RF_MINLIGHT;
+
+	trap_R_AddRefEntityToScene(&hand);
+}
+
+
 void CG_DrawActiveFrame( int serverTime, stereoFrame_t stereoView, qboolean demoPlayback ) {
 
 	cg.time = serverTime;
@@ -129,6 +150,9 @@ void CG_DrawActiveFrame( int serverTime, stereoFrame_t stereoView, qboolean demo
 	// clear all the render lists
 	trap_R_ClearScene();
 
+	// let the client system know what our weapon and zoom settings are
+	trap_SetUserCmdValue( cg.weaponSelect, 1.0f );
+
 	CG_AddEntities();
 
 	// set up cg.snap and possibly cg.nextSnap
@@ -136,6 +160,8 @@ void CG_DrawActiveFrame( int serverTime, stereoFrame_t stereoView, qboolean demo
 
 	// build cg.refdef
 	CG_CalcViewValues();
+
+	CG_AddViewWeapon( &cg.snap.ps );
 
 	cg.refdef.time = cg.time;
 	memcpy( cg.refdef.areamask, cg.snap.areamask, sizeof( cg.refdef.areamask ) );

@@ -253,6 +253,7 @@ void PF_setmodel (void)
 		trap_SetBrushModel(e, m);
 		VectorCopy(e->r.mins, e->v.mins);
 		VectorCopy(e->r.maxs, e->v.maxs);
+		VectorSubtract (e->v.maxs, e->v.mins, e->v.size);
 		e->v.modelindex= e->s.modelindex;
 	}
 	else
@@ -631,7 +632,7 @@ void PF_traceline (void)
 	VectorCopy (trace.endpos, pr_global_struct->trace_endpos);
 	VectorCopy (trace.plane.normal, pr_global_struct->trace_plane_normal);
 	pr_global_struct->trace_plane_dist =  trace.plane.dist;	
-	if (trace.entityNum)
+	if (trace.entityNum != ENTITYNUM_NONE)
 		pr_global_struct->trace_ent = EDICT_TO_PROG(EDICT_NUM(trace.entityNum));
 	else
 		pr_global_struct->trace_ent = EDICT_TO_PROG(sv.edicts);
@@ -654,18 +655,12 @@ void PF_checkpos (void)
 
 //============================================================================
 
-#if 0 // PANZER TODO - fix it
-byte	checkpvs[MAX_MAP_LEAFS/8];
-#endif
 
 int PF_newcheckclient (int check)
 {
-#if 0 // PANZER TODO - fix it
+	// PANZER TODO - check this.
 	int		i;
-	byte	*pvs;
 	edict_t	*ent;
-	mleaf_t	*leaf;
-	vec3_t	org;
 
 // cycle to the next one
 
@@ -700,15 +695,7 @@ int PF_newcheckclient (int check)
 		break;
 	}
 
-// get the PVS for the entity
-	VectorAdd (ent->v.origin, ent->v.view_ofs, org);
-	leaf = Mod_PointInLeaf (org, sv.worldmodel);
-	pvs = Mod_LeafPVS (leaf, sv.worldmodel);
-	memcpy (checkpvs, pvs, (sv.worldmodel->numleafs+7)>>3 );
-
 	return i;
-#endif
-	return 1;
 }
 
 /*
@@ -726,15 +713,10 @@ it is not returned at all.
 name checkclient ()
 =================
 */
-#define	MAX_CHECK	16
-int c_invis, c_notvis;
 void PF_checkclient (void)
 {
-#if 0 // PANZER TODO - fix it
-	edict_t	*ent, *self;
-	mleaf_t	*leaf;
-	int		l;
-	vec3_t	view;
+	edict_t	*ent;
+
 	
 // find a new check if on a new frame
 	if (sv.time - sv.lastchecktime >= 0.1)
@@ -751,23 +733,7 @@ void PF_checkclient (void)
 		return;
 	}
 
-// if current entity can't possibly see the check entity, return 0
-	self = PROG_TO_EDICT(pr_global_struct->self);
-	VectorAdd (self->v.origin, self->v.view_ofs, view);
-	leaf = Mod_PointInLeaf (view, sv.worldmodel);
-	l = (leaf - sv.worldmodel->leafs) - 1;
-	if ( (l<0) || !(checkpvs[l>>3] & (1<<(l&7)) ) )
-	{
-c_notvis++;
-		RETURN_EDICT(sv.edicts);
-		return;
-	}
-
-// might be able to see it
-c_invis++;
 	RETURN_EDICT(ent);
-#endif
-	RETURN_EDICT(sv.edicts);
 }
 
 //============================================================================
@@ -1253,8 +1219,7 @@ vector aim(entity, missilespeed)
 */
 void PF_aim (void)
 {
-#if 0 // PANZER TODO - fix it
-	edict_t	*ent, *check, *bestent;
+	edict_t	*ent, *check, *bestent, *trace_ent;
 	vec3_t	start, dir, end, bestdir;
 	int		i, j;
 	trace_t	tr;
@@ -1271,8 +1236,10 @@ void PF_aim (void)
 	VectorCopy (pr_global_struct->v_forward, dir);
 	VectorMA (start, 2048, dir, end);
 	tr = SV_Move (start, vec3_origin, vec3_origin, end, qfalse, ent);
-	if (tr.ent && tr.ent->v.takedamage == DAMAGE_AIM
-	&& (!teamplay.value || ent->v.team <=0 || ent->v.team != tr.ent->v.team) )
+
+	trace_ent= tr.entityNum == ENTITYNUM_NONE ? NULL : EDICT_NUM(tr.entityNum);
+	if (trace_ent && trace_ent->v.takedamage == DAMAGE_AIM
+	&& (!teamplay.value || ent->v.team <=0 || ent->v.team != trace_ent->v.team) )
 	{
 		VectorCopy (pr_global_struct->v_forward, G_VECTOR(OFS_RETURN));
 		return;
@@ -1301,8 +1268,8 @@ void PF_aim (void)
 		dist = DotProduct (dir, pr_global_struct->v_forward);
 		if (dist < bestdist)
 			continue;	// to far to turn
-		tr = SV_Move (start, vec3_origin, vec3_origin, end, false, ent);
-		if (tr.ent == check)
+		tr = SV_Move (start, vec3_origin, vec3_origin, end, qfalse, ent);
+		if (tr.entityNum == i)
 		{	// can shoot at this one
 			bestdist = dist;
 			bestent = check;
@@ -1322,7 +1289,6 @@ void PF_aim (void)
 	{
 		VectorCopy (bestdir, G_VECTOR(OFS_RETURN));
 	}
-#endif
 }
 
 /*

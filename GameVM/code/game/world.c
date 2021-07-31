@@ -32,6 +32,48 @@ void SV_UnlinkEdict (edict_t *ent)
 	trap_UnlinkEntity(ent);
 }
 
+
+/*
+====================
+SV_TouchLinks
+====================
+*/
+void SV_TouchLinks ( edict_t *ent )
+{
+	edict_t		*touch;
+	int			old_self, old_other;
+	int i;
+
+	for(i = 1; i < sv.num_edicts; ++i )
+	{
+		touch = EDICT_NUM(i);
+		if(touch->free)
+			continue;
+
+		if (touch == ent)
+			continue;
+		if (!touch->v.touch || touch->v.solid != SOLID_TRIGGER)
+			continue;
+		if (ent->v.absmin[0] > touch->v.absmax[0]
+		|| ent->v.absmin[1] > touch->v.absmax[1]
+		|| ent->v.absmin[2] > touch->v.absmax[2]
+		|| ent->v.absmax[0] < touch->v.absmin[0]
+		|| ent->v.absmax[1] < touch->v.absmin[1]
+		|| ent->v.absmax[2] < touch->v.absmin[2] )
+			continue;
+		old_self = pr_global_struct->self;
+		old_other = pr_global_struct->other;
+
+		pr_global_struct->self = EDICT_TO_PROG(touch);
+		pr_global_struct->other = EDICT_TO_PROG(ent);
+		pr_global_struct->time = sv.time;
+		PR_ExecuteProgram (touch->v.touch);
+
+		pr_global_struct->self = old_self;
+		pr_global_struct->other = old_other;
+	}
+}
+
 /*
 ===============
 SV_LinkEdict
@@ -40,15 +82,11 @@ SV_LinkEdict
 */
 void SV_LinkEdict (edict_t *ent, qboolean touch_triggers)
 {
-	trap_LinkEntity(ent);
-#if 0 // PANZER TODO - expand bbox, touch triggers
-	areanode_t	*node;
-
-	if (ent->area.prev)
-		SV_UnlinkEdict (ent);	// unlink from old position
-
 	if (ent == sv.edicts)
+	{
+		trap_LinkEntity(ent);
 		return;		// don't add the world
+	}
 
 	if (ent->free)
 		return;
@@ -57,6 +95,30 @@ void SV_LinkEdict (edict_t *ent, qboolean touch_triggers)
 	VectorAdd (ent->v.origin, ent->v.mins, ent->v.absmin);
 	VectorAdd (ent->v.origin, ent->v.maxs, ent->v.absmax);
 
+	// Set mins/maxs for Quake 3 code. absmin/absmax are calculated in SV_LinkEntity.
+	VectorCopy(ent->v.mins, ent->r.mins);
+	VectorCopy(ent->v.maxs, ent->r.maxs);
+	VectorCopy(ent->v.origin, ent->r.currentOrigin);
+
+	switch((int)ent->v.solid)
+	{
+	case SOLID_NOT:
+		ent->r.contents= CONTENTS_CORPSE;
+		break;
+	case SOLID_TRIGGER:
+		ent->r.contents= CONTENTS_TRIGGER;
+		break;
+	case SOLID_BBOX:
+	case SOLID_SLIDEBOX:
+		ent->r.contents= CONTENTS_BODY;
+		break;
+	case SOLID_BSP:
+		ent->r.contents= CONTENTS_SOLID;
+		break;
+	default:
+		ent->r.contents= 0;
+	// TODO - support other cases.
+	}
 //
 // to make items easier to pick up and allow them to be grabbed off
 // of shelves, the abs sizes are expanded
@@ -67,24 +129,19 @@ void SV_LinkEdict (edict_t *ent, qboolean touch_triggers)
 		ent->v.absmin[1] -= 15;
 		ent->v.absmax[0] += 15;
 		ent->v.absmax[1] += 15;
+
+		ent->r.mins[0] -= 15;
+		ent->r.mins[1] -= 15;
+		ent->r.maxs[0] += 15;
+		ent->r.maxs[1] += 15;
 	}
-	else
-	{	// because movement is clipped an epsilon away from an actual edge,
-		// we must fully check even when bounding boxes don't quite touch
-		ent->v.absmin[0] -= 1;
-		ent->v.absmin[1] -= 1;
-		ent->v.absmin[2] -= 1;
-		ent->v.absmax[0] += 1;
-		ent->v.absmax[1] += 1;
-		ent->v.absmax[2] += 1;
-	}
+
+	trap_LinkEntity(ent);
 
 // if touch_triggers, touch all entities at this node and decend for more
 	if (touch_triggers)
-		SV_TouchLinks ( ent, sv_areanodes );
-#endif
+		SV_TouchLinks ( ent );
 }
-
 
 /*
 ==================
@@ -94,8 +151,7 @@ SV_PointContents
 */
 int SV_PointContents (vec3_t p)
 {
-	// TODO - probably we should translate Q3 contents into Q1 contents here.
-	return trap_PointContents(p, 0);
+	return Contents_Q3_to_Q1(trap_PointContents(p, 0));
 }
 
 /*
@@ -113,23 +169,22 @@ edict_t	*SV_TestEntityPosition (edict_t *ent)
 
 	if (trace.startsolid)
 		return sv.edicts;
-	return EDICT_NUM(trace.entityNum);
+
+	return NULL;
 }
 
 
 /*
 ==================
-SV_ClipMoveToEntity
-
-Handles selection or creation of a clipping hull, and offseting (and
-eventually rotation) of the end points
+SV_Move
 ==================
 */
-trace_t SV_ClipMoveToEntity (edict_t *ent /*clipping entity*/, vec3_t start, vec3_t mins, vec3_t maxs, vec3_t end)
+trace_t SV_Move (vec3_t start, vec3_t mins, vec3_t maxs, vec3_t end, int type, edict_t *passedict)
 {
 	trace_t		trace;
 	vec3_t		offset;
 	vec3_t		start_l, end_l;
+	int			contentmask;
 
 // fill in a default trace
 	memset (&trace, 0, sizeof(trace_t));
@@ -140,170 +195,49 @@ trace_t SV_ClipMoveToEntity (edict_t *ent /*clipping entity*/, vec3_t start, vec
 	VectorSubtract (start, offset, start_l);
 	VectorSubtract (end, offset, end_l);
 
-	// PANZER TODO - check contents mask
-	trap_Trace(&trace, start, mins, maxs, end, NUM_FOR_EDICT(ent), CONTENTS_SOLID);
+	// TODO - check these values.
+	if(type == MOVE_NORMAL)
+		contentmask = CONTENTS_SOLID | CONTENTS_BODY;
+	else if(type == MOVE_NOMONSTERS)
+		contentmask = CONTENTS_SOLID;
+	else if(type == MOVE_MISSILE)
+		contentmask = CONTENTS_SOLID | CONTENTS_BODY;
+	else
+		contentmask = CONTENTS_SOLID;
 
-// fix trace up by the offset
-	if (trace.fraction != 1)
-		VectorAdd (trace.endpos, offset, trace.endpos);
+	trap_Trace(&trace, start, mins, maxs, end, passedict == NULL ? ENTITYNUM_NONE : NUM_FOR_EDICT(passedict), contentmask);
 
-// did we clip the move?
-	if (trace.fraction < 1 || trace.startsolid  )
-		trace.entityNum = NUM_FOR_EDICT(ent);
+	if(trace.entityNum == ENTITYNUM_WORLD)
+		trace.entityNum = 0;
 
 	return trace;
 }
 
-//===========================================================================
-
-/*
-====================
-SV_ClipToLinks
-
-Mins and maxs enclose the entire area swept by the move
-====================
-*/
-void SV_ClipToLinks ( moveclip_t *clip )
+int Contents_Q1_to_Q3(int contents)
 {
-	link_t		*l, *next;
-	edict_t		*touch;
-	trace_t		trace;
-
-#if 0 // PANZER TODO - fix it
-// touch linked edicts
-	for (l = node->solid_edicts.next ; l != &node->solid_edicts ; l = next)
+	switch(contents)
 	{
-		next = l->next;
-		touch = EDICT_FROM_AREA(l);
-		if (touch->v.solid == SOLID_NOT)
-			continue;
-		if (touch == clip->passedict)
-			continue;
-		if (touch->v.solid == SOLID_TRIGGER)
-			Sys_Error ("Trigger in clipping list");
-
-		if (clip->type == MOVE_NOMONSTERS && touch->v.solid != SOLID_BSP)
-			continue;
-
-		if (clip->boxmins[0] > touch->v.absmax[0]
-		|| clip->boxmins[1] > touch->v.absmax[1]
-		|| clip->boxmins[2] > touch->v.absmax[2]
-		|| clip->boxmaxs[0] < touch->v.absmin[0]
-		|| clip->boxmaxs[1] < touch->v.absmin[1]
-		|| clip->boxmaxs[2] < touch->v.absmin[2] )
-			continue;
-
-		if (clip->passedict && clip->passedict->v.size[0] && !touch->v.size[0])
-			continue;	// points never interact
-
-	// might intersect, so do an exact clip
-		if (clip->trace.allsolid)
-			return;
-		if (clip->passedict)
-		{
-			if (PROG_TO_EDICT(touch->v.owner) == clip->passedict)
-				continue;	// don't clip against own missiles
-			if (PROG_TO_EDICT(clip->passedict->v.owner) == touch)
-				continue;	// don't clip against owner
-		}
-
-		if ((int)touch->v.flags & FL_MONSTER)
-			trace = SV_ClipMoveToEntity (touch, clip->start, clip->mins2, clip->maxs2, clip->end);
-		else
-			trace = SV_ClipMoveToEntity (touch, clip->start, clip->mins, clip->maxs, clip->end);
-		if (trace.allsolid || trace.startsolid ||
-		trace.fraction < clip->trace.fraction)
-		{
-			trace.ent = touch;
-			if (clip->trace.startsolid)
-			{
-				clip->trace = trace;
-				clip->trace.startsolid = true;
-			}
-			else
-				clip->trace = trace;
-		}
-		else if (trace.startsolid)
-			clip->trace.startsolid = true;
+	case Q1_CONTENTS_EMPTY: return 0;
+	case Q1_CONTENTS_SOLID: return CONTENTS_SOLID;
+	case Q1_CONTENTS_WATER: return CONTENTS_WATER;
+	case Q1_CONTENTS_SLIME: return CONTENTS_SLIME;
+	case Q1_CONTENTS_LAVA: return CONTENTS_LAVA;
+	case Q1_CONTENTS_SKY: return 0;
 	}
 
-// recurse down both sides
-	if (node->axis == -1)
-		return;
-
-	if ( clip->boxmaxs[node->axis] > node->dist )
-		SV_ClipToLinks ( node->children[0], clip );
-	if ( clip->boxmins[node->axis] < node->dist )
-		SV_ClipToLinks ( node->children[1], clip );
-#endif
+	return 0;
 }
 
-
-/*
-==================
-SV_MoveBounds
-==================
-*/
-void SV_MoveBounds (vec3_t start, vec3_t mins, vec3_t maxs, vec3_t end, vec3_t boxmins, vec3_t boxmaxs)
+int Contents_Q3_to_Q1(int contents)
 {
-	int		i;
+	if((contents & CONTENTS_SOLID) != 0)
+		return Q1_CONTENTS_SOLID;
+	if((contents & CONTENTS_WATER) != 0)
+		return Q1_CONTENTS_WATER;
+	if((contents & CONTENTS_SLIME) != 0)
+		return Q1_CONTENTS_SLIME;
+	if((contents & CONTENTS_LAVA) != 0)
+		return Q1_CONTENTS_LAVA;
 
-	for (i=0 ; i<3 ; i++)
-	{
-		if (end[i] > start[i])
-		{
-			boxmins[i] = start[i] + mins[i] - 1;
-			boxmaxs[i] = end[i] + maxs[i] + 1;
-		}
-		else
-		{
-			boxmins[i] = end[i] + mins[i] - 1;
-			boxmaxs[i] = start[i] + maxs[i] + 1;
-		}
-	}
-}
-
-/*
-==================
-SV_Move
-==================
-*/
-trace_t SV_Move (vec3_t start, vec3_t mins, vec3_t maxs, vec3_t end, int type, edict_t *passedict)
-{
-	moveclip_t	clip;
-	int			i;
-
-	memset ( &clip, 0, sizeof ( moveclip_t ) );
-
-// clip to world
-	clip.trace = SV_ClipMoveToEntity ( sv.edicts, start, mins, maxs, end );
-
-	clip.start = start;
-	clip.end = end;
-	clip.mins = mins;
-	clip.maxs = maxs;
-	clip.type = type;
-	clip.passedict = passedict;
-
-	if (type == MOVE_MISSILE)
-	{
-		for (i=0 ; i<3 ; i++)
-		{
-			clip.mins2[i] = -15;
-			clip.maxs2[i] = 15;
-		}
-	}
-	else
-	{
-		VectorCopy (mins, clip.mins2);
-		VectorCopy (maxs, clip.maxs2);
-	}
-
-// create the bounding box of the entire move
-	SV_MoveBounds ( start, clip.mins2, clip.maxs2, end, clip.boxmins, clip.boxmaxs );
-
-// clip to entities
-	SV_ClipToLinks ( &clip );
-
-	return clip.trace;
+	return Q1_CONTENTS_EMPTY;
 }

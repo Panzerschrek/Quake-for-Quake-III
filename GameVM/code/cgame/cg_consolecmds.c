@@ -38,6 +38,9 @@ typedef struct {
 static consoleCommand_t	commands[] = {
 	{ "tcmd", CG_TargetCommand_f },
 	//{ "camera", CG_Camera_f },
+	{ "weapnext", CG_NextWeapon_f },
+	{ "weapprev", CG_PrevWeapon_f },
+	{ "weapon", CG_Weapon_f },
 };
 
 

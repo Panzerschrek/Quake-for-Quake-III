@@ -34,8 +34,6 @@ typedef struct {
 	qboolean	trackChange;	    // track this variable, and announce if changed
 } cvarTable_t;
 
-gclient_t		g_clients[MAX_CLIENTS];
-
 vmCvar_t	g_maxclients;
 vmCvar_t	g_speed;
 vmCvar_t	g_debugAlloc;
@@ -59,6 +57,9 @@ vmCvar_t	sv_maxspeed;
 vmCvar_t	sv_accelerate;
 vmCvar_t	sv_idealpitchscale;
 vmCvar_t	sv_aim;
+
+vmCvar_t	cl_rollspeed;
+vmCvar_t	cl_rollangle;
 
 static cvarTable_t		gameCvarTable[] = {
 	// noset vars
@@ -92,6 +93,9 @@ static cvarTable_t		gameCvarTable[] = {
 	{ &sv_accelerate, "sv_accelerate", "10", CVAR_SERVERINFO | CVAR_ARCHIVE, 0 },
 	{ &sv_idealpitchscale, "sv_idealpitchscale", "0.8", CVAR_SERVERINFO | CVAR_ARCHIVE, 0 },
 	{ &sv_aim, "sv_aim", "0.93", CVAR_SERVERINFO | CVAR_ARCHIVE, 0 },
+
+	{ &cl_rollspeed, "cl_rollspeed", "200", CVAR_SERVERINFO | CVAR_ARCHIVE, 0 },
+	{ &cl_rollangle, "cl_rollangle", "2.0", CVAR_SERVERINFO | CVAR_ARCHIVE, 0 },
 
 };
 
@@ -276,6 +280,7 @@ void SV_SpawnServer()
 	{
 		ent = EDICT_NUM(i+1);
 		svs.clients[i].edict = ent;
+		ent->s.number = i+1;
 	}
 
 	sv.time = 1.0;
@@ -283,7 +288,7 @@ void SV_SpawnServer()
 	// let the server system know where the entites are
 	trap_LocateGameData(
 		sv.edicts, sv.max_edicts, pr_edict_size,
-		&level.clients[0].ps, sizeof( level.clients[0] ) );
+		&svs.clients[0].ps, sizeof( svs.clients[0] ) );
 
 	//
 	// load the rest of the entities
@@ -309,11 +314,10 @@ void SV_SpawnServer()
 	// all setup is completed, any further precache statements are errors
 	sv.state = ss_active;
 
-	// PANZER TODO - fix it
 	// run two frames to allow everything to settle
 	host_frametime = 0.1;
-	//SV_Physics ();
-	//SV_Physics ();
+	SV_Physics ();
+	SV_Physics ();
 }
 
 /*
@@ -331,21 +335,19 @@ void G_InitGame( int levelTime, int randomSeed, int restart ) {
 
 	srand( randomSeed );
 
+	G_InitMemory();
+
 	// set some level globals
 	memset( &level, 0, sizeof( level ) );
 	level.time = levelTime;
 	level.startTime = levelTime;
 
 	// initialize all clients for this game
-	memset( g_clients, 0, MAX_CLIENTS * sizeof(g_clients[0]) );
-	level.clients = g_clients;
-
 	svs.maxclientslimit = svs.maxclients = 8;
 	svs.clients = G_Alloc (svs.maxclientslimit*sizeof(client_t));
+	memset( svs.clients, 0, svs.maxclientslimit * sizeof(svs.clients[0]) );
 
 	G_RegisterCvars();
-
-	G_InitMemory();
 
 	PR_Init();
 
@@ -440,6 +442,13 @@ void G_RunFrame( int levelTime ) {
 	edict_t		*edict;
 
 	host_frametime = ( levelTime - level.time ) / 1000.0;
+
+	// don't allow really long or short frames
+	if (host_frametime > 0.1)
+		host_frametime = 0.1;
+	if (host_frametime < 0.001)
+		host_frametime = 0.001;
+
 	pr_global_struct->frametime = host_frametime;
 	level.time = levelTime;
 
@@ -458,11 +467,21 @@ void G_RunFrame( int levelTime ) {
 
 		VectorCopy(edict->v.origin, edict->s.origin);
 		VectorCopy(edict->v.angles, edict->s.angles);
-		edict->s.modelindex= edict->v.modelindex;
+		edict->s.modelindex= edict->v.model == 0 ? 0 : edict->v.modelindex;
 		edict->s.frame = edict->v.frame;
+	}
 
-		// TODO - maybe copy bbox before call to trace_* functions?
-		VectorCopy(edict->v.absmin, edict->r.absmin);
-		VectorCopy(edict->v.absmax, edict->r.absmax);
+	for(i = 0; i < svs.maxclients; i++){
+		if(!svs.clients[i].active || svs.clients[i].edict == NULL) {
+			continue;
+		}
+		edict = svs.clients[i].edict;
+
+		//G_Printf("Client pos: %f %f %f\n", edict->v.origin[0], edict->v.origin[1], edict->v.origin[2]);
+		VectorCopy(edict->v.origin, svs.clients[i].ps.origin);
+		VectorCopy(edict->v.angles, svs.clients[i].ps.viewangles);
+		svs.clients[i].ps.viewheight = edict->v.view_ofs[2];
+		svs.clients[i].ps.weapon = SV_ModelIndex(pr_strings + edict->v.weaponmodel);
+		svs.clients[i].ps.weaponstate = edict->v.weaponframe; // Put weapon frame into "weaponstate" field.
 	}
 }
