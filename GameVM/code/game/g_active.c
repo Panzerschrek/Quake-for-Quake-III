@@ -61,6 +61,10 @@ void ClientThink_real( gclient_t *client ) {
 	sv_player = host_client->edict;
 	host_frametime = msec / 1000.0;
 
+	// read buttons
+	sv_player->v.button0 = ucmd->buttons & BUTTON_ATTACK;
+	sv_player->v.button2 = ucmd->upmove > 0;
+
 	for(i= 0; i < 3; ++i)
 		host_client->edict->v.angles[i]= ((float)ucmd->angles[i]) * (360.0f / 65536.0f);
 
