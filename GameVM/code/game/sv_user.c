@@ -366,10 +366,7 @@ void SV_ClientThink (void)
 // if dead, behave differently
 //
 	if (sv_player->v.health <= 0)
-	{
-		G_Printf("Client is dead\n");
 		return;
-	}
 
 //
 // angles

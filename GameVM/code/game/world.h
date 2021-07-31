@@ -31,7 +31,6 @@ typedef struct
 #define	MOVE_NOMONSTERS	1
 #define	MOVE_MISSILE	2
 
-
 void SV_ClearWorld (void);
 // called after the world model has been loaded, before linking any entities
 
@@ -66,3 +65,16 @@ trace_t SV_Move (vec3_t start, vec3_t mins, vec3_t maxs, vec3_t end, int type, e
 // shouldn't be considered solid objects
 
 // passedict is explicitly excluded from clipping checks (normally NULL)
+
+
+#define	Q1_CONTENTS_EMPTY		-1
+#define	Q1_CONTENTS_SOLID		-2
+#define	Q1_CONTENTS_WATER		-3
+#define	Q1_CONTENTS_SLIME		-4
+#define	Q1_CONTENTS_LAVA		-5
+#define	Q1_CONTENTS_SKY		-6
+#define	Q1_CONTENTS_ORIGIN		-7		// removed at csg time
+#define	Q1_CONTENTS_CLIP		-8		// changed to contents_solid
+
+int Contents_Q1_to_Q3(int contents);
+int Contents_Q3_to_Q1(int contents);

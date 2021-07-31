@@ -54,7 +54,7 @@ qboolean SV_CheckBottom (edict_t *ent)
 		{
 			start[0] = x ? maxs[0] : mins[0];
 			start[1] = y ? maxs[1] : mins[1];
-			if (SV_PointContents (start) != CONTENTS_SOLID)
+			if (SV_PointContents (start) != Q1_CONTENTS_SOLID)
 				goto realcheck;
 		}
 
@@ -140,7 +140,7 @@ qboolean SV_movestep (edict_t *ent, vec3_t move, qboolean relink)
 	
 			if (trace.fraction == 1)
 			{
-				if ( ((int)ent->v.flags & FL_SWIM) && SV_PointContents(trace.endpos) == 0 )
+				if ( ((int)ent->v.flags & FL_SWIM) && SV_PointContents(trace.endpos) == Q1_CONTENTS_EMPTY )
 					return qfalse;	// swim monster left water
 	
 				VectorCopy (trace.endpos, ent->v.origin);

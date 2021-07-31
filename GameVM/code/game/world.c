@@ -94,8 +94,7 @@ SV_PointContents
 */
 int SV_PointContents (vec3_t p)
 {
-	// TODO - probably we should translate Q3 contents into Q1 contents here.
-	return trap_PointContents(p, 0);
+	return Contents_Q3_to_Q1(trap_PointContents(p, 0));
 }
 
 /*
@@ -307,4 +306,33 @@ trace_t SV_Move (vec3_t start, vec3_t mins, vec3_t maxs, vec3_t end, int type, e
 	SV_ClipToLinks ( &clip );
 
 	return clip.trace;
+}
+
+int Contents_Q1_to_Q3(int contents)
+{
+	switch(contents)
+	{
+	case Q1_CONTENTS_EMPTY: return 0;
+	case Q1_CONTENTS_SOLID: return CONTENTS_SOLID;
+	case Q1_CONTENTS_WATER: return CONTENTS_WATER;
+	case Q1_CONTENTS_SLIME: return CONTENTS_SLIME;
+	case Q1_CONTENTS_LAVA: return CONTENTS_LAVA;
+	case Q1_CONTENTS_SKY: return 0;
+	}
+
+	return 0;
+}
+
+int Contents_Q3_to_Q1(int contents)
+{
+	if((contents & CONTENTS_SOLID) != 0)
+		return Q1_CONTENTS_SOLID;
+	if((contents & CONTENTS_WATER) != 0)
+		return Q1_CONTENTS_WATER;
+	if((contents & CONTENTS_SLIME) != 0)
+		return Q1_CONTENTS_SLIME;
+	if((contents & CONTENTS_LAVA) != 0)
+		return Q1_CONTENTS_LAVA;
+
+	return Q1_CONTENTS_EMPTY;
 }
