@@ -68,7 +68,10 @@ void ClientThink_real( gclient_t *client ) {
 	sv_player->v.impulse = ucmd->weapon;
 
 	for(i= 0; i < 3; ++i)
+	{
 		host_client->edict->v.angles[i]= ((float)ucmd->angles[i]) * (360.0f / 65536.0f);
+		host_client->edict->v.v_angle[i]= host_client->edict->v.angles[i];
+	}
 
 	SV_ClientThink();
 

@@ -1254,8 +1254,7 @@ vector aim(entity, missilespeed)
 */
 void PF_aim (void)
 {
-#if 0 // PANZER TODO - fix it
-	edict_t	*ent, *check, *bestent;
+	edict_t	*ent, *check, *bestent, *trace_ent;
 	vec3_t	start, dir, end, bestdir;
 	int		i, j;
 	trace_t	tr;
@@ -1272,8 +1271,10 @@ void PF_aim (void)
 	VectorCopy (pr_global_struct->v_forward, dir);
 	VectorMA (start, 2048, dir, end);
 	tr = SV_Move (start, vec3_origin, vec3_origin, end, qfalse, ent);
-	if (tr.ent && tr.ent->v.takedamage == DAMAGE_AIM
-	&& (!teamplay.value || ent->v.team <=0 || ent->v.team != tr.ent->v.team) )
+
+	trace_ent= tr.entityNum == ENTITYNUM_NONE ? NULL : EDICT_NUM(tr.entityNum);
+	if (trace_ent && trace_ent->v.takedamage == DAMAGE_AIM
+	&& (!teamplay.value || ent->v.team <=0 || ent->v.team != trace_ent->v.team) )
 	{
 		VectorCopy (pr_global_struct->v_forward, G_VECTOR(OFS_RETURN));
 		return;
@@ -1302,8 +1303,8 @@ void PF_aim (void)
 		dist = DotProduct (dir, pr_global_struct->v_forward);
 		if (dist < bestdist)
 			continue;	// to far to turn
-		tr = SV_Move (start, vec3_origin, vec3_origin, end, false, ent);
-		if (tr.ent == check)
+		tr = SV_Move (start, vec3_origin, vec3_origin, end, qfalse, ent);
+		if (tr.entityNum == i)
 		{	// can shoot at this one
 			bestdist = dist;
 			bestent = check;
@@ -1323,7 +1324,6 @@ void PF_aim (void)
 	{
 		VectorCopy (bestdir, G_VECTOR(OFS_RETURN));
 	}
-#endif
 }
 
 /*
