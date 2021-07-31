@@ -264,6 +264,9 @@ int SV_FlyMove (edict_t *ent, float time, trace_t *steptrace)
 		if (trace.fraction == 1)
 			 break;		// moved the entire distance
 
+		if (trace.entityNum == ENTITYNUM_NONE)
+			G_Error ("SV_FlyMove: !trace.ent");
+
 		trace_ent = EDICT_NUM(trace.entityNum);
 
 		if (trace.plane.normal[2] > 0.7)
@@ -831,7 +834,7 @@ void SV_WalkMove (edict_t *ent)
 			clip = SV_TryUnstick (ent, oldvel);
 		}
 	}
-	
+
 // extra friction based on view angle
 	if ( clip & 2 )
 		SV_WallFriction (ent, &steptrace);

@@ -149,17 +149,15 @@ edict_t	*SV_TestEntityPosition (edict_t *ent)
 
 /*
 ==================
-SV_ClipMoveToEntity
-
-Handles selection or creation of a clipping hull, and offseting (and
-eventually rotation) of the end points
+SV_Move
 ==================
 */
-trace_t SV_ClipMoveToEntity (edict_t *ent /*clipping entity*/, vec3_t start, vec3_t mins, vec3_t maxs, vec3_t end)
+trace_t SV_Move (vec3_t start, vec3_t mins, vec3_t maxs, vec3_t end, int type, edict_t *passedict)
 {
 	trace_t		trace;
 	vec3_t		offset;
 	vec3_t		start_l, end_l;
+	int			contentmask;
 
 // fill in a default trace
 	memset (&trace, 0, sizeof(trace_t));
@@ -170,171 +168,21 @@ trace_t SV_ClipMoveToEntity (edict_t *ent /*clipping entity*/, vec3_t start, vec
 	VectorSubtract (start, offset, start_l);
 	VectorSubtract (end, offset, end_l);
 
-	// PANZER TODO - check contents mask
-	trap_Trace(&trace, start, mins, maxs, end, ENTITYNUM_NONE, CONTENTS_SOLID);
+	if(type == MOVE_NORMAL)
+		contentmask = CONTENTS_SOLID | CONTENTS_CORPSE;
+	else if(type == MOVE_NOMONSTERS)
+		contentmask = CONTENTS_SOLID;
+	else if(type == MOVE_MISSILE)
+		contentmask = CONTENTS_SOLID | CONTENTS_CORPSE;
+	else
+		contentmask = CONTENTS_SOLID;
 
-// fix trace up by the offset
-	if (trace.fraction != 1)
-		VectorAdd (trace.endpos, offset, trace.endpos);
+	trap_Trace(&trace, start, mins, maxs, end, passedict == NULL ? ENTITYNUM_NONE : NUM_FOR_EDICT(passedict), contentmask);
 
-// did we clip the move?
-	if (trace.fraction < 1 || trace.startsolid  )
-		trace.entityNum = NUM_FOR_EDICT(ent);
+	if(trace.entityNum == ENTITYNUM_WORLD)
+		trace.entityNum = 0;
 
 	return trace;
-}
-
-//===========================================================================
-
-/*
-====================
-SV_ClipToLinks
-
-Mins and maxs enclose the entire area swept by the move
-====================
-*/
-void SV_ClipToLinks ( moveclip_t *clip )
-{
-	edict_t		*touch;
-	trace_t		trace;
-
-#if 0 // PANZER TODO - fix it
-// touch linked edicts
-	for (l = node->solid_edicts.next ; l != &node->solid_edicts ; l = next)
-	{
-		next = l->next;
-		touch = EDICT_FROM_AREA(l);
-		if (touch->v.solid == SOLID_NOT)
-			continue;
-		if (touch == clip->passedict)
-			continue;
-		if (touch->v.solid == SOLID_TRIGGER)
-			Sys_Error ("Trigger in clipping list");
-
-		if (clip->type == MOVE_NOMONSTERS && touch->v.solid != SOLID_BSP)
-			continue;
-
-		if (clip->boxmins[0] > touch->v.absmax[0]
-		|| clip->boxmins[1] > touch->v.absmax[1]
-		|| clip->boxmins[2] > touch->v.absmax[2]
-		|| clip->boxmaxs[0] < touch->v.absmin[0]
-		|| clip->boxmaxs[1] < touch->v.absmin[1]
-		|| clip->boxmaxs[2] < touch->v.absmin[2] )
-			continue;
-
-		if (clip->passedict && clip->passedict->v.size[0] && !touch->v.size[0])
-			continue;	// points never interact
-
-	// might intersect, so do an exact clip
-		if (clip->trace.allsolid)
-			return;
-		if (clip->passedict)
-		{
-			if (PROG_TO_EDICT(touch->v.owner) == clip->passedict)
-				continue;	// don't clip against own missiles
-			if (PROG_TO_EDICT(clip->passedict->v.owner) == touch)
-				continue;	// don't clip against owner
-		}
-
-		if ((int)touch->v.flags & FL_MONSTER)
-			trace = SV_ClipMoveToEntity (touch, clip->start, clip->mins2, clip->maxs2, clip->end);
-		else
-			trace = SV_ClipMoveToEntity (touch, clip->start, clip->mins, clip->maxs, clip->end);
-		if (trace.allsolid || trace.startsolid ||
-		trace.fraction < clip->trace.fraction)
-		{
-			trace.ent = touch;
-			if (clip->trace.startsolid)
-			{
-				clip->trace = trace;
-				clip->trace.startsolid = true;
-			}
-			else
-				clip->trace = trace;
-		}
-		else if (trace.startsolid)
-			clip->trace.startsolid = true;
-	}
-
-// recurse down both sides
-	if (node->axis == -1)
-		return;
-
-	if ( clip->boxmaxs[node->axis] > node->dist )
-		SV_ClipToLinks ( node->children[0], clip );
-	if ( clip->boxmins[node->axis] < node->dist )
-		SV_ClipToLinks ( node->children[1], clip );
-#endif
-}
-
-
-/*
-==================
-SV_MoveBounds
-==================
-*/
-void SV_MoveBounds (vec3_t start, vec3_t mins, vec3_t maxs, vec3_t end, vec3_t boxmins, vec3_t boxmaxs)
-{
-	int		i;
-
-	for (i=0 ; i<3 ; i++)
-	{
-		if (end[i] > start[i])
-		{
-			boxmins[i] = start[i] + mins[i] - 1;
-			boxmaxs[i] = end[i] + maxs[i] + 1;
-		}
-		else
-		{
-			boxmins[i] = end[i] + mins[i] - 1;
-			boxmaxs[i] = start[i] + maxs[i] + 1;
-		}
-	}
-}
-
-/*
-==================
-SV_Move
-==================
-*/
-trace_t SV_Move (vec3_t start, vec3_t mins, vec3_t maxs, vec3_t end, int type, edict_t *passedict)
-{
-	moveclip_t	clip;
-	int			i;
-
-	memset ( &clip, 0, sizeof ( moveclip_t ) );
-
-// clip to world
-	clip.trace = SV_ClipMoveToEntity ( sv.edicts, start, mins, maxs, end );
-
-	clip.start = start;
-	clip.end = end;
-	clip.mins = mins;
-	clip.maxs = maxs;
-	clip.type = type;
-	clip.passedict = passedict;
-
-	if (type == MOVE_MISSILE)
-	{
-		for (i=0 ; i<3 ; i++)
-		{
-			clip.mins2[i] = -15;
-			clip.maxs2[i] = 15;
-		}
-	}
-	else
-	{
-		VectorCopy (mins, clip.mins2);
-		VectorCopy (maxs, clip.maxs2);
-	}
-
-// create the bounding box of the entire move
-	SV_MoveBounds ( start, clip.mins2, clip.maxs2, end, clip.boxmins, clip.boxmaxs );
-
-// clip to entities
-	SV_ClipToLinks ( &clip );
-
-	return clip.trace;
 }
 
 int Contents_Q1_to_Q3(int contents)
