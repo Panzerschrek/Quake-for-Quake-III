@@ -472,5 +472,6 @@ void G_RunFrame( int levelTime ) {
 
 		VectorCopy(svs.clients[i].edict->v.origin, svs.clients[i].ps.origin);
 		VectorCopy(svs.clients[i].edict->v.angles, svs.clients[i].ps.viewangles);
+		svs.clients[i].ps.viewheight = svs.clients[i].edict->v.view_ofs[2];
 	}
 }
