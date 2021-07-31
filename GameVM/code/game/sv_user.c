@@ -38,6 +38,12 @@ qboolean	onground;
 
 usercmd_t	cmd;
 
+static float ScaleQ3DirToQ1(int dir)
+{
+	// Q3 dir is in range [-127; 127]. Q1 max speed is 400 (in always run mode).
+	return ((float)dir) * (400.0f / 127.0f);
+}
+
 /*
 ===============
 SV_SetIdealPitch
@@ -227,12 +233,12 @@ void SV_WaterMove (void)
 	AngleVectors (sv_player->v.v_angle, forward, right, up);
 
 	for (i=0 ; i<3 ; i++)
-		wishvel[i] = forward[i]*cmd.forwardmove + right[i]*cmd.rightmove;
+		wishvel[i] = forward[i]*ScaleQ3DirToQ1(cmd.forwardmove) + right[i]*ScaleQ3DirToQ1(cmd.rightmove);
 
 	if (!cmd.forwardmove && !cmd.rightmove && !cmd.upmove)
 		wishvel[2] -= 60;		// drift towards bottom
 	else
-		wishvel[2] += cmd.upmove;
+		wishvel[2] += ScaleQ3DirToQ1(cmd.upmove);
 
 	wishspeed = VectorLength(wishvel);
 	if (wishspeed > sv_maxspeed.value)
@@ -302,8 +308,8 @@ void SV_AirMove (void)
 
 	AngleVectors (sv_player->v.angles, forward, right, up);
 
-	fmove = cmd.forwardmove;
-	smove = cmd.rightmove;
+	fmove = ScaleQ3DirToQ1(cmd.forwardmove);
+	smove = ScaleQ3DirToQ1(cmd.rightmove);
 
 // hack to not let you back into teleporter
 	if (sv.time < sv_player->v.teleport_time && fmove < 0)
