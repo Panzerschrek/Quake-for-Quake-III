@@ -314,11 +314,10 @@ void SV_SpawnServer()
 	// all setup is completed, any further precache statements are errors
 	sv.state = ss_active;
 
-	// PANZER TODO - fix it
 	// run two frames to allow everything to settle
 	host_frametime = 0.1;
-	//SV_Physics ();
-	//SV_Physics ();
+	SV_Physics ();
+	SV_Physics ();
 }
 
 /*
