@@ -253,6 +253,7 @@ void PF_setmodel (void)
 		trap_SetBrushModel(e, m);
 		VectorCopy(e->r.mins, e->v.mins);
 		VectorCopy(e->r.maxs, e->v.maxs);
+		VectorSubtract (e->v.maxs, e->v.mins, e->v.size);
 		e->v.modelindex= e->s.modelindex;
 	}
 	else

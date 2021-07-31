@@ -42,13 +42,13 @@ void SV_TouchLinks ( edict_t *ent )
 {
 	edict_t		*touch;
 	int			old_self, old_other;
+	int i;
 
-	int i, numEntities;
-	int entitiesList[64];
-	numEntities = trap_EntitiesInBox( ent->v.absmin, ent->v.absmax, entitiesList, 64);
-	for( i = 0; i < numEntities; ++i )
+	for(i = 1; i < sv.num_edicts; ++i )
 	{
-		touch = EDICT_NUM(entitiesList[i]);
+		touch = EDICT_NUM(i);
+		if(touch->free)
+			continue;
 
 		if (touch == ent)
 			continue;
@@ -95,6 +95,10 @@ void SV_LinkEdict (edict_t *ent, qboolean touch_triggers)
 	VectorAdd (ent->v.origin, ent->v.mins, ent->v.absmin);
 	VectorAdd (ent->v.origin, ent->v.maxs, ent->v.absmax);
 
+	// Set mins/maxs for Quake 3 code. absmin/absmax are calculated in SV_LinkEntity.
+	VectorCopy(ent->v.mins, ent->r.mins);
+	VectorCopy(ent->v.maxs, ent->r.maxs);
+	VectorCopy(ent->v.origin, ent->r.currentOrigin);
 //
 // to make items easier to pick up and allow them to be grabbed off
 // of shelves, the abs sizes are expanded
@@ -105,10 +109,13 @@ void SV_LinkEdict (edict_t *ent, qboolean touch_triggers)
 		ent->v.absmin[1] -= 15;
 		ent->v.absmax[0] += 15;
 		ent->v.absmax[1] += 15;
+
+		ent->r.mins[0] -= 15;
+		ent->r.mins[1] -= 15;
+		ent->r.maxs[0] += 15;
+		ent->r.maxs[1] += 15;
 	}
 
-	VectorCopy(ent->v.absmin, ent->r.absmin);
-	VectorCopy(ent->v.absmax, ent->r.absmax);
 	trap_LinkEntity(ent);
 
 // if touch_triggers, touch all entities at this node and decend for more
