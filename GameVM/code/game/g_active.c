@@ -64,6 +64,7 @@ void ClientThink_real( gclient_t *client ) {
 	// read buttons
 	sv_player->v.button0 = ucmd->buttons & BUTTON_ATTACK;
 	sv_player->v.button2 = ucmd->upmove > 0;
+	sv_player->v.impulse = ucmd->weapon;
 
 	for(i= 0; i < 3; ++i)
 		host_client->edict->v.angles[i]= ((float)ucmd->angles[i]) * (360.0f / 65536.0f);

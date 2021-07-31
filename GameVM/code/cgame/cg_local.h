@@ -45,6 +45,8 @@ typedef struct {
 	int			time;			// this is the time value that the client
 								// is rendering at.
 
+	int weaponSelect;
+
 	// view rendering
 	refdef_t	refdef;
 	vec3_t		refdefViewAngles;		// will be converted to refdef.viewaxis
@@ -98,6 +100,14 @@ void CG_UpdateCvars( void );
 void CG_KeyEvent(int key, qboolean down);
 void CG_MouseEvent(int x, int y);
 void CG_EventHandling(int type);
+
+//
+// cg_weapons.c
+//
+void CG_NextWeapon_f( void );
+void CG_PrevWeapon_f( void );
+void CG_Weapon_f( void );
+
 
 //
 // cg_view.c

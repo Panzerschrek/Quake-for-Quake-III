@@ -404,7 +404,7 @@ trace_t SV_PushEntity (edict_t *ent, vec3_t push)
 	VectorCopy (trace.endpos, ent->v.origin);
 	SV_LinkEdict (ent, qtrue);
 
-	if (trace.fraction < 1.0)
+	if (trace.entityNum != ENTITYNUM_NONE)
 		SV_Impact (ent, EDICT_NUM(trace.entityNum));
 
 	return trace;

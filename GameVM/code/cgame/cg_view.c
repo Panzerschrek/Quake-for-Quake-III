@@ -121,6 +121,9 @@ void CG_DrawActiveFrame( int serverTime, stereoFrame_t stereoView, qboolean demo
 	// clear all the render lists
 	trap_R_ClearScene();
 
+	// let the client system know what our weapon and zoom settings are
+	trap_SetUserCmdValue( cg.weaponSelect, 1.0f );
+
 	CG_AddEntities();
 
 	// set up cg.snap and possibly cg.nextSnap
