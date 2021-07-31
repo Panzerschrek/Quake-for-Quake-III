@@ -443,6 +443,13 @@ void G_RunFrame( int levelTime ) {
 	edict_t		*edict;
 
 	host_frametime = ( levelTime - level.time ) / 1000.0;
+
+	// don't allow really long or short frames
+	if (host_frametime > 0.1)
+		host_frametime = 0.1;
+	if (host_frametime < 0.001)
+		host_frametime = 0.001;
+
 	pr_global_struct->frametime = host_frametime;
 	level.time = levelTime;
 
