@@ -48,6 +48,7 @@ void ClientThink_real( gclient_t *client ) {
 	ucmd = &client->cmd;
 
 	msec = ucmd->serverTime - client->ps.commandTime;
+	client->ps.commandTime= ucmd->serverTime;
 	// following others may result in bad times, but we still want
 	// to check for follow toggles
 	if ( msec < 1 ) {
@@ -86,12 +87,7 @@ void ClientThink( int clientNum ) {
 	client = svs.clients + clientNum;
 	trap_GetUsercmd( clientNum, &client->cmd );
 
-	// mark the time we got info, so we can display the
-	// phone jack if they don't get any for a while
-	client->lastCmdTime = level.time;
-
 	ClientThink_real( client );
-	client->cmd.serverTime = level.time;
 }
 
 
