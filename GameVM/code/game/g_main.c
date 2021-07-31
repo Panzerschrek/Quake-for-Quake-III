@@ -463,17 +463,14 @@ void G_RunFrame( int levelTime ) {
 		VectorCopy(edict->v.angles, edict->s.angles);
 		edict->s.modelindex= edict->v.modelindex;
 		edict->s.frame = edict->v.frame;
-
-		// TODO - maybe copy bbox before call to trace_* functions?
-		VectorCopy(edict->v.absmin, edict->r.absmin);
-		VectorCopy(edict->v.absmax, edict->r.absmax);
 	}
 
 	for(i = 0; i < svs.maxclients; i++){
 		if(!svs.clients[i].active || svs.clients[i].edict == NULL) {
 			continue;
 		}
+
 		VectorCopy(svs.clients[i].edict->v.origin, svs.clients[i].ps.origin);
-		VectorCopy(svs.clients[i].edict->v.v_angle, svs.clients[i].ps.viewangles);
+		VectorCopy(svs.clients[i].edict->v.angles, svs.clients[i].ps.viewangles);
 	}
 }

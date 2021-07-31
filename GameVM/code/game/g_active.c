@@ -53,17 +53,16 @@ void ClientThink_real( gclient_t *client ) {
 	if ( msec < 1 ) {
 		return;
 	}
-	if ( msec > 20 ) {
-		msec = 20;
+	if ( msec > 200 ) {
+		msec = 200;
 	}
 
 	host_client = client;
 	sv_player = host_client->edict;
 	host_frametime = msec / 1000.0;
 
-	VectorCopy (ucmd->angles, host_client->edict->v.v_angle);
 	for(i= 0; i < 3; ++i)
-		host_client->edict->v.v_angle[i]= ((float)ucmd->angles[i]) * (360.0f / 65536.0f);
+		host_client->edict->v.angles[i]= ((float)ucmd->angles[i]) * (360.0f / 65536.0f);
 
 	SV_ClientThink();
 
