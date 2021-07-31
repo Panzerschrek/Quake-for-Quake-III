@@ -99,6 +99,26 @@ void SV_LinkEdict (edict_t *ent, qboolean touch_triggers)
 	VectorCopy(ent->v.mins, ent->r.mins);
 	VectorCopy(ent->v.maxs, ent->r.maxs);
 	VectorCopy(ent->v.origin, ent->r.currentOrigin);
+
+	switch((int)ent->v.solid)
+	{
+	case SOLID_NOT:
+		ent->r.contents= CONTENTS_CORPSE;
+		break;
+	case SOLID_TRIGGER:
+		ent->r.contents= CONTENTS_TRIGGER;
+		break;
+	case SOLID_BBOX:
+	case SOLID_SLIDEBOX:
+		ent->r.contents= CONTENTS_BODY;
+		break;
+	case SOLID_BSP:
+		ent->r.contents= CONTENTS_SOLID;
+		break;
+	default:
+		ent->r.contents= 0;
+	// TODO - support other cases.
+	}
 //
 // to make items easier to pick up and allow them to be grabbed off
 // of shelves, the abs sizes are expanded
@@ -175,12 +195,13 @@ trace_t SV_Move (vec3_t start, vec3_t mins, vec3_t maxs, vec3_t end, int type, e
 	VectorSubtract (start, offset, start_l);
 	VectorSubtract (end, offset, end_l);
 
+	// TODO - check these values.
 	if(type == MOVE_NORMAL)
-		contentmask = CONTENTS_SOLID | CONTENTS_CORPSE;
+		contentmask = CONTENTS_SOLID | CONTENTS_BODY;
 	else if(type == MOVE_NOMONSTERS)
 		contentmask = CONTENTS_SOLID;
 	else if(type == MOVE_MISSILE)
-		contentmask = CONTENTS_SOLID | CONTENTS_CORPSE;
+		contentmask = CONTENTS_SOLID | CONTENTS_BODY;
 	else
 		contentmask = CONTENTS_SOLID;
 
