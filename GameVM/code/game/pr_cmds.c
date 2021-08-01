@@ -531,8 +531,6 @@ void PF_ambientsound (void)
 		return;
 	}
 
-	G_Printf("Create server static sound %s at pos %f %f %f\n", samp, pos[0], pos[1], pos[2]);
-
 	// Create separate entity for ambient sound.
 	eventEdict = ED_Alloc();
 	VectorCopy(pos, eventEdict->v.origin);
