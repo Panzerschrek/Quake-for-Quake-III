@@ -324,7 +324,7 @@ void SV_SpawnServer()
 	// PANZER TODO - set mapname
 
 	G_SpawnEntitiesFromString();
-	pr_global_struct->world = 1;
+	pr_global_struct->world = 0;
 
 	sv.active = qtrue;
 
