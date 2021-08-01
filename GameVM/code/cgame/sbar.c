@@ -33,7 +33,7 @@ int			sb_updates;		// if >= cg.refdef.numpages, no update needed
 
 qboolean	sb_showscores;
 
-int			sb_lines;			// scan lines to draw
+int			sb_lines = 24;			// scan lines to draw
 
 extern qboolean		standard_quake, rogue, hipnotic;
 
@@ -90,8 +90,11 @@ void Sbar_Changed (void)
 
 qhandle_t Draw_PicFromWad(const char* str)
 {
+	char nameTemp[MAX_OSPATH];
 	char shaderName[MAX_OSPATH];
-	Com_sprintf(shaderName, sizeof(shaderName), "gfx_wad/%s", str);
+	strcpy(nameTemp, str);
+	Q_strupr(nameTemp);
+	Com_sprintf(shaderName, sizeof(shaderName), "gfx_wad/%s", nameTemp);
 	return trap_R_RegisterShaderNoMip(shaderName);
 }
 /*
@@ -242,12 +245,15 @@ void Sbar_Init (void)
 
 // Panzer - move here wrappers
 
-void Draw_TransPic (int x, int y, qhandle_t pic)
+void Draw_PicScaled (int x, int y, int scale, qhandle_t pic)
 {
+	// PANZER TODO - know somehow original picture size.
+	trap_R_DrawStretchPic( x, y, 10.0, 10.0, 0.0, 0.0, 1.0, 1.0, pic );
 }
 
 void Draw_TransPicScaled (int x, int y, int scale, qhandle_t pic)
 {
+	trap_R_DrawStretchPic( x, y, 10.0, 10.0, 0.0, 0.0, 1.0, 1.0, pic );
 }
 
 void Draw_Fill (int x, int y, int w, int h, int c)
@@ -274,13 +280,11 @@ Sbar_DrawPic
 */
 void Sbar_DrawPic (int x, int y, qhandle_t pic)
 {
-	#if 0 // PANZER TODO - fix it
 	y*= sb_scale;
 	if (cl.gametype == GAME_DEATHMATCH)
 		Draw_PicScaled (x * sb_scale /* + ((cg.refdef.width - 320)>>1)*/, y + (cg.refdef.height-SBAR_HEIGHT * sb_scale), sb_scale, pic);
 	else
 		Draw_PicScaled (x * sb_scale + ((cg.refdef.width - 320 * sb_scale)>>1), y + (cg.refdef.height-SBAR_HEIGHT * sb_scale), sb_scale, pic);
-#endif
 }
 
 /*
@@ -290,13 +294,11 @@ Sbar_DrawTransPic
 */
 void Sbar_DrawTransPic (int x, int y, qhandle_t pic)
 {
-#if 0 // PANZER TODO - fix it
 	y*= sb_scale;
 	if (cl.gametype == GAME_DEATHMATCH)
 		Draw_TransPicScaled (x * sb_scale /*+ ((cg.refdef.width - 320)>>1)*/, y + (cg.refdef.height-SBAR_HEIGHT * sb_scale), sb_scale, pic);
 	else
 		Draw_TransPicScaled (x * sb_scale + ((cg.refdef.width - 320 * sb_scale)>>1), y + (cg.refdef.height-SBAR_HEIGHT * sb_scale), sb_scale, pic);
-#endif
 }
 
 /*
@@ -308,14 +310,12 @@ Draws one solid graphics character
 */
 void Sbar_DrawCharacter (int x, int y, int num)
 {
-#if 0 // PANZER TODO - fix it
 	x *= sb_scale;
 	y *= sb_scale;
 	if (cl.gametype == GAME_DEATHMATCH)
 		Draw_CharacterScaled ( x/*+ ((cg.refdef.width - 320)>>1) */ + 4 , y + cg.refdef.height-SBAR_HEIGHT * sb_scale, sb_scale, num);
 	else
 		Draw_CharacterScaled ( x + ((cg.refdef.width - 320 * sb_scale)>>1) + 4 , y + cg.refdef.height-SBAR_HEIGHT * sb_scale, sb_scale, num);
-#endif
 }
 
 /*
@@ -325,14 +325,12 @@ Sbar_DrawString
 */
 void Sbar_DrawString (int x, int y, char *str)
 {
-#if 0 // PANZER TODO - fix it
 	x *= sb_scale;
 	y *= sb_scale;
 	if (cl.gametype == GAME_DEATHMATCH)
 		Draw_StringScaled (x /*+ ((cg.refdef.width - 320)>>1)*/, y+ cg.refdef.height-SBAR_HEIGHT * sb_scale, sb_scale, str);
 	else
 		Draw_StringScaled (x + ((cg.refdef.width - 320 * sb_scale)>>1), y+ cg.refdef.height-SBAR_HEIGHT * sb_scale, sb_scale, str);
-#endif
 }
 
 /*
@@ -954,7 +952,7 @@ Sbar_Draw
 */
 void Sbar_Draw (void)
 {
-	// PANZER TODO - return this checp?
+	// PANZER TODO - return this check?
 	//if (scr_con_current == cg.refdef.height)
 	//	return;		// console is full screen
 

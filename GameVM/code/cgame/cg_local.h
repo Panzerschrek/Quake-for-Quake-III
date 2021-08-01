@@ -187,6 +187,13 @@ void CG_InitConsoleCommands( void );
 void CG_ExecuteNewServerCommands( int latestSequence );
 void CG_ParseServerinfo( void );
 
+//
+// sbar.c
+//
+
+void Sbar_Init (void);
+void Sbar_Draw (void);
+
 //===============================================
 
 //

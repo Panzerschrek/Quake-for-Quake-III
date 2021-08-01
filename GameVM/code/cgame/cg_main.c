@@ -337,6 +337,7 @@ void CG_Init( int serverMessageNum, int serverCommandSequence, int clientNum ) {
 	cg.loading = qtrue;		// force players to load instead of defer
 
 	CG_RegisterResources();
+	Sbar_Init();
 
 	cg.loading = qfalse;	// future players will be deferred
 

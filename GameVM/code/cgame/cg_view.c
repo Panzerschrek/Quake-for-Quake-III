@@ -166,6 +166,7 @@ void CG_DrawActiveFrame( int serverTime, stereoFrame_t stereoView, qboolean demo
 
 	CG_AddViewWeapon( &cg.snap.ps );
 
+
 	cg.refdef.time = cg.time;
 	memcpy( cg.refdef.areamask, cg.snap.areamask, sizeof( cg.refdef.areamask ) );
 
@@ -173,4 +174,6 @@ void CG_DrawActiveFrame( int serverTime, stereoFrame_t stereoView, qboolean demo
 	trap_S_Respatialize( cg.snap.ps.clientNum, cg.refdef.vieworg, cg.refdef.viewaxis, 0 );
 
 	trap_R_RenderScene( &cg.refdef );
+
+	Sbar_Draw();
 }
