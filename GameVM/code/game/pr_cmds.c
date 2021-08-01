@@ -512,7 +512,8 @@ void PF_ambientsound (void)
 	char		*samp;
 	float		*pos;
 	float 		vol, attenuation;
-	int			i, soundnum;
+	int			soundnum, i;
+	edict_t		*eventEdict;
 
 	pos = G_VECTOR (OFS_PARM0);			
 	samp = G_STRING(OFS_PARM1);
@@ -530,17 +531,28 @@ void PF_ambientsound (void)
 		return;
 	}
 
-// add an svc_spawnambient command to the level signon packet
+	G_Printf("Create server static sound %s at pos %f %f %f\n", samp, pos[0], pos[1], pos[2]);
 
-	MSG_WriteByte (&sv.signon,svc_spawnstaticsound);
-	for (i=0 ; i<3 ; i++)
-		MSG_WriteCoord(&sv.signon, pos[i]);
+	// Create separate entity for ambient sound.
+	eventEdict = ED_Alloc();
+	VectorCopy(pos, eventEdict->v.origin);
+	VectorCopy(pos, eventEdict->s.origin);
+	VectorCopy(pos, eventEdict->r.currentOrigin);
+	for(i = 0; i < 3; ++i)
+	{
+		eventEdict->v.mins[i]= eventEdict->r.mins[i]= -64;
+		eventEdict->v.maxs[i]= eventEdict->r.maxs[i]= +64;
+	}
 
-	MSG_WriteByte (&sv.signon, soundnum);
+	eventEdict->s.loopSound = qtrue; // use this field as ambient sound entity indicator.
 
-	MSG_WriteByte (&sv.signon, vol*255);
-	MSG_WriteByte (&sv.signon, attenuation*64);
+	// Reuse some fileds for event params.
+	eventEdict->s.weapon = soundnum;
+	eventEdict->s.legsAnim = vol * 255;
+	eventEdict->s.torsoAnim = attenuation;
+	eventEdict->r.svFlags = SVF_BROADCAST; // Prevent dropping of this event.
 
+	trap_LinkEntity(eventEdict);
 }
 
 /*
@@ -964,7 +976,7 @@ void PF_precache_sound (void)
 	s = G_STRING(OFS_PARM0);
 	G_INT(OFS_RETURN) = G_INT(OFS_PARM0);
 	PR_CheckEmptyString (s);
-	
+
 	for (i=0 ; i<MAX_SOUNDS ; i++)
 	{
 		if (!sv.sound_precache[i])

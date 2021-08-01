@@ -121,6 +121,7 @@ void CG_Weapon_f( void );
 // cg_event.c
 //
 
+void CG_SetAmbientSound( entityState_t *ent );
 void CG_CheckEvents( entityState_t *ent );
 
 

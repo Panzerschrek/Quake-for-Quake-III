@@ -41,6 +41,18 @@ static void CG_StartSoundEvent( entityState_t *ent )
 	}
 }
 
+// TODO - move this function into separate file.
+void CG_SetAmbientSound( entityState_t *ent )
+{
+	int  soundNum, volume, attenuation;
+
+	soundNum = ent->weapon;
+	volume = ent->legsAnim;
+	attenuation = ent->torsoAnim;
+
+	trap_S_AddLoopingSound(ent->number, ent->origin, vec3_origin, cgs.gameSounds[soundNum]);
+}
+
 void CG_CheckEvents( entityState_t *ent )
 {
 	switch(ent->event)
