@@ -103,6 +103,7 @@ void Svcmd_GameMem_f( void );
 //
 
 edict_t* G_CreateEventEdict(vec3_t origin, int eventType);
+edict_t* G_CreateGlobalEventEdict(vec3_t origin, int eventType);
 
 extern	level_locals_t	level;
 
