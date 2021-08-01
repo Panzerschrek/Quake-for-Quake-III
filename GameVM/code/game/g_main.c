@@ -466,6 +466,20 @@ void G_RunFrame( int levelTime ) {
 	// Run Quake1 physics (for all entities)
 	SV_Physics();
 
+	// Free old events
+	for (i=0 ; i< sv.num_edicts; i++) {
+		edict = EDICT_NUM(i);
+		if ( edict->free ) {
+			continue;
+		}
+		if( edict->s.event != 0 && level.time - edict->eventTime > EVENT_VALID_MSEC )
+		{
+			edict->s.event = 0;
+			ED_Free(edict);
+			continue;
+		}
+	}
+
 	// Update client data struct for every edict.
 	for (i=0 ; i< sv.num_edicts; i++) {
 		edict = EDICT_NUM(i);
