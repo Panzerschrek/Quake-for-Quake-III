@@ -104,6 +104,9 @@ void CG_AddEntities()
 		}
 
 		trap_R_AddRefEntityToScene(&out_ent);
+
+		if( in_ent->loopSound )
+			CG_SetAmbientSound( in_ent );
 	}
 }
 

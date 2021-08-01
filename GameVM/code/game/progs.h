@@ -43,6 +43,7 @@ typedef struct edict_s
 
 	qboolean	free;
 	float		freetime;			// sv.time when the object was freed
+	int			eventTime;			// For events
 	entvars_t	v;					// C exported fields from progs
 // other fields from progs come immediately after
 } edict_t;

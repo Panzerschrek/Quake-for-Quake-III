@@ -69,21 +69,28 @@ void SV_StartSound (edict_t *entity, int channel, char *sample, int volume,
 	float attenuation)
 {
 	int         sound_num;
-	int field_mask;
-	int			i;
 	int			ent;
+	int			i;
+	vec3_t		origin;
+	edict_t*	event_edict;
 
 	if (volume < 0 || volume > 255)
+	{
 		G_Error ("SV_StartSound: volume = %i", volume);
+		return;
+	}
 
 	if (attenuation < 0 || attenuation > 4)
+	{
 		G_Error ("SV_StartSound: attenuation = %f", attenuation);
+		return;
+	}
 
 	if (channel < 0 || channel > 7)
+	{
 		G_Error ("SV_StartSound: channel = %i", channel);
-
-	if (sv.datagram.cursize > MAX_DATAGRAM-16)
 		return;
+	}
 
 // find precache number for sound
 	for (sound_num=1 ; sound_num<MAX_SOUNDS
@@ -99,25 +106,17 @@ void SV_StartSound (edict_t *entity, int channel, char *sample, int volume,
 
 	ent = NUM_FOR_EDICT(entity);
 
-	channel = (ent<<3) | channel;
+	// Start event for entity center to prevent dropping of event entity from snapshots list because of PVS/Areas check.
+	for( i = 0; i < 3; ++i )
+		origin[i]= entity->v.origin[i] + 0.5f * (entity->v.mins[i] + entity->v.maxs[i]);
 
-	field_mask = 0;
-	if (volume != DEFAULT_SOUND_PACKET_VOLUME)
-		field_mask |= SND_VOLUME;
-	if (attenuation != DEFAULT_SOUND_PACKET_ATTENUATION)
-		field_mask |= SND_ATTENUATION;
+	event_edict = G_CreateEventEdict(origin, svc_sound);
 
-// directed messages go only to the entity the are targeted on
-	MSG_WriteByte (&sv.datagram, svc_sound);
-	MSG_WriteByte (&sv.datagram, field_mask);
-	if (field_mask & SND_VOLUME)
-		MSG_WriteByte (&sv.datagram, volume);
-	if (field_mask & SND_ATTENUATION)
-		MSG_WriteByte (&sv.datagram, attenuation*64);
-	MSG_WriteShort (&sv.datagram, channel);
-	MSG_WriteByte (&sv.datagram, sound_num);
-	for (i=0 ; i<3 ; i++)
-		MSG_WriteCoord (&sv.datagram, entity->v.origin[i]+0.5*(entity->v.mins[i]+entity->v.maxs[i]));
+	// Reuse some fileds for event params.
+	event_edict->s.eFlags = ent;
+	event_edict->s.weapon = sound_num;
+	event_edict->s.legsAnim = channel;
+	event_edict->s.torsoAnim = attenuation;
 }
 
 

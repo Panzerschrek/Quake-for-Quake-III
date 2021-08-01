@@ -98,6 +98,13 @@ void *G_Alloc( int size );
 void G_InitMemory( void );
 void Svcmd_GameMem_f( void );
 
+//
+// g_utils.c
+//
+
+edict_t* G_CreateEventEdict(vec3_t origin, int eventType);
+edict_t* G_CreateGlobalEventEdict(vec3_t origin, int eventType);
+
 extern	level_locals_t	level;
 
 #define	FOFS(x) ((size_t)&(((gentity_t *)0)->x))

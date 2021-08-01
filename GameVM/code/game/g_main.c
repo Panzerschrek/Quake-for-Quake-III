@@ -224,15 +224,29 @@ void G_UpdateCvars( void ) {
 	}
 }
 
-void G_SetModelsConfig()
+void G_SetResourcesConfig()
 {
 	int		i;
-	for (i=0 ; i<MAX_MODELS ; i++)
+	for (i=0 ; i < MAX_MODELS; i++)
 	{
 		if (!sv.model_precache[i])
 			continue;
 
 		trap_SetConfigstring(CS_MODELS + i, sv.model_precache[i]);
+	}
+
+	for (i=0 ; i < MAX_SOUNDS; i++)
+	{
+		if (!sv.sound_precache[i])
+			continue;
+
+		trap_SetConfigstring(CS_SOUNDS + i, sv.sound_precache[i]);
+	}
+
+	{
+		char musicIndex[16];
+		Com_sprintf(musicIndex, sizeof(musicIndex), "%d", (int)sv.edicts->v.sounds);
+		trap_SetConfigstring(CS_MUSIC, musicIndex);
 	}
 }
 
@@ -289,6 +303,9 @@ void SV_SpawnServer()
 	trap_LocateGameData(
 		sv.edicts, sv.max_edicts, pr_edict_size,
 		&svs.clients[0].ps, sizeof( svs.clients[0] ) );
+
+	sv.sound_precache[0] = pr_strings;
+	//sv.model_precache[0] = pr_strings; // PANZER TODO - uncomment this
 
 	//
 	// load the rest of the entities
@@ -353,7 +370,7 @@ void G_InitGame( int levelTime, int randomSeed, int restart ) {
 
 	SV_SpawnServer();
 
-	G_SetModelsConfig();
+	G_SetResourcesConfig();
 
 	G_Printf ("-----------------------------------\n");
 }
@@ -457,6 +474,20 @@ void G_RunFrame( int levelTime ) {
 
 	// Run Quake1 physics (for all entities)
 	SV_Physics();
+
+	// Free old events
+	for (i=0 ; i< sv.num_edicts; i++) {
+		edict = EDICT_NUM(i);
+		if ( edict->free ) {
+			continue;
+		}
+		if( edict->s.event != 0 && level.time - edict->eventTime > EVENT_VALID_MSEC )
+		{
+			edict->s.event = 0;
+			ED_Free(edict);
+			continue;
+		}
+	}
 
 	// Update client data struct for every edict.
 	for (i=0 ; i< sv.num_edicts; i++) {

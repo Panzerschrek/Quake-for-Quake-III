@@ -23,6 +23,7 @@ Foundation, Inc., 51 Franklin St, Fifth Floor, Boston, MA  02110-1301  USA
 // cg_main.c -- initialization and primary entry point for cgame
 #include "cg_local.h"
 
+
 void CG_Init( int serverMessageNum, int serverCommandSequence, int clientNum );
 void CG_Shutdown( void );
 
@@ -72,6 +73,7 @@ Q_EXPORT intptr_t vmMain( int command, int arg0, int arg1, int arg2, int arg3, i
 
 cg_t				cg;
 cgs_t				cgs;
+centity_t			cg_entities[MAX_GENTITIES];
 
 vmCvar_t	cg_timescaleFadeEnd;
 vmCvar_t	cg_timescaleFadeSpeed;
@@ -182,6 +184,16 @@ const char *CG_Argv( int arg ) {
 	return buffer;
 }
 
+static void CG_StartMusic(int index) {
+	char trackName[64]= "music/track00";
+
+	trackName[11]= '0' + index / 10;
+	trackName[12]= '0' + index % 10;
+	Com_Printf("Starting music track \"%s\"\n", trackName);
+	trap_S_StartBackgroundTrack(trackName, trackName);
+}
+
+
 /*
 =================
 CG_RegisterGraphics
@@ -189,7 +201,7 @@ CG_RegisterGraphics
 This function may execute for a couple of minutes with a slow disk.
 =================
 */
-static void CG_RegisterGraphics( void ) {
+static void CG_RegisterResources( void ) {
 	int		i, j;
 
 	// clear any references to old media
@@ -208,9 +220,9 @@ static void CG_RegisterGraphics( void ) {
 		Com_sprintf( name, sizeof(name), "*%i", i );
 		cgs.inlineDrawModel[i] = trap_R_RegisterModel( name );
 		trap_R_ModelBounds( cgs.inlineDrawModel[i], mins, maxs );
-		//for ( j = 0 ; j < 3 ; j++ ) {
-		//	cgs.inlineModelMidpoints[i][j] = mins[j] + 0.5 * ( maxs[j] - mins[j] );
-		//}
+		for ( j = 0 ; j < 3 ; j++ ) {
+			cgs.inlineModelMidpoints[i][j] = mins[j] + 0.5 * ( maxs[j] - mins[j] );
+		}
 	}
 
 	// register all the server specified models
@@ -236,6 +248,29 @@ static void CG_RegisterGraphics( void ) {
 		}
 
 		cgs.gameModels[i] = trap_R_RegisterModel( modelName );
+	}
+
+	// register all the server specified sounds
+	for (i=1 ; i< MAX_SOUNDS; i++) {
+		const char* soundName;
+		char	soundFileName[MAX_OSPATH];
+		soundName = CG_ConfigString( CS_SOUNDS + i );
+		if ( !soundName[0] ) {
+			break;
+		}
+		Com_sprintf(soundFileName, sizeof(soundFileName), "sound/%s", soundName);
+
+		cgs.gameSounds[i] = trap_S_RegisterSound( soundFileName, qfalse );
+	}
+
+	{
+		const char* musicIndexStr = CG_ConfigString(CS_MUSIC);
+		if(musicIndexStr && musicIndexStr[0] )
+		{
+			int music_index = atoi(musicIndexStr);
+			if(music_index > 0 && music_index < 100 )
+				CG_StartMusic(music_index);
+		}
 	}
 }
 
@@ -269,6 +304,7 @@ void CG_Init( int serverMessageNum, int serverCommandSequence, int clientNum ) {
 	// clear everything
 	memset( &cgs, 0, sizeof( cgs ) );
 	memset( &cg, 0, sizeof( cg ) );
+	memset( cg_entities, 0, sizeof( cg_entities ) );
 
 	cg.clientNum = clientNum;
 
@@ -292,7 +328,7 @@ void CG_Init( int serverMessageNum, int serverCommandSequence, int clientNum ) {
 
 	cg.loading = qtrue;		// force players to load instead of defer
 
-	CG_RegisterGraphics();
+	CG_RegisterResources();
 
 	cg.loading = qfalse;	// future players will be deferred
 

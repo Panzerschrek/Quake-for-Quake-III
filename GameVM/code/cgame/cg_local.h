@@ -25,6 +25,10 @@ Foundation, Inc., 51 Franklin St, Fifth Floor, Boston, MA  02110-1301  USA
 #include "../game/bg_public.h"
 #include "cg_public.h"
 
+typedef struct
+{
+	int prev_unique_event_id;
+} centity_t;
 
 // The entire cgame module is unloaded and reloaded on each level change,
 // so there is NO persistant data between levels on the client side.
@@ -71,9 +75,13 @@ typedef struct {
 	// Inline (brush) models.
 	int				numInlineModels;
 	qhandle_t		inlineDrawModel[MAX_MODELS];
+	vec3_t			inlineModelMidpoints[MAX_MODELS];
 
 	// Separate models.
 	qhandle_t		gameModels[MAX_MODELS];
+
+	// Sounds.
+	qhandle_t gameSounds[MAX_SOUNDS];
 
 } cgs_t;
 
@@ -81,6 +89,7 @@ typedef struct {
 
 extern	cgs_t			cgs;
 extern	cg_t			cg;
+extern	centity_t		cg_entities[MAX_GENTITIES];
 
 extern	vmCvar_t		cg_timescaleFadeEnd;
 extern	vmCvar_t		cg_timescaleFadeSpeed;
@@ -107,6 +116,13 @@ void CG_EventHandling(int type);
 void CG_NextWeapon_f( void );
 void CG_PrevWeapon_f( void );
 void CG_Weapon_f( void );
+
+//
+// cg_event.c
+//
+
+void CG_SetAmbientSound( entityState_t *ent );
+void CG_CheckEvents( entityState_t *ent );
 
 
 //
