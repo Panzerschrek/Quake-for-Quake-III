@@ -298,6 +298,9 @@ void SV_SpawnServer()
 		sv.edicts, sv.max_edicts, pr_edict_size,
 		&svs.clients[0].ps, sizeof( svs.clients[0] ) );
 
+	sv.sound_precache[0] = pr_strings;
+	//sv.model_precache[0] = pr_strings; // PANZER TODO - uncomment this
+
 	//
 	// load the rest of the entities
 	//
