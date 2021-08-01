@@ -224,15 +224,23 @@ void G_UpdateCvars( void ) {
 	}
 }
 
-void G_SetModelsConfig()
+void G_SetResourcesConfig()
 {
 	int		i;
-	for (i=0 ; i<MAX_MODELS ; i++)
+	for (i=0 ; i < MAX_MODELS; i++)
 	{
 		if (!sv.model_precache[i])
 			continue;
 
 		trap_SetConfigstring(CS_MODELS + i, sv.model_precache[i]);
+	}
+
+	for (i=0 ; i < MAX_SOUNDS; i++)
+	{
+		if (!sv.sound_precache[i])
+			continue;
+
+		trap_SetConfigstring(CS_SOUNDS + i, sv.sound_precache[i]);
 	}
 }
 
@@ -353,7 +361,7 @@ void G_InitGame( int levelTime, int randomSeed, int restart ) {
 
 	SV_SpawnServer();
 
-	G_SetModelsConfig();
+	G_SetResourcesConfig();
 
 	G_Printf ("-----------------------------------\n");
 }

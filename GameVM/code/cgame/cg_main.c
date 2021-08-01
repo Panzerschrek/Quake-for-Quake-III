@@ -189,7 +189,7 @@ CG_RegisterGraphics
 This function may execute for a couple of minutes with a slow disk.
 =================
 */
-static void CG_RegisterGraphics( void ) {
+static void CG_RegisterResources( void ) {
 	int		i, j;
 
 	// clear any references to old media
@@ -236,6 +236,19 @@ static void CG_RegisterGraphics( void ) {
 		}
 
 		cgs.gameModels[i] = trap_R_RegisterModel( modelName );
+	}
+
+	// register all the server specified sounds
+	for (i=1 ; i< MAX_SOUNDS; i++) {
+		const char* soundName;
+		char	soundFileName[MAX_OSPATH];
+		soundName = CG_ConfigString( CS_SOUNDS + i );
+		if ( !soundName[0] ) {
+			break;
+		}
+		Com_sprintf(soundFileName, sizeof(soundFileName), "sound/%s", soundName);
+
+		cgs.gameSounds[i] = trap_S_RegisterSound( soundFileName, qfalse );
 	}
 }
 
@@ -292,7 +305,7 @@ void CG_Init( int serverMessageNum, int serverCommandSequence, int clientNum ) {
 
 	cg.loading = qtrue;		// force players to load instead of defer
 
-	CG_RegisterGraphics();
+	CG_RegisterResources();
 
 	cg.loading = qfalse;	// future players will be deferred
 

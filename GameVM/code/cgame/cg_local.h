@@ -75,6 +75,9 @@ typedef struct {
 	// Separate models.
 	qhandle_t		gameModels[MAX_MODELS];
 
+	// Sounds.
+	qhandle_t gameSounds[MAX_SOUNDS];
+
 } cgs_t;
 
 //==============================================================================
