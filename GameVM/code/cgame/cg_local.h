@@ -83,17 +83,56 @@ typedef struct {
 	// Sounds.
 	qhandle_t gameSounds[MAX_SOUNDS];
 
+	qhandle_t		draw_disc;	// also used on sbar
 } cgs_t;
+
+typedef struct
+{
+	qhandle_t		sb_nums[2][11];
+	qhandle_t		sb_colon, sb_slash;
+	qhandle_t		sb_ibar;
+	qhandle_t		sb_sbar;
+	qhandle_t		sb_scorebar;
+
+	qhandle_t		sb_weapons[7][8];   // 0 is active, 1 is owned, 2-5 are flashes
+	qhandle_t		sb_ammo[4];
+	qhandle_t		sb_sigil[4];
+	qhandle_t		sb_armor[3];
+	qhandle_t		sb_items[32];
+
+	qhandle_t		sb_faces[7][2];		// 0 is gibbed, 1 is dead, 2-6 are alive
+								// 0 is static, 1 is temporary animation
+	qhandle_t		sb_face_invis;
+	qhandle_t		sb_face_quad;
+	qhandle_t		sb_face_invuln;
+	qhandle_t		sb_face_invis_invuln;
+
+	qhandle_t		rsb_invbar[2];
+	qhandle_t		rsb_weapons[5];
+	qhandle_t		rsb_items[2];
+	qhandle_t		rsb_ammo[3];
+	qhandle_t		rsb_teambord;		// PGM 01/19/97 - team color border
+
+	//MED 01/04/97 added two more weapons + 3 alternates for grenade launcher
+	qhandle_t		hsb_weapons[7][5];   // 0 is active, 1 is owned, 2-5 are flashes
+	//MED 01/04/97 added array to simplify weapon parsing
+	int         hipweapons[4];// = {HIT_LASER_CANNON_BIT,HIT_MJOLNIR_BIT,4,HIT_PROXIMITY_GUN_BIT};
+	//MED 01/04/97 added hipnotic items array
+	qhandle_t		hsb_items[2];
+} sbar_t;
 
 //==============================================================================
 
 extern	cgs_t			cgs;
 extern	cg_t			cg;
 extern	centity_t		cg_entities[MAX_GENTITIES];
+extern sbar_t			sbar;
 
 extern	vmCvar_t		cg_timescaleFadeEnd;
 extern	vmCvar_t		cg_timescaleFadeSpeed;
 extern	vmCvar_t		cg_timescale;
+
+extern	vmCvar_t	teamplay;
 
 //
 // cg_main.c
