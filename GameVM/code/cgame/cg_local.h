@@ -28,7 +28,7 @@ Foundation, Inc., 51 Franklin St, Fifth Floor, Boston, MA  02110-1301  USA
 typedef struct
 {
 	int prev_unique_event_id;
-	qboolean should_process_event;
+	vec3_t origin;
 } centity_t;
 
 // The entire cgame module is unloaded and reloaded on each level change,
@@ -116,6 +116,12 @@ void CG_EventHandling(int type);
 void CG_NextWeapon_f( void );
 void CG_PrevWeapon_f( void );
 void CG_Weapon_f( void );
+
+//
+// cg_event.c
+//
+
+void CG_CheckEvents( entityState_t *ent );
 
 
 //

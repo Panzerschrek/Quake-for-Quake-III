@@ -26,21 +26,27 @@ Foundation, Inc., 51 Franklin St, Fifth Floor, Boston, MA  02110-1301  USA
 #include "cg_local.h"
 
 void CG_ProcessSnapshots( void ) {
-	int				i, n, event_id;
+	int				i, n, event_unique_id;
 	int snapshotTime;
+	entityState_t* entState;
+	centity_t*	cent;
 	trap_GetCurrentSnapshotNumber( &n, &snapshotTime );
 	trap_GetSnapshot( n, &cg.snap);
 
 	for( i = 0; i < cg.snap.numEntities; ++i )
 	{
-		event_id = cg.snap.entities[i].torsoAnim;
-		if( cg_entities[i].prev_unique_event_id != event_id )
+		entState = &cg.snap.entities[i];
+		n = cg.snap.entities[i].number;
+		cent = &cg_entities[n];
+
+		VectorCopy(entState->origin, cent->origin);
+
+		event_unique_id = entState->constantLight;
+		if( entState->event != 0 && cent->prev_unique_event_id != event_unique_id )
 		{
-			cg_entities[i].should_process_event = qtrue;
-			cg_entities[i].prev_unique_event_id = event_id;
+			cent->prev_unique_event_id = event_unique_id;
+			CG_CheckEvents( &cg.snap.entities[i] );
 		}
-		else
-			cg_entities[i].should_process_event = qfalse;
 	}
 }
 

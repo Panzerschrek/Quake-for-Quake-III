@@ -74,6 +74,7 @@ void SV_StartSound (edict_t *entity, int channel, char *sample, int volume,
 {
 	int         sound_num;
 	int			ent;
+	int			i;
 	edict_t*	event_edict;
 
 	if (volume < 0 || volume > 255)
@@ -111,17 +112,21 @@ void SV_StartSound (edict_t *entity, int channel, char *sample, int volume,
 	event_edict = ED_Alloc();
 	VectorCopy(entity->v.origin, event_edict->v.origin);
 	VectorCopy(entity->v.origin, event_edict->s.origin);
+	VectorCopy(entity->v.origin, event_edict->r.currentOrigin);
+
+	for( i= 0; i < 3; ++i )
+		event_edict->r.mins[i]= event_edict->r.maxs[i]= 0;
 
 	event_edict->eventTime = level.time;
 	event_edict->s.event = svc_sound;
 	// Reuse some fileds for event params.
-	event_edict->s.eventParm = ent;
-	event_edict->s.powerups = volume;
-	event_edict->s.weapon = attenuation;
-	event_edict->s.legsAnim = channel;
+	event_edict->s.eFlags = ent;
+	event_edict->s.weapon = sound_num;
+	//event_edict->s.powerups = volume;
+	//event_edict->s.legsAnim = channel;
 
 	// Give unique ids for all events to distinguish different events for same entity number on client.
-	event_edict->s.torsoAnim = unique_event_id;
+	event_edict->s.constantLight = unique_event_id;
 	++unique_event_id;
 
 	trap_LinkEntity(event_edict);
