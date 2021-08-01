@@ -18,12 +18,27 @@ static int Q1ToQ3Channel(int q1_channel)
 
 static void CG_StartSoundEvent( entityState_t *ent )
 {
-	int entityNum, soundNum, channel;
+	int entityNum, soundNum, channel, attenuation;
 
 	entityNum = ent->eFlags;
 	soundNum = ent->weapon;
 	channel = Q1ToQ3Channel(ent->legsAnim);
-	trap_S_StartSound(NULL, entityNum, channel, cgs.gameSounds[soundNum]);
+	attenuation = ent->torsoAnim;
+
+	// See defs.qc
+	switch(attenuation)
+	{
+	case 0:
+		trap_S_StartLocalSound(entityNum, channel);
+		break;
+	case 1:
+	case 2:
+	case 3:
+	default:
+		trap_S_StartSound(NULL, entityNum, channel, cgs.gameSounds[soundNum]);
+		break;
+
+	}
 }
 
 void CG_CheckEvents( entityState_t *ent )

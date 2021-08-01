@@ -122,8 +122,8 @@ void SV_StartSound (edict_t *entity, int channel, char *sample, int volume,
 	// Reuse some fileds for event params.
 	event_edict->s.eFlags = ent;
 	event_edict->s.weapon = sound_num;
-	//event_edict->s.powerups = volume;
 	event_edict->s.legsAnim = channel;
+	event_edict->s.torsoAnim = attenuation;
 
 	// Give unique ids for all events to distinguish different events for same entity number on client.
 	event_edict->s.constantLight = unique_event_id;
