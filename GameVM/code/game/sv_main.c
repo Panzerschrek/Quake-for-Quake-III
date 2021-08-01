@@ -50,10 +50,6 @@ void SV_StartParticle (vec3_t org, vec3_t dir, int color, int count)
 #define DEFAULT_SOUND_PACKET_VOLUME 255
 #define DEFAULT_SOUND_PACKET_ATTENUATION 1.0
 
-// TODO - make this varaible accessible in other places.
-static int unique_event_id = 1;
-
-
 /*
 ==================
 SV_StartSound
@@ -109,27 +105,13 @@ void SV_StartSound (edict_t *entity, int channel, char *sample, int volume,
 
 	ent = NUM_FOR_EDICT(entity);
 
-	event_edict = ED_Alloc();
-	VectorCopy(entity->v.origin, event_edict->v.origin);
-	VectorCopy(entity->v.origin, event_edict->s.origin);
-	VectorCopy(entity->v.origin, event_edict->r.currentOrigin);
+	event_edict = G_CreateEventEdict(entity->v.origin, svc_sound);
 
-	for( i= 0; i < 3; ++i )
-		event_edict->r.mins[i]= event_edict->r.maxs[i]= 0;
-
-	event_edict->eventTime = level.time;
-	event_edict->s.event = svc_sound;
 	// Reuse some fileds for event params.
 	event_edict->s.eFlags = ent;
 	event_edict->s.weapon = sound_num;
 	event_edict->s.legsAnim = channel;
 	event_edict->s.torsoAnim = attenuation;
-
-	// Give unique ids for all events to distinguish different events for same entity number on client.
-	event_edict->s.constantLight = unique_event_id;
-	++unique_event_id;
-
-	trap_LinkEntity(event_edict);
 }
 
 
