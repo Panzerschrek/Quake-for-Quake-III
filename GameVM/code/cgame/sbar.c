@@ -21,7 +21,6 @@ Foundation, Inc., 59 Temple Place - Suite 330, Boston, MA  02111-1307, USA.
 // sbar.c -- status bar code
 
 #include "cg_local.h"
-#include "../game/quakedef.h"
 #include "q_client.h"
 #include "sbar.h"
 
@@ -241,6 +240,29 @@ void Sbar_Init (void)
 }
 
 
+// Panzer - move here wrappers
+
+void Draw_TransPic (int x, int y, qhandle_t pic)
+{
+}
+
+void Draw_TransPicScaled (int x, int y, int scale, qhandle_t pic)
+{
+}
+
+void Draw_Fill (int x, int y, int w, int h, int c)
+{
+}
+
+void Draw_CharacterScaled (int x, int y, int scale, int num)
+{
+}
+
+void Draw_StringScaled (int x, int y, int scale, char *str)
+{
+}
+
+
 //=============================================================================
 
 // drawing routines are relative to the status bar location
@@ -445,7 +467,7 @@ void Sbar_UpdateScoreboard (void)
 	{
 		k = fragsort[i];
 		s = &cl.scores[k];
-		sprintf (&scoreboardtext[i][1], "%3i %s", s->frags, s->name);
+		Com_sprintf (&scoreboardtext[i][1], 20, "%3i %s", s->frags, s->name);
 
 		top = s->colors & 0xf0;
 		bottom = (s->colors & 15) <<4;
@@ -467,10 +489,10 @@ void Sbar_SoloScoreboard (void)
 	int		minutes, seconds, tens, units;
 	int		l;
 
-	sprintf (str,"Monsters:%3i /%3i", cl.stats[STAT_MONSTERS], cl.stats[STAT_TOTALMONSTERS]);
+	Com_sprintf (str, sizeof(str), "Monsters:%3i /%3i", cl.stats[STAT_MONSTERS], cl.stats[STAT_TOTALMONSTERS]);
 	Sbar_DrawString (8, 4, str);
 
-	sprintf (str,"Secrets :%3i /%3i", cl.stats[STAT_SECRETS], cl.stats[STAT_TOTALSECRETS]);
+	Com_sprintf (str, sizeof(str), "Secrets :%3i /%3i", cl.stats[STAT_SECRETS], cl.stats[STAT_TOTALSECRETS]);
 	Sbar_DrawString (8, 12, str);
 
 // time
@@ -478,7 +500,7 @@ void Sbar_SoloScoreboard (void)
 	seconds = cl.time - 60*minutes;
 	tens = seconds / 10;
 	units = seconds - 10*tens;
-	sprintf (str,"Time :%3i:%i%i", minutes, tens, units);
+	Com_sprintf (str, sizeof(str), "Time :%3i:%i%i", minutes, tens, units);
 	Sbar_DrawString (184, 4, str);
 
 // draw level name
@@ -668,7 +690,7 @@ void Sbar_DrawInventory (void)
 // ammo counts
 	for (i=0 ; i<4 ; i++)
 	{
-		sprintf (num, "%3i",cl.stats[STAT_SHELLS+i] );
+		Com_sprintf (num, sizeof(num), "%3i",cl.stats[STAT_SHELLS+i] );
 		if (num[0] != ' ')
 			Sbar_DrawCharacter ( (6*i+1)*8 - 2, -24, 18 + num[0] - '0');
 		if (num[1] != ' ')
@@ -809,7 +831,7 @@ void Sbar_DrawFrags (void)
 
 	// draw number
 		f = s->frags;
-		sprintf (num, "%3i",f);
+		Com_sprintf (num, sizeof(num), "%3i",f);
 
 		Sbar_DrawCharacter ( (x+1)*8 , -24, num[0]);
 		Sbar_DrawCharacter ( (x+2)*8 , -24, num[1]);
@@ -866,7 +888,7 @@ void Sbar_DrawFace (void)
 
 		// draw number
 		f = s->frags;
-		sprintf (num, "%3i",f);
+		Com_sprintf (num, sizeof(num), "%3i",f);
 
 		if (top==8)
 		{
@@ -1123,7 +1145,7 @@ void Sbar_DeathmatchOverlay (void)
 
 	// draw number
 		f = s->frags;
-		sprintf (num, "%3i",f);
+		Com_sprintf (num, sizeof(num), "%3i",f);
 
 		Draw_CharacterScaled ( x + 8 * sb_scale , y, sb_scale, num[0]);
 		Draw_CharacterScaled ( x + 16 * sb_scale, y, sb_scale, num[1]);
@@ -1144,7 +1166,7 @@ void Sbar_DeathmatchOverlay (void)
 		tens = n/10;
 		units = n%10;
 
-		sprintf (num, "%3i:%i%i", minutes, tens, units);
+		Com_sprintf (num, sizeof(num), "%3i:%i%i", minutes, tens, units);
 
 		Draw_String ( x+48 , y, num);
 }
@@ -1220,7 +1242,7 @@ void Sbar_MiniDeathmatchOverlay (void)
 
 	// draw number
 		f = s->frags;
-		sprintf (num, "%3i",f);
+		Com_sprintf (num, sizeof(num), "%3i",f);
 
 		Draw_CharacterScaled ( x + 8  * sb_scale, y, sb_scale, num[0]);
 		Draw_CharacterScaled ( x + 16 * sb_scale, y, sb_scale, num[1]);
@@ -1243,7 +1265,7 @@ void Sbar_MiniDeathmatchOverlay (void)
 		tens = n/10;
 		units = n%10;
 
-		sprintf (num, "%3i:%i%i", minutes, tens, units);
+		Com_sprintf (num, sizeof(num), "%3i:%i%i", minutes, tens, units);
 
 		Draw_String ( x+48 , y, num);
 }

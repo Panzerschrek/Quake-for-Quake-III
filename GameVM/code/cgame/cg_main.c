@@ -22,6 +22,7 @@ Foundation, Inc., 51 Franklin St, Fifth Floor, Boston, MA  02110-1301  USA
 //
 // cg_main.c -- initialization and primary entry point for cgame
 #include "cg_local.h"
+#include "q_client.h"
 
 
 void CG_Init( int serverMessageNum, int serverCommandSequence, int clientNum );
@@ -70,14 +71,21 @@ Q_EXPORT intptr_t vmMain( int command, int arg0, int arg1, int arg2, int arg3, i
 	return -1;
 }
 
+// PANZER TODO - init this.
+qboolean		standard_quake, rogue, hipnotic;
 
 cg_t				cg;
 cgs_t				cgs;
 centity_t			cg_entities[MAX_GENTITIES];
+sbar_t				sbar;
+
+client_state_t		cl;
 
 vmCvar_t	cg_timescaleFadeEnd;
 vmCvar_t	cg_timescaleFadeSpeed;
 vmCvar_t	cg_timescale;
+
+vmCvar_t	teamplay; // PANZER TODO - register it?
 
 typedef struct {
 	vmCvar_t	*vmCvar;

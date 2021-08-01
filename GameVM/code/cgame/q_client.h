@@ -1,3 +1,5 @@
+#include "../game/quakedef.h"
+
 #define VID_GRADES (1 << 6)
 
 typedef struct
