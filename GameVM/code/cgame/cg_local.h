@@ -75,6 +75,7 @@ typedef struct {
 	// Inline (brush) models.
 	int				numInlineModels;
 	qhandle_t		inlineDrawModel[MAX_MODELS];
+	vec3_t			inlineModelMidpoints[MAX_MODELS];
 
 	// Separate models.
 	qhandle_t		gameModels[MAX_MODELS];

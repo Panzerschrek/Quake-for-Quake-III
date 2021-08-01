@@ -39,7 +39,14 @@ void CG_ProcessSnapshots( void ) {
 		n = cg.snap.entities[i].number;
 		cent = &cg_entities[n];
 
-		trap_S_UpdateEntityPosition(n, entState->origin);
+		if ( entState->solid == SOLID_BMODEL )
+		{
+			vec3_t origin;
+			VectorAdd(entState->origin, cgs.inlineModelMidpoints[ entState->modelindex ], origin);
+			trap_S_UpdateEntityPosition(n, origin);
+		}
+		else
+			trap_S_UpdateEntityPosition(n, entState->origin);
 
 		event_unique_id = entState->constantLight;
 		if( entState->event != 0 && cent->prev_unique_event_id != event_unique_id )

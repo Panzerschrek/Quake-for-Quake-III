@@ -210,9 +210,9 @@ static void CG_RegisterResources( void ) {
 		Com_sprintf( name, sizeof(name), "*%i", i );
 		cgs.inlineDrawModel[i] = trap_R_RegisterModel( name );
 		trap_R_ModelBounds( cgs.inlineDrawModel[i], mins, maxs );
-		//for ( j = 0 ; j < 3 ; j++ ) {
-		//	cgs.inlineModelMidpoints[i][j] = mins[j] + 0.5 * ( maxs[j] - mins[j] );
-		//}
+		for ( j = 0 ; j < 3 ; j++ ) {
+			cgs.inlineModelMidpoints[i][j] = mins[j] + 0.5 * ( maxs[j] - mins[j] );
+		}
 	}
 
 	// register all the server specified models

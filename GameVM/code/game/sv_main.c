@@ -71,6 +71,7 @@ void SV_StartSound (edict_t *entity, int channel, char *sample, int volume,
 	int         sound_num;
 	int			ent;
 	int			i;
+	vec3_t		origin;
 	edict_t*	event_edict;
 
 	if (volume < 0 || volume > 255)
@@ -105,7 +106,11 @@ void SV_StartSound (edict_t *entity, int channel, char *sample, int volume,
 
 	ent = NUM_FOR_EDICT(entity);
 
-	event_edict = G_CreateEventEdict(entity->v.origin, svc_sound);
+	// Start event for entity center to prevent dropping of event entity from snapshots list because of PVS/Areas check.
+	for( i = 0; i < 3; ++i )
+		origin[i]= entity->v.origin[i] + 0.5f * (entity->v.mins[i] + entity->v.maxs[i]);
+
+	event_edict = G_CreateEventEdict(origin, svc_sound);
 
 	// Reuse some fileds for event params.
 	event_edict->s.eFlags = ent;
