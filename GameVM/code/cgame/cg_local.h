@@ -28,7 +28,6 @@ Foundation, Inc., 51 Franklin St, Fifth Floor, Boston, MA  02110-1301  USA
 typedef struct
 {
 	int prev_unique_event_id;
-	vec3_t origin;
 } centity_t;
 
 // The entire cgame module is unloaded and reloaded on each level change,

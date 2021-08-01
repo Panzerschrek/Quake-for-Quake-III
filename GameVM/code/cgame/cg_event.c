@@ -3,12 +3,12 @@
 
 static void CG_StartSoundEvent( entityState_t *ent )
 {
-	int entityNum;
+	int entityNum, soundNum;
 
 	entityNum = ent->eFlags;
+	soundNum = ent->weapon;
 	//Com_Printf("start sound with index %d for entity %d\n", ent->weapon, entityNum);
-	// TODO - fix this. We probavly should not set position for entity-linked sounds.
-	trap_S_StartSound(cg_entities[entityNum].origin, entityNum, CHAN_BODY, cgs.gameSounds[ent->weapon]);
+	trap_S_StartSound(NULL, entityNum, CHAN_ITEM, cgs.gameSounds[soundNum]);
 }
 
 void CG_CheckEvents( entityState_t *ent )
