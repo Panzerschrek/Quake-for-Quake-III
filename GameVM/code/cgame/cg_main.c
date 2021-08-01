@@ -184,6 +184,16 @@ const char *CG_Argv( int arg ) {
 	return buffer;
 }
 
+static void CG_StartMusic(int index) {
+	char trackName[64]= "music/track00";
+
+	trackName[11]= '0' + index / 10;
+	trackName[12]= '0' + index % 10;
+	Com_Printf("Starting music track \"%s\"\n", trackName);
+	trap_S_StartBackgroundTrack(trackName, trackName);
+}
+
+
 /*
 =================
 CG_RegisterGraphics
@@ -251,6 +261,16 @@ static void CG_RegisterResources( void ) {
 		Com_sprintf(soundFileName, sizeof(soundFileName), "sound/%s", soundName);
 
 		cgs.gameSounds[i] = trap_S_RegisterSound( soundFileName, qfalse );
+	}
+
+	{
+		const char* musicIndexStr = CG_ConfigString(CS_MUSIC);
+		if(musicIndexStr && musicIndexStr[0] )
+		{
+			int music_index = atoi(musicIndexStr);
+			if(music_index > 0 && music_index < 100 )
+				CG_StartMusic(music_index);
+		}
 	}
 }
 

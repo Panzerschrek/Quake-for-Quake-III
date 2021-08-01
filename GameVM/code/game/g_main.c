@@ -242,6 +242,12 @@ void G_SetResourcesConfig()
 
 		trap_SetConfigstring(CS_SOUNDS + i, sv.sound_precache[i]);
 	}
+
+	{
+		char musicIndex[16];
+		Com_sprintf(musicIndex, sizeof(musicIndex), "%d", (int)sv.edicts->v.sounds);
+		trap_SetConfigstring(CS_MUSIC, musicIndex);
+	}
 }
 
 void SV_SpawnServer()
