@@ -25,6 +25,11 @@ Foundation, Inc., 51 Franklin St, Fifth Floor, Boston, MA  02110-1301  USA
 #include "../game/bg_public.h"
 #include "cg_public.h"
 
+typedef struct
+{
+	int prev_unique_event_id;
+	qboolean should_process_event;
+} centity_t;
 
 // The entire cgame module is unloaded and reloaded on each level change,
 // so there is NO persistant data between levels on the client side.
@@ -84,6 +89,7 @@ typedef struct {
 
 extern	cgs_t			cgs;
 extern	cg_t			cg;
+extern	centity_t		cg_entities[MAX_GENTITIES];
 
 extern	vmCvar_t		cg_timescaleFadeEnd;
 extern	vmCvar_t		cg_timescaleFadeSpeed;

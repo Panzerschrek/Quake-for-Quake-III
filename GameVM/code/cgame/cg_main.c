@@ -23,6 +23,7 @@ Foundation, Inc., 51 Franklin St, Fifth Floor, Boston, MA  02110-1301  USA
 // cg_main.c -- initialization and primary entry point for cgame
 #include "cg_local.h"
 
+
 void CG_Init( int serverMessageNum, int serverCommandSequence, int clientNum );
 void CG_Shutdown( void );
 
@@ -72,6 +73,7 @@ Q_EXPORT intptr_t vmMain( int command, int arg0, int arg1, int arg2, int arg3, i
 
 cg_t				cg;
 cgs_t				cgs;
+centity_t			cg_entities[MAX_GENTITIES];
 
 vmCvar_t	cg_timescaleFadeEnd;
 vmCvar_t	cg_timescaleFadeSpeed;
@@ -282,6 +284,7 @@ void CG_Init( int serverMessageNum, int serverCommandSequence, int clientNum ) {
 	// clear everything
 	memset( &cgs, 0, sizeof( cgs ) );
 	memset( &cg, 0, sizeof( cg ) );
+	memset( cg_entities, 0, sizeof( cg_entities ) );
 
 	cg.clientNum = clientNum;
 
