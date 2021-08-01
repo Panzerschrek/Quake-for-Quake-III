@@ -24,7 +24,7 @@ Foundation, Inc., 59 Temple Place - Suite 330, Boston, MA  02111-1307, USA.
 #include "q_client.h"
 #include "sbar.h"
 
-int sb_scale = 1;
+int sb_scale = 2;
 
 int			sb_updates;		// if >= cg.refdef.numpages, no update needed
 
@@ -33,7 +33,7 @@ int			sb_updates;		// if >= cg.refdef.numpages, no update needed
 
 qboolean	sb_showscores;
 
-int			sb_lines = 24;			// scan lines to draw
+int			sb_lines = 32;			// scan lines to draw
 
 extern qboolean		standard_quake, rogue, hipnotic;
 
@@ -248,12 +248,12 @@ void Sbar_Init (void)
 void Draw_PicScaled (int x, int y, int scale, qhandle_t pic)
 {
 	// PANZER TODO - know somehow original picture size.
-	trap_R_DrawStretchPic( x, y, 10.0, 10.0, 0.0, 0.0, 1.0, 1.0, pic );
+	trap_R_DrawStretchPic( x, y, 20.0, 30.0, 0.0, 0.0, 1.0, 1.0, pic );
 }
 
 void Draw_TransPicScaled (int x, int y, int scale, qhandle_t pic)
 {
-	trap_R_DrawStretchPic( x, y, 10.0, 10.0, 0.0, 0.0, 1.0, 1.0, pic );
+	trap_R_DrawStretchPic( x, y, 20.0, 30.0, 0.0, 0.0, 1.0, 1.0, pic );
 }
 
 void Draw_Fill (int x, int y, int w, int h, int c)
@@ -299,6 +299,37 @@ void Sbar_DrawTransPic (int x, int y, qhandle_t pic)
 		Draw_TransPicScaled (x * sb_scale /*+ ((cg.refdef.width - 320)>>1)*/, y + (cg.refdef.height-SBAR_HEIGHT * sb_scale), sb_scale, pic);
 	else
 		Draw_TransPicScaled (x * sb_scale + ((cg.refdef.width - 320 * sb_scale)>>1), y + (cg.refdef.height-SBAR_HEIGHT * sb_scale), sb_scale, pic);
+}
+
+/*
+=============
+Sbar_DrawPicStretched
+=============
+*/
+void Sbar_DrawPicStretched (int x, int y, int w, int h, qhandle_t pic)
+{
+	y*= sb_scale;
+	//if (cl.gametype == GAME_DEATHMATCH)
+	//	trap_R_DrawStretchPic (x * sb_scale /* + ((cg.refdef.width - 320)>>1)*/, y + (cg.refdef.height-SBAR_HEIGHT * sb_scale), w * sb_scale, h * sb_scale, 0.0, 0.0, 1.0, 1.0, pic);
+	//else
+	{
+		trap_R_DrawStretchPic (x * sb_scale + ((cg.refdef.width - 320 * sb_scale)>>1), y + (cg.refdef.height-SBAR_HEIGHT * sb_scale), w * sb_scale, h * sb_scale, 0.0, 0.0, 1.0, 1.0, pic);
+		//Com_Printf("Draw pic %d at pos %f %f with size %f %f\n", pic, (float) (x * sb_scale + ((cg.refdef.width - 320 * sb_scale)>>1)), (float)(y + (cg.refdef.height-SBAR_HEIGHT * sb_scale)), (float)(w * sb_scale), (float)(h * sb_scale) );
+	}
+}
+
+/*
+=============
+Sbar_DrawTransPicStretched
+=============
+*/
+void Sbar_DrawTransPicStretched (int x, int y, int w, int h, qhandle_t pic)
+{
+	y*= sb_scale;
+	if (cl.gametype == GAME_DEATHMATCH)
+		trap_R_DrawStretchPic (x * sb_scale /*+ ((cg.refdef.width - 320)>>1)*/, y + (cg.refdef.height-SBAR_HEIGHT * sb_scale), w * sb_scale, h * sb_scale, 0.0f, 0.0f, 1.0f, 1.0f, pic);
+	else
+		trap_R_DrawStretchPic (x * sb_scale + ((cg.refdef.width - 320 * sb_scale)>>1), y + (cg.refdef.height-SBAR_HEIGHT * sb_scale), w * sb_scale, h * sb_scale, 0.0f, 0.0f, 1.0f, 1.0f,  pic);
 }
 
 /*
@@ -380,6 +411,9 @@ void Sbar_DrawNum (int x, int y, int num, int digits, int color)
 	char			*ptr;
 	int				l, frame;
 
+	int num_width = 24;
+	int num_height= 24;
+
 	l = Sbar_itoa (num, str);
 	ptr = str;
 	if (l > digits)
@@ -394,7 +428,7 @@ void Sbar_DrawNum (int x, int y, int num, int digits, int color)
 		else
 			frame = *ptr -'0';
 
-		Sbar_DrawTransPic (x,y, sbar.sb_nums[color][frame]);
+		Sbar_DrawTransPicStretched (x,y, num_width, num_height, sbar.sb_nums[color][frame]);
 		x += 24;
 		ptr++;
 	}
@@ -577,16 +611,19 @@ void Sbar_DrawInventory (void)
 	float	time;
 	int		flashon;
 
+	int inv_width= 320;
+	int inv_height= 24;
+
 	if (rogue)
 	{
 		if ( cl.stats[STAT_ACTIVEWEAPON] >= RIT_LAVA_NAILGUN )
-			Sbar_DrawPic (0, -24, sbar.rsb_invbar[0]);
+			Sbar_DrawPicStretched (0, -24, inv_width, inv_height, sbar.rsb_invbar[0]);
 		else
-			Sbar_DrawPic (0, -24, sbar.rsb_invbar[1]);
+			Sbar_DrawPicStretched (0, -24, inv_width, inv_height, sbar.rsb_invbar[1]);
 	}
 	else
 	{
-		Sbar_DrawPic (0, -24, sbar.sb_ibar);
+		Sbar_DrawPicStretched (0, -24, inv_width, inv_height, sbar.sb_ibar);
 	}
 
 // weapons
@@ -856,6 +893,9 @@ void Sbar_DrawFace (void)
 {
 	int		f, anim;
 
+	int face_width= 24;
+	int face_height= 24;
+
 // PGM 01/19/97 - team color drawing
 // PGM 03/02/97 - fixed so color swatch only appears in CTF modes
 	if (rogue &&
@@ -880,7 +920,7 @@ void Sbar_DrawFace (void)
 		else
 			xofs = ((cg.refdef.width - 320)>>1) + 113;
 
-		Sbar_DrawPic (112, 0, sbar.rsb_teambord);
+		Sbar_DrawPicStretched (112, 0, face_width, face_height, sbar.rsb_teambord);
 		Draw_Fill (xofs, cg.refdef.height-SBAR_HEIGHT+3, 22, 9, top);
 		Draw_Fill (xofs, cg.refdef.height-SBAR_HEIGHT+12, 22, 9, bottom);
 
@@ -942,7 +982,7 @@ void Sbar_DrawFace (void)
 	}
 	else
 		anim = 0;
-	Sbar_DrawPic (112, 0, sbar.sb_faces[f][anim]);
+	Sbar_DrawPicStretched (112, 0, face_width, face_height, sbar.sb_faces[f][anim]);
 }
 
 /*
@@ -952,6 +992,11 @@ Sbar_Draw
 */
 void Sbar_Draw (void)
 {
+	int sbar_width = 320;
+	int sbar_height = 24;
+	int ammo_width = 16;
+	int ammo_height = 16;
+
 	// PANZER TODO - return this check?
 	//if (scr_con_current == cg.refdef.height)
 	//	return;		// console is full screen
@@ -965,15 +1010,15 @@ void Sbar_Draw (void)
 			Sbar_DrawFrags ();
 	}
 
-	if (sb_showscores || cl.stats[STAT_HEALTH] <= 0)
+	if (sb_showscores || cg.snap.ps.stats[STAT_HEALTH] <= 0)
 	{
-		Sbar_DrawPic (0, 0, sbar.sb_scorebar);
+		Sbar_DrawPicStretched (0, 0, sbar_width, sbar_height, sbar.sb_scorebar);
 		Sbar_DrawScoreboard ();
 		sb_updates = 0;
 	}
 	else if (sb_lines)
 	{
-		Sbar_DrawPic (0, 0, sbar.sb_sbar);
+		Sbar_DrawPicStretched (0, 0, sbar_width, sbar_height, sbar.sb_sbar);
 
    // keys (hipnotic only)
 	  //MED 01/04/97 moved keys here so they would not be overwritten
@@ -1027,30 +1072,30 @@ void Sbar_Draw (void)
 		if (rogue)
 		{
 			if (cl.items & RIT_SHELLS)
-				Sbar_DrawPic (224, 0, sbar.sb_ammo[0]);
+				Sbar_DrawPicStretched (224, 0, ammo_width, ammo_height, sbar.sb_ammo[0]);
 			else if (cl.items & RIT_NAILS)
-				Sbar_DrawPic (224, 0, sbar.sb_ammo[1]);
+				Sbar_DrawPicStretched (224, 0, ammo_width, ammo_height, sbar.sb_ammo[1]);
 			else if (cl.items & RIT_ROCKETS)
-				Sbar_DrawPic (224, 0, sbar.sb_ammo[2]);
+				Sbar_DrawPicStretched (224, 0, ammo_width, ammo_height, sbar.sb_ammo[2]);
 			else if (cl.items & RIT_CELLS)
-				Sbar_DrawPic (224, 0, sbar.sb_ammo[3]);
+				Sbar_DrawPicStretched (224, 0, ammo_width, ammo_height, sbar.sb_ammo[3]);
 			else if (cl.items & RIT_LAVA_NAILS)
-				Sbar_DrawPic (224, 0, sbar.rsb_ammo[0]);
+				Sbar_DrawPicStretched (224, 0, ammo_width, ammo_height, sbar.rsb_ammo[0]);
 			else if (cl.items & RIT_PLASMA_AMMO)
-				Sbar_DrawPic (224, 0, sbar.rsb_ammo[1]);
+				Sbar_DrawPicStretched (224, 0, ammo_width, ammo_height, sbar.rsb_ammo[1]);
 			else if (cl.items & RIT_MULTI_ROCKETS)
-				Sbar_DrawPic (224, 0, sbar.rsb_ammo[2]);
+				Sbar_DrawPicStretched (224, 0, ammo_width, ammo_height, sbar.rsb_ammo[2]);
 		}
 		else
 		{
 			if (cl.items & IT_SHELLS)
-				Sbar_DrawPic (224, 0, sbar.sb_ammo[0]);
+				Sbar_DrawPicStretched (224, 0, ammo_width, ammo_height, sbar.sb_ammo[0]);
 			else if (cl.items & IT_NAILS)
-				Sbar_DrawPic (224, 0, sbar.sb_ammo[1]);
+				Sbar_DrawPicStretched (224, 0, ammo_width, ammo_height, sbar.sb_ammo[1]);
 			else if (cl.items & IT_ROCKETS)
-				Sbar_DrawPic (224, 0, sbar.sb_ammo[2]);
+				Sbar_DrawPicStretched (224, 0, ammo_width, ammo_height, sbar.sb_ammo[2]);
 			else if (cl.items & IT_CELLS)
-				Sbar_DrawPic (224, 0, sbar.sb_ammo[3]);
+				Sbar_DrawPicStretched (224, 0, ammo_width, ammo_height, sbar.sb_ammo[3]);
 		}
 
 		Sbar_DrawNum (248, 0, cl.stats[STAT_AMMO], 3,

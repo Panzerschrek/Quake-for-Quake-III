@@ -514,5 +514,6 @@ void G_RunFrame( int levelTime ) {
 		svs.clients[i].ps.viewheight = edict->v.view_ofs[2];
 		svs.clients[i].ps.weapon = SV_ModelIndex(pr_strings + edict->v.weaponmodel);
 		svs.clients[i].ps.weaponstate = edict->v.weaponframe; // Put weapon frame into "weaponstate" field.
+		svs.clients[i].ps.stats[STAT_HEALTH] = edict->v.health;
 	}
 }
