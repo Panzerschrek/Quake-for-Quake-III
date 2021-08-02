@@ -273,33 +273,6 @@ void Draw_StringScaled (int x, int y, int scale, char *str)
 
 // drawing routines are relative to the status bar location
 
-/*
-=============
-Sbar_DrawPic
-=============
-*/
-void Sbar_DrawPic (int x, int y, qhandle_t pic)
-{
-	y*= sb_scale;
-	if (cl.gametype == GAME_DEATHMATCH)
-		Draw_PicScaled (x * sb_scale /* + ((cg.refdef.width - 320)>>1)*/, y + (cg.refdef.height-SBAR_HEIGHT * sb_scale), sb_scale, pic);
-	else
-		Draw_PicScaled (x * sb_scale + ((cg.refdef.width - 320 * sb_scale)>>1), y + (cg.refdef.height-SBAR_HEIGHT * sb_scale), sb_scale, pic);
-}
-
-/*
-=============
-Sbar_DrawTransPic
-=============
-*/
-void Sbar_DrawTransPic (int x, int y, qhandle_t pic)
-{
-	y*= sb_scale;
-	if (cl.gametype == GAME_DEATHMATCH)
-		Draw_TransPicScaled (x * sb_scale /*+ ((cg.refdef.width - 320)>>1)*/, y + (cg.refdef.height-SBAR_HEIGHT * sb_scale), sb_scale, pic);
-	else
-		Draw_TransPicScaled (x * sb_scale + ((cg.refdef.width - 320 * sb_scale)>>1), y + (cg.refdef.height-SBAR_HEIGHT * sb_scale), sb_scale, pic);
-}
 
 /*
 =============
@@ -322,11 +295,7 @@ Sbar_DrawTransPicStretched
 */
 void Sbar_DrawTransPicStretched (int x, int y, int w, int h, qhandle_t pic)
 {
-	y*= sb_scale;
-	if (cl.gametype == GAME_DEATHMATCH)
-		trap_R_DrawStretchPic (x * sb_scale /*+ ((cg.refdef.width - 320)>>1)*/, y + (cg.refdef.height-SBAR_HEIGHT * sb_scale), w * sb_scale, h * sb_scale, 0.0f, 0.0f, 1.0f, 1.0f, pic);
-	else
-		trap_R_DrawStretchPic (x * sb_scale + ((cg.refdef.width - 320 * sb_scale)>>1), y + (cg.refdef.height-SBAR_HEIGHT * sb_scale), w * sb_scale, h * sb_scale, 0.0f, 0.0f, 1.0f, 1.0f,  pic);
+	Sbar_DrawPicStretched(x, y, w, h, pic);
 }
 
 /*
