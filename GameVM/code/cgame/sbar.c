@@ -563,6 +563,11 @@ void Sbar_DrawScoreboard (void)
 #endif
 }
 
+static int GetItems()
+{
+	return (cg.snap.ps.stats[STAT_ITEMS_LO] & 65535) | (cg.snap.ps.stats[STAT_ITEMS_HI] << 16);
+}
+
 //=============================================================================
 
 /*
@@ -603,7 +608,7 @@ void Sbar_DrawInventory (void)
 // weapons
 	for (i=0 ; i<7 ; i++)
 	{
-		if (cg.snap.ps.stats[STAT_ITEMS] & (IT_SHOTGUN<<i) )
+		if (GetItems() & (IT_SHOTGUN<<i) )
 		{
 			// PANZER TODO - add flashing on pick-up.
 			if ( (IT_SHOTGUN<<i) == cg.snap.ps.stats[STAT_ACTIVE_WEAPON] )
@@ -627,7 +632,7 @@ void Sbar_DrawInventory (void)
 	  int grenadeflashing=0;
 	  for (i=0 ; i<4 ; i++)
 	  {
-		 if (cg.snap.ps.stats[STAT_ITEMS] & (1<<sbar.hipweapons[i]) )
+		 if (GetItems() & (1<<sbar.hipweapons[i]) )
 		 {
 			// PANZER TODO - add flashing on pick-up.
 		   if ( cg.snap.ps.stats[STAT_ACTIVE_WEAPON] == (1<<sbar.hipweapons[i])  )
@@ -638,7 +643,7 @@ void Sbar_DrawInventory (void)
 			// check grenade launcher
 			if (i==2)
 			{
-			   if (cg.snap.ps.stats[STAT_ITEMS] & HIT_PROXIMITY_GUN)
+			   if (GetItems() & HIT_PROXIMITY_GUN)
 			   {
 				  if (flashon)
 				  {
@@ -649,7 +654,7 @@ void Sbar_DrawInventory (void)
 			}
 			else if (i==3)
 			{
-			   if (cg.snap.ps.stats[STAT_ITEMS] & (IT_SHOTGUN<<4))
+			   if (GetItems() & (IT_SHOTGUN<<4))
 			   {
 				  if (flashon && !grenadeflashing)
 				  {
@@ -701,7 +706,7 @@ void Sbar_DrawInventory (void)
 	flashon = 0;
    // items
    for (i=0 ; i<6 ; i++)
-	  if (cg.snap.ps.stats[STAT_ITEMS] & (1<<(17+i)))
+	  if (GetItems() & (1<<(17+i)))
 	  {
 		// PANZER TODO - add flashing.
 		 //MED 01/04/97 changed keys
@@ -715,7 +720,7 @@ void Sbar_DrawInventory (void)
    if (hipnotic)
    {
 	  for (i=0 ; i<2 ; i++)
-		 if (cg.snap.ps.stats[STAT_ITEMS] & (1<<(24+i)))
+		 if (GetItems() & (1<<(24+i)))
 		 {
 			time = cl.item_gettime[24+i];
 			if (time && time > cl.time - 2 && flashon )
@@ -736,7 +741,7 @@ void Sbar_DrawInventory (void)
 	// new rogue items
 		for (i=0 ; i<2 ; i++)
 		{
-			if (cg.snap.ps.stats[STAT_ITEMS] & (1<<(29+i)))
+			if (GetItems() & (1<<(29+i)))
 			{
 				time = cl.item_gettime[29+i];
 
@@ -759,7 +764,7 @@ void Sbar_DrawInventory (void)
 	// sigils
 		for (i=0 ; i<4 ; i++)
 		{
-			if (cg.snap.ps.stats[STAT_ITEMS] & (1<<(28+i)))
+			if (GetItems() & (1<<(28+i)))
 			{
 				// PANZER TODO - add flashing.
 				Sbar_DrawPicStretched (320-32 + i*8, -16, sigil_width, sigil_height, sbar.sb_sigil[i]);
@@ -896,23 +901,23 @@ void Sbar_DrawFace (void)
 	}
 // PGM 01/19/97 - team color drawing
 
-	if ( (cg.snap.ps.stats[STAT_ITEMS] & (IT_INVISIBILITY | IT_INVULNERABILITY) )
+	if ( (GetItems() & (IT_INVISIBILITY | IT_INVULNERABILITY) )
 	== (IT_INVISIBILITY | IT_INVULNERABILITY) )
 	{
 		Sbar_DrawPicStretched (112, 0, face_width, face_height, sbar.sb_face_invis_invuln);
 		return;
 	}
-	if (cg.snap.ps.stats[STAT_ITEMS] & IT_QUAD)
+	if (GetItems() & IT_QUAD)
 	{
 		Sbar_DrawPicStretched (112, 0, face_width, face_height, sbar.sb_face_quad );
 		return;
 	}
-	if (cg.snap.ps.stats[STAT_ITEMS] & IT_INVISIBILITY)
+	if (GetItems() & IT_INVISIBILITY)
 	{
 		Sbar_DrawPicStretched (112, 0, face_width, face_height,  sbar.sb_face_invis );
 		return;
 	}
-	if (cg.snap.ps.stats[STAT_ITEMS] & IT_INVULNERABILITY)
+	if (GetItems() & IT_INVULNERABILITY)
 	{
 		Sbar_DrawPicStretched (112, 0, face_width, face_height,  sbar.sb_face_invuln);
 		return;
@@ -976,13 +981,13 @@ void Sbar_Draw (void)
 	  //MED 01/04/97 moved keys here so they would not be overwritten
 	  if (hipnotic)
 	  {
-		 if (cg.snap.ps.stats[STAT_ITEMS] & IT_KEY1)
+		 if (GetItems() & IT_KEY1)
 			Sbar_DrawPicStretched (209, 3, item_width, item_height, sbar.sb_items[0]);
-		 if (cg.snap.ps.stats[STAT_ITEMS] & IT_KEY2)
+		 if (GetItems() & IT_KEY2)
 			Sbar_DrawPicStretched (209, 12, item_width, item_height, sbar.sb_items[1]);
 	  }
    // armor
-		if (cg.snap.ps.stats[STAT_ITEMS] & IT_INVULNERABILITY)
+		if (GetItems() & IT_INVULNERABILITY)
 		{
 			Sbar_DrawNum (24, 0, 666, 3, 1);
 			Sbar_DrawPicStretched (0, 0, armor_width, armor_height, cgs.draw_disc);
@@ -993,22 +998,22 @@ void Sbar_Draw (void)
 			{
 				Sbar_DrawNum (24, 0, cg.snap.ps.stats[Q3_STAT_ARMOR], 3,
 								cg.snap.ps.stats[Q3_STAT_ARMOR] <= 25);
-				if (cg.snap.ps.stats[STAT_ITEMS] & RIT_ARMOR3)
+				if (GetItems() & RIT_ARMOR3)
 					Sbar_DrawPicStretched (0, 0, armor_width, armor_height, sbar.sb_armor[2]);
-				else if (cg.snap.ps.stats[STAT_ITEMS] & RIT_ARMOR2)
+				else if (GetItems() & RIT_ARMOR2)
 					Sbar_DrawPicStretched (0, 0, armor_width, armor_height, sbar.sb_armor[1]);
-				else if (cg.snap.ps.stats[STAT_ITEMS] & RIT_ARMOR1)
+				else if (GetItems() & RIT_ARMOR1)
 					Sbar_DrawPicStretched (0, 0, armor_width, armor_height, sbar.sb_armor[0]);
 			}
 			else
 			{
 				Sbar_DrawNum (24, 0, cg.snap.ps.stats[Q3_STAT_ARMOR], 3
 				, cg.snap.ps.stats[Q3_STAT_ARMOR] <= 25);
-				if (cg.snap.ps.stats[STAT_ITEMS] & IT_ARMOR3)
+				if (GetItems() & IT_ARMOR3)
 					Sbar_DrawPicStretched (0, 0, armor_width, armor_height, sbar.sb_armor[2]);
-				else if (cg.snap.ps.stats[STAT_ITEMS] & IT_ARMOR2)
+				else if (GetItems() & IT_ARMOR2)
 					Sbar_DrawPicStretched (0, 0, armor_width, armor_height, sbar.sb_armor[1]);
-				else if (cg.snap.ps.stats[STAT_ITEMS] & IT_ARMOR1)
+				else if (GetItems() & IT_ARMOR1)
 					Sbar_DrawPicStretched (0, 0, armor_width, armor_height, sbar.sb_armor[0]);
 			}
 		}
@@ -1023,30 +1028,30 @@ void Sbar_Draw (void)
 	// ammo icon
 		if (rogue)
 		{
-			if (cg.snap.ps.stats[STAT_ITEMS] & RIT_SHELLS)
+			if (GetItems() & RIT_SHELLS)
 				Sbar_DrawPicStretched (224, 0, ammo_width, ammo_height, sbar.sb_ammo[0]);
-			else if (cg.snap.ps.stats[STAT_ITEMS] & RIT_NAILS)
+			else if (GetItems() & RIT_NAILS)
 				Sbar_DrawPicStretched (224, 0, ammo_width, ammo_height, sbar.sb_ammo[1]);
-			else if (cg.snap.ps.stats[STAT_ITEMS] & RIT_ROCKETS)
+			else if (GetItems() & RIT_ROCKETS)
 				Sbar_DrawPicStretched (224, 0, ammo_width, ammo_height, sbar.sb_ammo[2]);
-			else if (cg.snap.ps.stats[STAT_ITEMS] & RIT_CELLS)
+			else if (GetItems() & RIT_CELLS)
 				Sbar_DrawPicStretched (224, 0, ammo_width, ammo_height, sbar.sb_ammo[3]);
-			else if (cg.snap.ps.stats[STAT_ITEMS] & RIT_LAVA_NAILS)
+			else if (GetItems() & RIT_LAVA_NAILS)
 				Sbar_DrawPicStretched (224, 0, ammo_width, ammo_height, sbar.rsb_ammo[0]);
-			else if (cg.snap.ps.stats[STAT_ITEMS] & RIT_PLASMA_AMMO)
+			else if (GetItems() & RIT_PLASMA_AMMO)
 				Sbar_DrawPicStretched (224, 0, ammo_width, ammo_height, sbar.rsb_ammo[1]);
-			else if (cg.snap.ps.stats[STAT_ITEMS] & RIT_MULTI_ROCKETS)
+			else if (GetItems() & RIT_MULTI_ROCKETS)
 				Sbar_DrawPicStretched (224, 0, ammo_width, ammo_height, sbar.rsb_ammo[2]);
 		}
 		else
 		{
-			if (cg.snap.ps.stats[STAT_ITEMS] & IT_SHELLS)
+			if (GetItems() & IT_SHELLS)
 				Sbar_DrawPicStretched (224, 0, ammo_width, ammo_height, sbar.sb_ammo[0]);
-			else if (cg.snap.ps.stats[STAT_ITEMS] & IT_NAILS)
+			else if (GetItems() & IT_NAILS)
 				Sbar_DrawPicStretched (224, 0, ammo_width, ammo_height, sbar.sb_ammo[1]);
-			else if (cg.snap.ps.stats[STAT_ITEMS] & IT_ROCKETS)
+			else if (GetItems() & IT_ROCKETS)
 				Sbar_DrawPicStretched (224, 0, ammo_width, ammo_height, sbar.sb_ammo[2]);
-			else if (cg.snap.ps.stats[STAT_ITEMS] & IT_CELLS)
+			else if (GetItems() & IT_CELLS)
 				Sbar_DrawPicStretched (224, 0, ammo_width, ammo_height, sbar.sb_ammo[3]);
 		}
 

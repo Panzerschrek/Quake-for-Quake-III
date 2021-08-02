@@ -70,7 +70,8 @@ Foundation, Inc., 51 Franklin St, Fifth Floor, Boston, MA  02110-1301  USA
 // NOTE: may not have more than 16
 typedef enum {
 	STAT_HEALTH,
-	STAT_ITEMS,					// 16 bit fields
+	STAT_ITEMS_LO, // Lower 16 bits of stats.
+	STAT_ITEMS_HI, // Heightr 16 bits of stats.
 	Q3_STAT_ARMOR,
 	STAT_ACTIVE_WEAPON, // edict->v.weapon
 	Q3_STAT_CURRENT_AMMO,
