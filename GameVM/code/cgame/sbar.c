@@ -227,19 +227,7 @@ void Sbar_Init (void)
 	}
 }
 
-
 // Panzer - move here wrappers
-
-void Draw_PicScaled (int x, int y, int scale, qhandle_t pic)
-{
-	// PANZER TODO - know somehow original picture size.
-	trap_R_DrawStretchPic( x, y, 20.0, 30.0, 0.0, 0.0, 1.0, 1.0, pic );
-}
-
-void Draw_TransPicScaled (int x, int y, int scale, qhandle_t pic)
-{
-	trap_R_DrawStretchPic( x, y, 20.0, 30.0, 0.0, 0.0, 1.0, 1.0, pic );
-}
 
 void Draw_Fill (int x, int y, int w, int h, int c)
 {
@@ -1105,6 +1093,9 @@ void Sbar_IntermissionNumber (int x, int y, int num, int digits, int color)
 	char			*ptr;
 	int				l, frame;
 
+	const int num_width = 24;
+	const int num_height = 24;
+
 	l = Sbar_itoa (num, str);
 	ptr = str;
 	if (l > digits)
@@ -1119,7 +1110,7 @@ void Sbar_IntermissionNumber (int x, int y, int num, int digits, int color)
 		else
 			frame = *ptr -'0';
 
-		Draw_TransPicScaled (x,y,sb_scale,sbar.sb_nums[color][frame]);
+		trap_R_DrawStretchPic (x, y, num_width * sb_scale, num_height * sb_scale, 0.0f, 0.0f, 1.0f, 1.0f, sbar.sb_nums[color][frame]);
 		x += 24 * sb_scale;
 		ptr++;
 	}
@@ -1312,7 +1303,6 @@ Sbar_IntermissionOverlay
 */
 void Sbar_IntermissionOverlay (void)
 {
-#if 0 // PANZER TODO - fix it
 	qhandle_t	pic;
 	int		dig;
 	int		num;
@@ -1323,7 +1313,7 @@ void Sbar_IntermissionOverlay (void)
 		Sbar_DeathmatchOverlay ();
 		return;
 	}
-
+#if 0 // PANZER TODO - fix it
 	x_ofs = (cg.refdef.width - SBAR_WIDTH * sb_scale) >> 1;
 	pic = Draw_CachePic ("gfx/complete.lmp");
 	Draw_TransPicScaled (x_ofs + 64 * sb_scale, 24 * sb_scale, sb_scale, pic);
