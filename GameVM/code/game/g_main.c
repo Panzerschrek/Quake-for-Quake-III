@@ -524,6 +524,10 @@ void G_RunFrame( int levelTime ) {
 		client->ps.stats[Q3_STAT_NAILS] = edict->v.ammo_nails;
 		client->ps.stats[Q3_STAT_ROCKETS] = edict->v.ammo_rockets;
 		client->ps.stats[Q3_STAT_CELLS] = edict->v.ammo_cells;
+		client->ps.stats[Q3_STAT_TOTAL_SECRETS] = pr_global_struct->total_secrets;
+		client->ps.stats[Q3_STAT_TOTAL_MONSTERS] = pr_global_struct->total_monsters;
+		client->ps.stats[Q3_STAT_SECRETS] = pr_global_struct->found_secrets;
+		client->ps.stats[Q3_STAT_MONSTERS] = pr_global_struct->killed_monsters;
 
 		{
 			eval_t* val;

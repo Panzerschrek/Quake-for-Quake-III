@@ -512,10 +512,10 @@ void Sbar_SoloScoreboard (void)
 	int		minutes, seconds, tens, units;
 	int		l;
 
-	Com_sprintf (str, sizeof(str), "Monsters:%3i /%3i", cl.stats[STAT_MONSTERS], cl.stats[STAT_TOTALMONSTERS]);
+	Com_sprintf (str, sizeof(str), "Monsters:%3i /%3i", cg.snap.ps.stats[Q3_STAT_MONSTERS], cg.snap.ps.stats[Q3_STAT_TOTAL_MONSTERS]);
 	Sbar_DrawString (8, 4, str);
 
-	Com_sprintf (str, sizeof(str), "Secrets :%3i /%3i", cl.stats[STAT_SECRETS], cl.stats[STAT_TOTALSECRETS]);
+	Com_sprintf (str, sizeof(str), "Secrets :%3i /%3i", cg.snap.ps.stats[Q3_STAT_SECRETS], cg.snap.ps.stats[Q3_STAT_TOTAL_SECRETS]);
 	Sbar_DrawString (8, 12, str);
 
 // time
@@ -948,10 +948,10 @@ void Sbar_DrawFace (void)
 		return;
 	}
 
-	if (cl.stats[STAT_HEALTH] >= 100)
+	if (cg.snap.ps.stats[STAT_HEALTH] >= 100)
 		f = 4;
 	else
-		f = cl.stats[STAT_HEALTH] / 20;
+		f = cg.snap.ps.stats[STAT_HEALTH] / 20;
 
 	if (cl.time <= cl.faceanimtime)
 	{

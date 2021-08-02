@@ -195,6 +195,9 @@ void CG_ParseServerinfo( void );
 
 void Sbar_Init (void);
 void Sbar_Draw (void);
+void Sbar_ShowScores (void);
+void Sbar_DontShowScores (void);
+
 
 //===============================================
 
