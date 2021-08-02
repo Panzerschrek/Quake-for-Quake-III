@@ -972,6 +972,13 @@ void Sbar_Draw (void)
 
 	Sbar_CalculateScale();
 
+	// PANZER TODO - allow cursor customization.
+	Draw_CharacterScaled(
+		cg.refdef.x + cg.refdef.width  / 2 - 4,
+		cg.refdef.y + cg.refdef.height / 2 - 4,
+		1,
+		'+');
+
 	sb_updates++;
 
 	if (sb_lines > 24)
