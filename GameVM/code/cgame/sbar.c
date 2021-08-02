@@ -24,7 +24,7 @@ Foundation, Inc., 59 Temple Place - Suite 330, Boston, MA  02111-1307, USA.
 #include "q_client.h"
 #include "sbar.h"
 
-int sb_scale = 2;
+float sb_scale = 1.0f;
 
 int			sb_updates;		// if >= cg.refdef.numpages, no update needed
 
@@ -68,23 +68,6 @@ void Sbar_DontShowScores (void)
 {
 	sb_showscores = qfalse;
 	sb_updates = 0;
-}
-
-/*
-===============
-Sbar_Changed
-===============
-*/
-void Sbar_Changed (void)
-{
-	int		scales[2];
-
-	scales[0] = (cg.refdef.width * 3 / 4) / SBAR_WIDTH; // take 3/4 of screen, not more.
-	scales[1] = cg.refdef.height / (200 + 100); // 200 - original size + some space for wide monitors.
-	sb_scale = scales[0] < scales[1] ? scales[0] : scales[1]; // Take minimum
-	if (sb_scale == 0) sb_scale = 1;
-
-	sb_updates = 0;	// update next frame
 }
 
 
@@ -304,13 +287,13 @@ void Draw_StringScaled (int x, int y, int scale, const char *str)
 Sbar_DrawPicStretched
 =============
 */
-void Sbar_DrawPicStretched (int x, int y, int w, int h, qhandle_t pic)
+void Sbar_DrawPicStretched (float x, float y, float w, float h, qhandle_t pic)
 {
 	y*= sb_scale;
 	if (cl.gametype == GAME_DEATHMATCH)
 		trap_R_DrawStretchPic (x * sb_scale /* + ((cg.refdef.width - SBAR_WIDTH)>>1)*/, y + (cg.refdef.height-SBAR_HEIGHT * sb_scale), w * sb_scale, h * sb_scale, 0.0, 0.0, 1.0, 1.0, pic);
 	else
-		trap_R_DrawStretchPic (x * sb_scale + ((cg.refdef.width - SBAR_WIDTH * sb_scale)>>1), y + (cg.refdef.height-SBAR_HEIGHT * sb_scale), w * sb_scale, h * sb_scale, 0.0, 0.0, 1.0, 1.0, pic);
+		trap_R_DrawStretchPic (x * sb_scale + (cg.refdef.width - SBAR_WIDTH * sb_scale) * 0.5f, y + (cg.refdef.height-SBAR_HEIGHT * sb_scale), w * sb_scale, h * sb_scale, 0.0, 0.0, 1.0, 1.0, pic);
 }
 
 /*
@@ -318,7 +301,7 @@ void Sbar_DrawPicStretched (int x, int y, int w, int h, qhandle_t pic)
 Sbar_DrawTransPicStretched
 =============
 */
-void Sbar_DrawTransPicStretched (int x, int y, int w, int h, qhandle_t pic)
+void Sbar_DrawTransPicStretched (float x, float y, float w, float h, qhandle_t pic)
 {
 	Sbar_DrawPicStretched(x, y, w, h, pic);
 }
@@ -330,14 +313,14 @@ Sbar_DrawCharacter
 Draws one solid graphics character
 ================
 */
-void Sbar_DrawCharacter (int x, int y, int num)
+void Sbar_DrawCharacter (float x, float y, int num)
 {
 	x *= sb_scale;
 	y *= sb_scale;
 	if (cl.gametype == GAME_DEATHMATCH)
 		Draw_CharacterScaled ( x/*+ ((cg.refdef.width - SBAR_WIDTH)>>1) */ + 4 , y + cg.refdef.height-SBAR_HEIGHT * sb_scale, sb_scale, num);
 	else
-		Draw_CharacterScaled ( x + ((cg.refdef.width - SBAR_WIDTH * sb_scale)>>1) + 4 , y + cg.refdef.height-SBAR_HEIGHT * sb_scale, sb_scale, num);
+		Draw_CharacterScaled ( x + (cg.refdef.width - SBAR_WIDTH * sb_scale) * 0.5f + 4 , y + cg.refdef.height-SBAR_HEIGHT * sb_scale, sb_scale, num);
 }
 
 /*
@@ -352,7 +335,7 @@ void Sbar_DrawString (int x, int y, char *str)
 	if (cl.gametype == GAME_DEATHMATCH)
 		Draw_StringScaled (x /*+ ((cg.refdef.width - SBAR_WIDTH)>>1)*/, y+ cg.refdef.height-SBAR_HEIGHT * sb_scale, sb_scale, str);
 	else
-		Draw_StringScaled (x + ((cg.refdef.width - SBAR_WIDTH * sb_scale)>>1), y+ cg.refdef.height-SBAR_HEIGHT * sb_scale, sb_scale, str);
+		Draw_StringScaled (x + (cg.refdef.width - SBAR_WIDTH * sb_scale) * 0.5f, y+ cg.refdef.height-SBAR_HEIGHT * sb_scale, sb_scale, str);
 }
 
 /*
@@ -963,6 +946,26 @@ void Sbar_DrawFace (void)
 	Sbar_DrawPicStretched (112, 0, face_width, face_height, sbar.sb_faces[f][anim]);
 }
 
+static void Sbar_CalculateScale()
+{
+	float scale_h, scale_v;
+
+	sb_scale = cg_sbar_scale.value;
+	if( sb_scale <- 1.0f )
+		sb_scale = 1.0f;
+	else if( sb_scale <= 1.5f )
+		sb_scale = 1.5f;
+	else
+		sb_scale = (int)(sb_scale + 0.999f);
+
+	scale_h = cg.refdef.width / 320.0f;
+	scale_v = cg.refdef.height / 200.0f;
+	if( sb_scale > scale_h )
+		sb_scale = (int)scale_h;
+	if( sb_scale > scale_v )
+		sb_scale = (int)scale_v;
+}
+
 /*
 ===============
 Sbar_Draw
@@ -979,9 +982,7 @@ void Sbar_Draw (void)
 	const int item_width = 16;
 	const int item_height = 16;
 
-	// PANZER TODO - return this check?
-	//if (scr_con_current == cg.refdef.height)
-	//	return;		// console is full screen
+	Sbar_CalculateScale();
 
 	sb_updates++;
 
@@ -1150,7 +1151,7 @@ void Sbar_DeathmatchOverlay (void)
 // draw the text
 	l = scoreboardlines;
 
-	x = 80 * sb_scale + ((cg.refdef.width - SBAR_WIDTH * sb_scale)>>1);
+	x = 80 * sb_scale + (cg.refdef.width - SBAR_WIDTH * sb_scale) * 0.5f;
 	y = 40 * sb_scale;
 	for (i=0 ; i<l ; i++)
 	{
