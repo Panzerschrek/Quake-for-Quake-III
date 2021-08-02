@@ -517,7 +517,8 @@ void G_RunFrame( int levelTime ) {
 		client->ps.weapon = SV_ModelIndex(pr_strings + edict->v.weaponmodel);
 		client->ps.weaponstate = edict->v.weaponframe; // Put weapon frame into "weaponstate" field.
 		client->ps.stats[STAT_HEALTH] = edict->v.health;
-		client->ps.stats[STAT_WEAPONS] = edict->v.items;
+		client->ps.stats[STAT_ITEMS] = edict->v.items;
+		client->ps.stats[Q3_STAT_ARMOR] = edict->v.armorvalue;
 		client->ps.stats[STAT_CUR_WEAPON] = edict->v.weapon;
 	}
 }
