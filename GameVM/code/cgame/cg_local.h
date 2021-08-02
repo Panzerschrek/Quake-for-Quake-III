@@ -88,6 +88,8 @@ typedef struct {
 
 typedef struct
 {
+	qhandle_t		conchars;
+
 	qhandle_t		sb_nums[2][11];
 	qhandle_t		sb_colon, sb_slash;
 	qhandle_t		sb_ibar;

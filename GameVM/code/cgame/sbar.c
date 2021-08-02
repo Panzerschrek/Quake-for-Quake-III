@@ -106,6 +106,8 @@ void Sbar_Init (void)
 {
 	int		i;
 
+	sbar.conchars = Draw_PicFromWad("conchars");
+
 	for (i=0 ; i<10 ; i++)
 	{
 		sbar.sb_nums[0][i] = Draw_PicFromWad (va("num_%i",i));
@@ -262,10 +264,33 @@ void Draw_Fill (int x, int y, int w, int h, int c)
 
 void Draw_CharacterScaled (int x, int y, int scale, int num)
 {
+	float				row, col;
+
+	num &= 255;
+	if( num == ' ' )
+		return;
+
+	row = num>>4;
+	col = num&15;
+
+	trap_R_DrawStretchPic(
+		x, y,
+		8 * scale, 8 * scale,
+		col / 16.0f,
+		row / 16.0,
+		col / 16.0 + 1.0 / 16.0,
+		row / 16.0 + 1.0 / 16.0,
+		sbar.conchars);
 }
 
-void Draw_StringScaled (int x, int y, int scale, char *str)
+void Draw_StringScaled (int x, int y, int scale, const char *str)
 {
+	while (*str)
+	{
+		Draw_CharacterScaled (x, y, scale, *str);
+		str++;
+		x += 8 * scale;
+	}
 }
 
 
