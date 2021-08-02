@@ -519,6 +519,11 @@ void G_RunFrame( int levelTime ) {
 		client->ps.stats[STAT_HEALTH] = edict->v.health;
 		client->ps.stats[STAT_ITEMS] = edict->v.items;
 		client->ps.stats[Q3_STAT_ARMOR] = edict->v.armorvalue;
-		client->ps.stats[STAT_CUR_WEAPON] = edict->v.weapon;
+		client->ps.stats[STAT_ACTIVE_WEAPON] = edict->v.weapon;
+		client->ps.stats[Q3_STAT_CURRENT_AMMO] = edict->v.currentammo;
+		client->ps.stats[Q3_STAT_SHELLS] = edict->v.ammo_shells;
+		client->ps.stats[Q3_STAT_NAILS] = edict->v.ammo_nails;
+		client->ps.stats[Q3_STAT_ROCKETS] = edict->v.ammo_rockets;
+		client->ps.stats[Q3_STAT_CELLS] = edict->v.ammo_cells;
 	}
 }

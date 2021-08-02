@@ -72,7 +72,12 @@ typedef enum {
 	STAT_HEALTH,
 	STAT_ITEMS,					// 16 bit fields
 	Q3_STAT_ARMOR,
-	STAT_CUR_WEAPON, // edict->v.weapon
+	STAT_ACTIVE_WEAPON, // edict->v.weapon
+	Q3_STAT_CURRENT_AMMO,
+	Q3_STAT_SHELLS,
+	Q3_STAT_NAILS,
+	Q3_STAT_ROCKETS,
+	Q3_STAT_CELLS,
 } statIndex_t;
 
 

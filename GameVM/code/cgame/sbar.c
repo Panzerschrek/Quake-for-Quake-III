@@ -618,7 +618,7 @@ void Sbar_DrawInventory (void)
 
 	if (rogue)
 	{
-		if ( cl.stats[STAT_ACTIVEWEAPON] >= RIT_LAVA_NAILGUN )
+		if ( cg.snap.ps.stats[STAT_ACTIVE_WEAPON] >= RIT_LAVA_NAILGUN )
 			Sbar_DrawPicStretched (0, -24, inv_width, inv_height, sbar.rsb_invbar[0]);
 		else
 			Sbar_DrawPicStretched (0, -24, inv_width, inv_height, sbar.rsb_invbar[1]);
@@ -634,7 +634,7 @@ void Sbar_DrawInventory (void)
 		if (cg.snap.ps.stats[STAT_ITEMS] & (IT_SHOTGUN<<i) )
 		{
 			// PANZER TODO - add flashing on pick-up.
-			if ( (IT_SHOTGUN<<i) == cg.snap.ps.stats[STAT_CUR_WEAPON] )
+			if ( (IT_SHOTGUN<<i) == cg.snap.ps.stats[STAT_ACTIVE_WEAPON] )
 				flashon = 1;
 			else
 				flashon = 0;
@@ -657,17 +657,11 @@ void Sbar_DrawInventory (void)
 	  {
 		 if (cg.snap.ps.stats[STAT_ITEMS] & (1<<sbar.hipweapons[i]) )
 		 {
-			time = cl.item_gettime[sbar.hipweapons[i]];
-			flashon = (int)((cl.time - time)*10);
-			if (flashon >= 10)
-			{
-			   if ( cl.stats[STAT_ACTIVEWEAPON] == (1<<sbar.hipweapons[i])  )
-				  flashon = 1;
-			   else
-				  flashon = 0;
-			}
-			else
-			   flashon = (flashon%5) + 2;
+			// PANZER TODO - add flashing on pick-up.
+		   if ( cg.snap.ps.stats[STAT_ACTIVE_WEAPON] == (1<<sbar.hipweapons[i])  )
+			  flashon = 1;
+		   else
+			  flashon = 0;
 
 			// check grenade launcher
 			if (i==2)
@@ -708,11 +702,11 @@ void Sbar_DrawInventory (void)
 	if (rogue)
 	{
 	// check for powered up weapon.
-		if ( cl.stats[STAT_ACTIVEWEAPON] >= RIT_LAVA_NAILGUN )
+		if ( cg.snap.ps.stats[STAT_ACTIVE_WEAPON] >= RIT_LAVA_NAILGUN )
 		{
 			for (i=0;i<5;i++)
 			{
-				if (cl.stats[STAT_ACTIVEWEAPON] == (RIT_LAVA_NAILGUN << i))
+				if (cg.snap.ps.stats[STAT_ACTIVE_WEAPON] == (RIT_LAVA_NAILGUN << i))
 				{
 					Sbar_DrawPicStretched ((i+2)*24, -16, weapon_width[i], weapon_height, sbar.rsb_weapons[i]);
 				}
@@ -723,7 +717,7 @@ void Sbar_DrawInventory (void)
 // ammo counts
 	for (i=0 ; i<4 ; i++)
 	{
-		Com_sprintf (num, sizeof(num), "%3i",cl.stats[STAT_SHELLS+i] );
+		Com_sprintf (num, sizeof(num), "%3i",cg.snap.ps.stats[Q3_STAT_SHELLS+i] );
 		if (num[0] != ' ')
 			Sbar_DrawCharacter ( (6*i+1)*8 - 2, -24, 18 + num[0] - '0');
 		if (num[1] != ' ')
@@ -992,8 +986,8 @@ void Sbar_Draw (void)
 {
 	const int sbar_width = 320;
 	const int sbar_height = 24;
-	const int ammo_width = 16;
-	const int ammo_height = 16;
+	const int ammo_width = 24;
+	const int ammo_height = 24;
 	const int armor_width = 24;
 	const int armor_height = 24;
 
@@ -1098,8 +1092,8 @@ void Sbar_Draw (void)
 				Sbar_DrawPicStretched (224, 0, ammo_width, ammo_height, sbar.sb_ammo[3]);
 		}
 
-		Sbar_DrawNum (248, 0, cl.stats[STAT_AMMO], 3,
-					  cl.stats[STAT_AMMO] <= 10);
+		Sbar_DrawNum (248, 0, cg.snap.ps.stats[Q3_STAT_CURRENT_AMMO], 3,
+					  cg.snap.ps.stats[Q3_STAT_CURRENT_AMMO] <= 10);
 	}
 
 	if (cg.refdef.width > 320) {
