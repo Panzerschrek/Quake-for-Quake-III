@@ -517,8 +517,6 @@ void G_RunFrame( int levelTime ) {
 		client->ps.weapon = SV_ModelIndex(pr_strings + edict->v.weaponmodel);
 		client->ps.weaponstate = edict->v.weaponframe; // Put weapon frame into "weaponstate" field.
 		client->ps.stats[STAT_HEALTH] = edict->v.health;
-		client->ps.stats[STAT_ITEMS_LO] = ((int)edict->v.items) & 65535;
-		client->ps.stats[STAT_ITEMS_HI] = ((int)edict->v.items) >> 16;
 		client->ps.stats[Q3_STAT_ARMOR] = edict->v.armorvalue;
 		client->ps.stats[STAT_ACTIVE_WEAPON] = edict->v.weapon;
 		client->ps.stats[Q3_STAT_CURRENT_AMMO] = edict->v.currentammo;
@@ -526,5 +524,19 @@ void G_RunFrame( int levelTime ) {
 		client->ps.stats[Q3_STAT_NAILS] = edict->v.ammo_nails;
 		client->ps.stats[Q3_STAT_ROCKETS] = edict->v.ammo_rockets;
 		client->ps.stats[Q3_STAT_CELLS] = edict->v.ammo_cells;
+
+		{
+			eval_t* val;
+			int items;
+			val = GetEdictFieldValue(edict, "items2");
+
+			if (val)
+				items = (int)edict->v.items | ((int)val->_float << 23);
+			else
+				items = (int)edict->v.items | ((int)pr_global_struct->serverflags << 28);
+
+			client->ps.stats[STAT_ITEMS_LO] = items & 65535;
+			client->ps.stats[STAT_ITEMS_HI] = items >> 16;
+		}
 	}
 }
