@@ -134,6 +134,7 @@ extern	vmCvar_t		cg_timescaleFadeEnd;
 extern	vmCvar_t		cg_timescaleFadeSpeed;
 extern	vmCvar_t		cg_timescale;
 extern	vmCvar_t		cg_sbar_scale;
+extern	vmCvar_t		cg_sbar_lines;
 
 extern	vmCvar_t	teamplay;
 

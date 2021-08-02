@@ -954,6 +954,17 @@ static void Sbar_CalculateScale()
 		sb_scale = (int)scale_v;
 }
 
+static void Sbar_CalculateLines()
+{
+	if(cg_sbar_lines.value <= 0.0f )
+		sb_lines = 0;
+	else if(cg_sbar_lines.value <= 1.0f )
+		sb_lines = 24;
+	else
+		sb_lines = 48;
+}
+
+
 /*
 ===============
 Sbar_Draw
@@ -971,6 +982,7 @@ void Sbar_Draw (void)
 	const int item_height = 16;
 
 	Sbar_CalculateScale();
+	Sbar_CalculateLines();
 
 	// PANZER TODO - allow cursor customization.
 	Draw_CharacterScaled(

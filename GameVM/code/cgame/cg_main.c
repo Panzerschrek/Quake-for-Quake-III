@@ -85,6 +85,7 @@ vmCvar_t	cg_timescaleFadeEnd;
 vmCvar_t	cg_timescaleFadeSpeed;
 vmCvar_t	cg_timescale;
 vmCvar_t	cg_sbar_scale;
+vmCvar_t	cg_sbar_lines;
 
 vmCvar_t	teamplay; // PANZER TODO - register it?
 
@@ -102,6 +103,7 @@ static cvarTable_t cvarTable[] = {
 	{ &cg_timescaleFadeSpeed, "cg_timescaleFadeSpeed", "0", 0},
 	{ &cg_timescale, "timescale", "1", 0},
 	{ &cg_sbar_scale, "cg_sbar_scale", "1", CVAR_ARCHIVE },
+	{ &cg_sbar_lines, "cg_sbar_lines", "2", CVAR_ARCHIVE },
 };
 
 static int  cvarTableSize = ARRAY_LEN( cvarTable );
