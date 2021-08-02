@@ -613,6 +613,8 @@ void Sbar_DrawInventory (void)
 
 	int inv_width= 320;
 	int inv_height= 24;
+	int weapon_width[8]= {24, 24, 24, 24, 24, 24, 48, 24 };
+	int weapon_height = inv_height;
 
 	if (rogue)
 	{
@@ -629,26 +631,22 @@ void Sbar_DrawInventory (void)
 // weapons
 	for (i=0 ; i<7 ; i++)
 	{
-		if (cl.items & (IT_SHOTGUN<<i) )
+		if (cg.snap.ps.stats[STAT_WEAPONS] & (IT_SHOTGUN<<i) )
 		{
-			time = cl.item_gettime[i];
-			flashon = (int)((cl.time - time)*10);
-			if (flashon >= 10)
-			{
-				if ( cl.stats[STAT_ACTIVEWEAPON] == (IT_SHOTGUN<<i)  )
-					flashon = 1;
-				else
-					flashon = 0;
-			}
+			// PANZER TODO - add flashing on pick-up.
+			if ( (IT_SHOTGUN<<i) == cg.snap.ps.stats[STAT_CUR_WEAPON] )
+				flashon = 1;
 			else
-				flashon = (flashon%5) + 2;
+				flashon = 0;
 
-		 Sbar_DrawPic (i*24, -16, sbar.sb_weapons[flashon][i]);
+			Sbar_DrawPicStretched (i*24, -16, weapon_width[i], weapon_height, sbar.sb_weapons[flashon][i]);
 
 			if (flashon > 1)
 				sb_updates = 0;		// force update to remove flash
 		}
 	}
+
+	// PANZER TODO - check addons.
 
 // MED 01/04/97
 // hipnotic weapons
@@ -679,7 +677,7 @@ void Sbar_DrawInventory (void)
 				  if (flashon)
 				  {
 					 grenadeflashing = 1;
-					 Sbar_DrawPic (96, -16, sbar.hsb_weapons[flashon][2]);
+					 Sbar_DrawPicStretched (96, -16, weapon_width[i], weapon_height, sbar.hsb_weapons[flashon][2]);
 				  }
 			   }
 			}
@@ -689,18 +687,18 @@ void Sbar_DrawInventory (void)
 			   {
 				  if (flashon && !grenadeflashing)
 				  {
-					 Sbar_DrawPic (96, -16, sbar.hsb_weapons[flashon][3]);
+					 Sbar_DrawPicStretched (96, -16, weapon_width[i], weapon_height, sbar.hsb_weapons[flashon][3]);
 				  }
 				  else if (!grenadeflashing)
 				  {
-					 Sbar_DrawPic (96, -16, sbar.hsb_weapons[0][3]);
+					 Sbar_DrawPicStretched (96, -16, weapon_width[i], weapon_height, sbar.hsb_weapons[0][3]);
 				  }
 			   }
 			   else
-				  Sbar_DrawPic (96, -16, sbar.hsb_weapons[flashon][4]);
+				  Sbar_DrawPicStretched (96, -16, weapon_width[i], weapon_height, sbar.hsb_weapons[flashon][4]);
 			}
 			else
-			   Sbar_DrawPic (176 + (i*24), -16, sbar.hsb_weapons[flashon][i]);
+			   Sbar_DrawPicStretched (176 + (i*24), -16, weapon_width[i], weapon_height, sbar.hsb_weapons[flashon][i]);
 			if (flashon > 1)
 			   sb_updates = 0;      // force update to remove flash
 		 }
@@ -716,7 +714,7 @@ void Sbar_DrawInventory (void)
 			{
 				if (cl.stats[STAT_ACTIVEWEAPON] == (RIT_LAVA_NAILGUN << i))
 				{
-					Sbar_DrawPic ((i+2)*24, -16, sbar.rsb_weapons[i]);
+					Sbar_DrawPicStretched ((i+2)*24, -16, weapon_width[i], weapon_height, sbar.rsb_weapons[i]);
 				}
 			}
 		}
