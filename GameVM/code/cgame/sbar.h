@@ -23,6 +23,7 @@ Foundation, Inc., 59 Temple Place - Suite 330, Boston, MA  02111-1307, USA.
 // does, the entire thing will be redrawn for the next vid.numpages frames.
 
 #define	SBAR_HEIGHT		24
+#define SBAR_WIDTH	320
 
 extern	int			sb_lines;			// scan lines to draw
 

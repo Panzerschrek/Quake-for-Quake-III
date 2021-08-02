@@ -79,7 +79,7 @@ void Sbar_Changed (void)
 {
 	int		scales[2];
 
-	scales[0] = (cg.refdef.width * 3 / 4) / 320; // take 3/4 of screen, not more.
+	scales[0] = (cg.refdef.width * 3 / 4) / SBAR_WIDTH; // take 3/4 of screen, not more.
 	scales[1] = cg.refdef.height / (200 + 100); // 200 - original size + some space for wide monitors.
 	sb_scale = scales[0] < scales[1] ? scales[0] : scales[1]; // Take minimum
 	if (sb_scale == 0) sb_scale = 1;
@@ -308,9 +308,9 @@ void Sbar_DrawPicStretched (int x, int y, int w, int h, qhandle_t pic)
 {
 	y*= sb_scale;
 	if (cl.gametype == GAME_DEATHMATCH)
-		trap_R_DrawStretchPic (x * sb_scale /* + ((cg.refdef.width - 320)>>1)*/, y + (cg.refdef.height-SBAR_HEIGHT * sb_scale), w * sb_scale, h * sb_scale, 0.0, 0.0, 1.0, 1.0, pic);
+		trap_R_DrawStretchPic (x * sb_scale /* + ((cg.refdef.width - SBAR_WIDTH)>>1)*/, y + (cg.refdef.height-SBAR_HEIGHT * sb_scale), w * sb_scale, h * sb_scale, 0.0, 0.0, 1.0, 1.0, pic);
 	else
-		trap_R_DrawStretchPic (x * sb_scale + ((cg.refdef.width - 320 * sb_scale)>>1), y + (cg.refdef.height-SBAR_HEIGHT * sb_scale), w * sb_scale, h * sb_scale, 0.0, 0.0, 1.0, 1.0, pic);
+		trap_R_DrawStretchPic (x * sb_scale + ((cg.refdef.width - SBAR_WIDTH * sb_scale)>>1), y + (cg.refdef.height-SBAR_HEIGHT * sb_scale), w * sb_scale, h * sb_scale, 0.0, 0.0, 1.0, 1.0, pic);
 }
 
 /*
@@ -335,9 +335,9 @@ void Sbar_DrawCharacter (int x, int y, int num)
 	x *= sb_scale;
 	y *= sb_scale;
 	if (cl.gametype == GAME_DEATHMATCH)
-		Draw_CharacterScaled ( x/*+ ((cg.refdef.width - 320)>>1) */ + 4 , y + cg.refdef.height-SBAR_HEIGHT * sb_scale, sb_scale, num);
+		Draw_CharacterScaled ( x/*+ ((cg.refdef.width - SBAR_WIDTH)>>1) */ + 4 , y + cg.refdef.height-SBAR_HEIGHT * sb_scale, sb_scale, num);
 	else
-		Draw_CharacterScaled ( x + ((cg.refdef.width - 320 * sb_scale)>>1) + 4 , y + cg.refdef.height-SBAR_HEIGHT * sb_scale, sb_scale, num);
+		Draw_CharacterScaled ( x + ((cg.refdef.width - SBAR_WIDTH * sb_scale)>>1) + 4 , y + cg.refdef.height-SBAR_HEIGHT * sb_scale, sb_scale, num);
 }
 
 /*
@@ -350,9 +350,9 @@ void Sbar_DrawString (int x, int y, char *str)
 	x *= sb_scale;
 	y *= sb_scale;
 	if (cl.gametype == GAME_DEATHMATCH)
-		Draw_StringScaled (x /*+ ((cg.refdef.width - 320)>>1)*/, y+ cg.refdef.height-SBAR_HEIGHT * sb_scale, sb_scale, str);
+		Draw_StringScaled (x /*+ ((cg.refdef.width - SBAR_WIDTH)>>1)*/, y+ cg.refdef.height-SBAR_HEIGHT * sb_scale, sb_scale, str);
 	else
-		Draw_StringScaled (x + ((cg.refdef.width - 320 * sb_scale)>>1), y+ cg.refdef.height-SBAR_HEIGHT * sb_scale, sb_scale, str);
+		Draw_StringScaled (x + ((cg.refdef.width - SBAR_WIDTH * sb_scale)>>1), y+ cg.refdef.height-SBAR_HEIGHT * sb_scale, sb_scale, str);
 }
 
 /*
@@ -573,8 +573,8 @@ void Sbar_DrawScoreboard (void)
 		top = Sbar_ColorForMap (top);
 		bottom = Sbar_ColorForMap (bottom);
 
-		Draw_Fill ( x*8+10 + ((cg.refdef.width - 320)>>1), y + cg.refdef.height - SBAR_HEIGHT, 28, 4, top);
-		Draw_Fill ( x*8+10 + ((cg.refdef.width - 320)>>1), y+4 + cg.refdef.height - SBAR_HEIGHT, 28, 4, bottom);
+		Draw_Fill ( x*8+10 + ((cg.refdef.width - SBAR_WIDTH)>>1), y + cg.refdef.height - SBAR_HEIGHT, 28, 4, top);
+		Draw_Fill ( x*8+10 + ((cg.refdef.width - SBAR_WIDTH)>>1), y+4 + cg.refdef.height - SBAR_HEIGHT, 28, 4, bottom);
 
 	// draw text
 		for (j=0 ; j<20 ; j++)
@@ -607,7 +607,7 @@ void Sbar_DrawInventory (void)
 	float	time;
 	int		flashon;
 
-	const int inv_width= 320;
+	const int inv_width= SBAR_WIDTH;
 	const int inv_height= 24;
 	const int weapon_width[8]= {24, 24, 24, 24, 24, 24, 48, 24 };
 	const int weapon_height = inv_height;
@@ -792,7 +792,7 @@ void Sbar_DrawInventory (void)
 			if (GetItems() & (1<<(28+i)))
 			{
 				// PANZER TODO - add flashing.
-				Sbar_DrawPicStretched (320-32 + i*8, -16, sigil_width, sigil_height, sbar.sb_sigil[i]);
+				Sbar_DrawPicStretched (SBAR_WIDTH-32 + i*8, -16, sigil_width, sigil_height, sbar.sb_sigil[i]);
 			}
 		}
 	}
@@ -823,7 +823,7 @@ void Sbar_DrawFrags (void)
 	if (cl.gametype == GAME_DEATHMATCH)
 		xofs = 0;
 	else
-		xofs = (cg.refdef.width - 320)>>1;
+		xofs = (cg.refdef.width - SBAR_WIDTH)>>1;
 	y = cg.refdef.height - SBAR_HEIGHT - 23;
 
 	for (i=0 ; i<l ; i++)
@@ -896,7 +896,7 @@ void Sbar_DrawFace (void)
 		if (cl.gametype == GAME_DEATHMATCH)
 			xofs = 113;
 		else
-			xofs = ((cg.refdef.width - 320)>>1) + 113;
+			xofs = ((cg.refdef.width - SBAR_WIDTH)>>1) + 113;
 
 		Sbar_DrawPicStretched (112, 0, face_width, face_height, sbar.rsb_teambord);
 		Draw_Fill (xofs, cg.refdef.height-SBAR_HEIGHT+3, 22, 9, top);
@@ -970,7 +970,7 @@ Sbar_Draw
 */
 void Sbar_Draw (void)
 {
-	const int sbar_width = 320;
+	const int sbar_width = SBAR_WIDTH;
 	const int sbar_height = 24;
 	const int ammo_width = 24;
 	const int ammo_height = 24;
@@ -1084,7 +1084,7 @@ void Sbar_Draw (void)
 					  cg.snap.ps.stats[Q3_STAT_CURRENT_AMMO] <= 10);
 	}
 
-	if (cg.refdef.width > 320) {
+	if (cg.refdef.width > SBAR_WIDTH) {
 		if (cl.gametype == GAME_DEATHMATCH)
 			Sbar_MiniDeathmatchOverlay ();
 	}
@@ -1150,7 +1150,7 @@ void Sbar_DeathmatchOverlay (void)
 // draw the text
 	l = scoreboardlines;
 
-	x = 80 * sb_scale + ((cg.refdef.width - 320 * sb_scale)>>1);
+	x = 80 * sb_scale + ((cg.refdef.width - SBAR_WIDTH * sb_scale)>>1);
 	y = 40 * sb_scale;
 	for (i=0 ; i<l ; i++)
 	{
@@ -1323,7 +1323,7 @@ void Sbar_IntermissionOverlay (void)
 		return;
 	}
 
-	x_ofs = (cg.refdef.width - 320 * sb_scale) >> 1;
+	x_ofs = (cg.refdef.width - SBAR_WIDTH * sb_scale) >> 1;
 	pic = Draw_CachePic ("gfx/complete.lmp");
 	Draw_TransPicScaled (x_ofs + 64 * sb_scale, 24 * sb_scale, sb_scale, pic);
 
