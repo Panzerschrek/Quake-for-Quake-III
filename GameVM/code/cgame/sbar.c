@@ -309,13 +309,10 @@ Sbar_DrawPicStretched
 void Sbar_DrawPicStretched (int x, int y, int w, int h, qhandle_t pic)
 {
 	y*= sb_scale;
-	//if (cl.gametype == GAME_DEATHMATCH)
-	//	trap_R_DrawStretchPic (x * sb_scale /* + ((cg.refdef.width - 320)>>1)*/, y + (cg.refdef.height-SBAR_HEIGHT * sb_scale), w * sb_scale, h * sb_scale, 0.0, 0.0, 1.0, 1.0, pic);
-	//else
-	{
+	if (cl.gametype == GAME_DEATHMATCH)
+		trap_R_DrawStretchPic (x * sb_scale /* + ((cg.refdef.width - 320)>>1)*/, y + (cg.refdef.height-SBAR_HEIGHT * sb_scale), w * sb_scale, h * sb_scale, 0.0, 0.0, 1.0, 1.0, pic);
+	else
 		trap_R_DrawStretchPic (x * sb_scale + ((cg.refdef.width - 320 * sb_scale)>>1), y + (cg.refdef.height-SBAR_HEIGHT * sb_scale), w * sb_scale, h * sb_scale, 0.0, 0.0, 1.0, 1.0, pic);
-		//Com_Printf("Draw pic %d at pos %f %f with size %f %f\n", pic, (float) (x * sb_scale + ((cg.refdef.width - 320 * sb_scale)>>1)), (float)(y + (cg.refdef.height-SBAR_HEIGHT * sb_scale)), (float)(w * sb_scale), (float)(h * sb_scale) );
-	}
 }
 
 /*
@@ -611,10 +608,16 @@ void Sbar_DrawInventory (void)
 	float	time;
 	int		flashon;
 
-	int inv_width= 320;
-	int inv_height= 24;
-	int weapon_width[8]= {24, 24, 24, 24, 24, 24, 48, 24 };
-	int weapon_height = inv_height;
+	const int inv_width= 320;
+	const int inv_height= 24;
+	const int weapon_width[8]= {24, 24, 24, 24, 24, 24, 48, 24 };
+	const int weapon_height = inv_height;
+	const int sigil_width = 8;
+	const int sigil_height = 16;
+	const int item_width = 16;
+	const int item_height = 16;
+	const int addon_item_width = 16;
+	const int addon_item_height = 16;
 
 	if (rogue)
 	{
@@ -731,21 +734,12 @@ void Sbar_DrawInventory (void)
    for (i=0 ; i<6 ; i++)
 	  if (cg.snap.ps.stats[STAT_ITEMS] & (1<<(17+i)))
 	  {
-		 time = cl.item_gettime[17+i];
-		 if (time && time > cl.time - 2 && flashon )
-		 {  // flash frame
-			sb_updates = 0;
-		 }
-		 else
-		 {
+		// PANZER TODO - add flashing.
 		 //MED 01/04/97 changed keys
-			if (!hipnotic || (i>1))
-			{
-			   Sbar_DrawPic (192 + i*16, -16, sbar.sb_items[i]);
-			}
-		 }
-		 if (time && time > cl.time - 2)
-			sb_updates = 0;
+		if (!hipnotic || (i>1))
+		{
+		   Sbar_DrawPicStretched (192 + i*16, -16, item_width, item_height, sbar.sb_items[i]);
+		}
 	  }
    //MED 01/04/97 added hipnotic items
    // hipnotic items
@@ -761,7 +755,7 @@ void Sbar_DrawInventory (void)
 			}
 			else
 			{
-			   Sbar_DrawPic (288 + i*16, -16, sbar.hsb_items[i]);
+			   Sbar_DrawPicStretched (288 + i*16, -16, addon_item_width, addon_item_height, sbar.hsb_items[i]);
 			}
 			if (time && time > cl.time - 2)
 			   sb_updates = 0;
@@ -783,7 +777,7 @@ void Sbar_DrawInventory (void)
 				}
 				else
 				{
-					Sbar_DrawPic (288 + i*16, -16, sbar.rsb_items[i]);
+					Sbar_DrawPicStretched (288 + i*16, -16, addon_item_width, addon_item_height, sbar.rsb_items[i]);
 				}
 
 				if (time &&	time > cl.time - 2)
@@ -798,15 +792,8 @@ void Sbar_DrawInventory (void)
 		{
 			if (cg.snap.ps.stats[STAT_ITEMS] & (1<<(28+i)))
 			{
-				time = cl.item_gettime[28+i];
-				if (time &&	time > cl.time - 2 && flashon )
-				{	// flash frame
-					sb_updates = 0;
-				}
-				else
-					Sbar_DrawPic (320-32 + i*8, -16, sbar.sb_sigil[i]);
-				if (time &&	time > cl.time - 2)
-					sb_updates = 0;
+				// PANZER TODO - add flashing.
+				Sbar_DrawPicStretched (320-32 + i*8, -16, sigil_width, sigil_height, sbar.sb_sigil[i]);
 			}
 		}
 	}
@@ -885,8 +872,8 @@ void Sbar_DrawFace (void)
 {
 	int		f, anim;
 
-	int face_width= 24;
-	int face_height= 24;
+	const int face_width= 24;
+	const int face_height= 24;
 
 // PGM 01/19/97 - team color drawing
 // PGM 03/02/97 - fixed so color swatch only appears in CTF modes
@@ -943,22 +930,22 @@ void Sbar_DrawFace (void)
 	if ( (cg.snap.ps.stats[STAT_ITEMS] & (IT_INVISIBILITY | IT_INVULNERABILITY) )
 	== (IT_INVISIBILITY | IT_INVULNERABILITY) )
 	{
-		Sbar_DrawPic (112, 0, sbar.sb_face_invis_invuln);
+		Sbar_DrawPicStretched (112, 0, face_width, face_height, sbar.sb_face_invis_invuln);
 		return;
 	}
 	if (cg.snap.ps.stats[STAT_ITEMS] & IT_QUAD)
 	{
-		Sbar_DrawPic (112, 0, sbar.sb_face_quad );
+		Sbar_DrawPicStretched (112, 0, face_width, face_height, sbar.sb_face_quad );
 		return;
 	}
 	if (cg.snap.ps.stats[STAT_ITEMS] & IT_INVISIBILITY)
 	{
-		Sbar_DrawPic (112, 0, sbar.sb_face_invis );
+		Sbar_DrawPicStretched (112, 0, face_width, face_height,  sbar.sb_face_invis );
 		return;
 	}
 	if (cg.snap.ps.stats[STAT_ITEMS] & IT_INVULNERABILITY)
 	{
-		Sbar_DrawPic (112, 0, sbar.sb_face_invuln);
+		Sbar_DrawPicStretched (112, 0, face_width, face_height,  sbar.sb_face_invuln);
 		return;
 	}
 
@@ -990,6 +977,8 @@ void Sbar_Draw (void)
 	const int ammo_height = 24;
 	const int armor_width = 24;
 	const int armor_height = 24;
+	const int item_width = 16;
+	const int item_height = 16;
 
 	// PANZER TODO - return this check?
 	//if (scr_con_current == cg.refdef.height)
@@ -1019,9 +1008,9 @@ void Sbar_Draw (void)
 	  if (hipnotic)
 	  {
 		 if (cg.snap.ps.stats[STAT_ITEMS] & IT_KEY1)
-			Sbar_DrawPic (209, 3, sbar.sb_items[0]);
+			Sbar_DrawPicStretched (209, 3, item_width, item_height, sbar.sb_items[0]);
 		 if (cg.snap.ps.stats[STAT_ITEMS] & IT_KEY2)
-			Sbar_DrawPic (209, 12, sbar.sb_items[1]);
+			Sbar_DrawPicStretched (209, 12, item_width, item_height, sbar.sb_items[1]);
 	  }
    // armor
 		if (cg.snap.ps.stats[STAT_ITEMS] & IT_INVULNERABILITY)
@@ -1033,8 +1022,8 @@ void Sbar_Draw (void)
 		{
 			if (rogue)
 			{
-				Sbar_DrawNum (24, 0, cl.stats[STAT_ARMOR], 3,
-								cl.stats[STAT_ARMOR] <= 25);
+				Sbar_DrawNum (24, 0, cg.snap.ps.stats[Q3_STAT_ARMOR], 3,
+								cg.snap.ps.stats[Q3_STAT_ARMOR] <= 25);
 				if (cg.snap.ps.stats[STAT_ITEMS] & RIT_ARMOR3)
 					Sbar_DrawPicStretched (0, 0, armor_width, armor_height, sbar.sb_armor[2]);
 				else if (cg.snap.ps.stats[STAT_ITEMS] & RIT_ARMOR2)
