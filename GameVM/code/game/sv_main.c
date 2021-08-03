@@ -17,35 +17,6 @@ EVENT MESSAGES
 =============================================================================
 */
 
-/*
-==================
-SV_StartParticle
-
-Make sure the event gets sent to all clients
-==================
-*/
-void SV_StartParticle (vec3_t org, vec3_t dir, int color, int count)
-{
-	int		i, v;
-
-	if (sv.datagram.cursize > MAX_DATAGRAM-16)
-		return;
-	MSG_WriteByte (&sv.datagram, svc_particle);
-	MSG_WriteCoord (&sv.datagram, org[0]);
-	MSG_WriteCoord (&sv.datagram, org[1]);
-	MSG_WriteCoord (&sv.datagram, org[2]);
-	for (i=0 ; i<3 ; i++)
-	{
-		v = dir[i]*16;
-		if (v > 127)
-			v = 127;
-		else if (v < -128)
-			v = -128;
-		MSG_WriteChar (&sv.datagram, v);
-	}
-	MSG_WriteByte (&sv.datagram, count);
-	MSG_WriteByte (&sv.datagram, color);
-}
 
 #define DEFAULT_SOUND_PACKET_VOLUME 255
 #define DEFAULT_SOUND_PACKET_ATTENUATION 1.0
@@ -222,7 +193,7 @@ static void SV_ProcessBufferMessages(sizebuf_t* buf)
 			switch (cmd)
 			{
 			default:
-				G_Error ("CL_ParseServerMessage: Illegible server message\n");
+				G_Error ("SV_ProcessBufferMessages: Illegible server message %d\n", cmd);
 				break;
 
 			case svc_nop:
@@ -284,6 +255,7 @@ static void SV_ProcessBufferMessages(sizebuf_t* buf)
 
 			case svc_lightstyle:
 				MSG_ReadByte ();
+				MSG_ReadString();
 				break;
 
 			case svc_sound:

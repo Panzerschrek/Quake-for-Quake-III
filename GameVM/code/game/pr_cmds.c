@@ -496,7 +496,8 @@ void PF_particle (void)
 	dir = G_VECTOR(OFS_PARM1);
 	color = G_FLOAT(OFS_PARM2);
 	count = G_FLOAT(OFS_PARM3);
-	SV_StartParticle (org, dir, color, count);
+
+	// PANZER TODO - start particles.
 }
 
 
