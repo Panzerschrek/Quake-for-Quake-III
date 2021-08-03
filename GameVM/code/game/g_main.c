@@ -457,6 +457,7 @@ Advances the non-player objects in the world
 void G_RunFrame( int levelTime ) {
 	int			i;
 	edict_t		*edict;
+	client_t	*client;
 
 	host_frametime = ( levelTime - level.time ) / 1000.0;
 
@@ -503,16 +504,43 @@ void G_RunFrame( int levelTime ) {
 	}
 
 	for(i = 0; i < svs.maxclients; i++){
-		if(!svs.clients[i].active || svs.clients[i].edict == NULL) {
+		client = &svs.clients[i];
+		if(!client->active || client->edict == NULL) {
 			continue;
 		}
 		edict = svs.clients[i].edict;
 
 		//G_Printf("Client pos: %f %f %f\n", edict->v.origin[0], edict->v.origin[1], edict->v.origin[2]);
-		VectorCopy(edict->v.origin, svs.clients[i].ps.origin);
-		VectorCopy(edict->v.angles, svs.clients[i].ps.viewangles);
-		svs.clients[i].ps.viewheight = edict->v.view_ofs[2];
-		svs.clients[i].ps.weapon = SV_ModelIndex(pr_strings + edict->v.weaponmodel);
-		svs.clients[i].ps.weaponstate = edict->v.weaponframe; // Put weapon frame into "weaponstate" field.
+		VectorCopy(edict->v.origin, client->ps.origin);
+		VectorCopy(edict->v.angles, client->ps.viewangles);
+		client->ps.viewheight = edict->v.view_ofs[2];
+		client->ps.weapon = SV_ModelIndex(pr_strings + edict->v.weaponmodel);
+		client->ps.weaponstate = edict->v.weaponframe; // Put weapon frame into "weaponstate" field.
+		client->ps.stats[STAT_HEALTH] = edict->v.health;
+		client->ps.stats[Q3_STAT_ARMOR] = edict->v.armorvalue;
+		client->ps.stats[STAT_ACTIVE_WEAPON] = edict->v.weapon;
+		client->ps.stats[Q3_STAT_CURRENT_AMMO] = edict->v.currentammo;
+		client->ps.stats[Q3_STAT_SHELLS] = edict->v.ammo_shells;
+		client->ps.stats[Q3_STAT_NAILS] = edict->v.ammo_nails;
+		client->ps.stats[Q3_STAT_ROCKETS] = edict->v.ammo_rockets;
+		client->ps.stats[Q3_STAT_CELLS] = edict->v.ammo_cells;
+		client->ps.stats[Q3_STAT_TOTAL_SECRETS] = pr_global_struct->total_secrets;
+		client->ps.stats[Q3_STAT_TOTAL_MONSTERS] = pr_global_struct->total_monsters;
+		client->ps.stats[Q3_STAT_SECRETS] = pr_global_struct->found_secrets;
+		client->ps.stats[Q3_STAT_MONSTERS] = pr_global_struct->killed_monsters;
+
+		{
+			eval_t* val;
+			int items;
+			val = GetEdictFieldValue(edict, "items2");
+
+			if (val)
+				items = (int)edict->v.items | ((int)val->_float << 23);
+			else
+				items = (int)edict->v.items | ((int)pr_global_struct->serverflags << 28);
+
+			client->ps.stats[STAT_ITEMS_LO] = items & 65535;
+			client->ps.stats[STAT_ITEMS_HI] = items >> 16;
+		}
 	}
 }

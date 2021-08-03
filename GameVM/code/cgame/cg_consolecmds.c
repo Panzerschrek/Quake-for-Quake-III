@@ -41,6 +41,8 @@ static consoleCommand_t	commands[] = {
 	{ "weapnext", CG_NextWeapon_f },
 	{ "weapprev", CG_PrevWeapon_f },
 	{ "weapon", CG_Weapon_f },
+	{ "+scores", Sbar_ShowScores },
+	{ "-scores", Sbar_DontShowScores },
 };
 
 

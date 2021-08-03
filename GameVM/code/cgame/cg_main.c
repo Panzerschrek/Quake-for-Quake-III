@@ -70,14 +70,21 @@ Q_EXPORT intptr_t vmMain( int command, int arg0, int arg1, int arg2, int arg3, i
 	return -1;
 }
 
+// PANZER TODO - init this.
+qboolean		standard_quake, rogue, hipnotic;
 
 cg_t				cg;
 cgs_t				cgs;
 centity_t			cg_entities[MAX_GENTITIES];
+sbar_t				sbar;
 
 vmCvar_t	cg_timescaleFadeEnd;
 vmCvar_t	cg_timescaleFadeSpeed;
 vmCvar_t	cg_timescale;
+vmCvar_t	cg_sbar_scale;
+vmCvar_t	cg_sbar_lines;
+
+vmCvar_t	teamplay; // PANZER TODO - register it?
 
 typedef struct {
 	vmCvar_t	*vmCvar;
@@ -92,6 +99,8 @@ static cvarTable_t cvarTable[] = {
 	{ &cg_timescaleFadeEnd, "cg_timescaleFadeEnd", "1", 0},
 	{ &cg_timescaleFadeSpeed, "cg_timescaleFadeSpeed", "0", 0},
 	{ &cg_timescale, "timescale", "1", 0},
+	{ &cg_sbar_scale, "cg_sbar_scale", "1", CVAR_ARCHIVE },
+	{ &cg_sbar_lines, "cg_sbar_lines", "2", CVAR_ARCHIVE },
 };
 
 static int  cvarTableSize = ARRAY_LEN( cvarTable );
@@ -329,6 +338,7 @@ void CG_Init( int serverMessageNum, int serverCommandSequence, int clientNum ) {
 	cg.loading = qtrue;		// force players to load instead of defer
 
 	CG_RegisterResources();
+	Sbar_Init();
 
 	cg.loading = qfalse;	// future players will be deferred
 
