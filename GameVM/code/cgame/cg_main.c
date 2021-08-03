@@ -281,6 +281,15 @@ static void CG_RegisterResources( void ) {
 				CG_StartMusic(music_index);
 		}
 	}
+
+	// Register local sounds.
+	cgs.sfx_wizhit = trap_S_RegisterSound ("sound/wizard/hit.wav", qfalse);
+	cgs.sfx_knighthit = trap_S_RegisterSound ("sound/hknight/hit.wav", qfalse);
+	cgs.sfx_tink1 = trap_S_RegisterSound ("sound/weapons/tink1.wav", qfalse);
+	cgs.sfx_ric1 = trap_S_RegisterSound ("sound/weapons/ric1.wav", qfalse);
+	cgs.sfx_ric2 = trap_S_RegisterSound ("sound/weapons/ric2.wav", qfalse);
+	cgs.sfx_ric3 = trap_S_RegisterSound ("sound/weapons/ric3.wav", qfalse);
+	cgs.sfx_r_exp3 = trap_S_RegisterSound ("sound/weapons/r_exp3.wav", qfalse);
 }
 
 //===========================================================================

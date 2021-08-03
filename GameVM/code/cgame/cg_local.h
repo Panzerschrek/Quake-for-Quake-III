@@ -107,6 +107,14 @@ typedef struct {
 
 	// Sounds.
 	qhandle_t gameSounds[MAX_SOUNDS];
+
+	qhandle_t		sfx_wizhit;
+	qhandle_t		sfx_knighthit;
+	qhandle_t		sfx_tink1;
+	qhandle_t		sfx_ric1;
+	qhandle_t		sfx_ric2;
+	qhandle_t		sfx_ric3;
+	qhandle_t		sfx_r_exp3;
 } cgs_t;
 
 typedef struct

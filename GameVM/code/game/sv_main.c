@@ -141,106 +141,47 @@ int SV_ModelIndex (char *name)
 	return i;
 }
 
-static void SV_ProcessBeam(const char* model_name)
-{
-	int		ent;
-	vec3_t	start, end;
-
-	ent = MSG_ReadShort ();
-
-	start[0] = MSG_ReadCoord ();
-	start[1] = MSG_ReadCoord ();
-	start[2] = MSG_ReadCoord ();
-
-	end[0] = MSG_ReadCoord ();
-	end[1] = MSG_ReadCoord ();
-	end[2] = MSG_ReadCoord ();
-}
-
 static void SV_ProcessTEnt()
 {
-	int		type;
-	vec3_t	pos;
+	int		type, ent;
+	vec3_t	pos, pos2;
+	edict_t* eventEntity;
 
-	// PANZER TODO - convert this messages into temp entities.
 	type = MSG_ReadByte ();
 	switch (type)
 	{
 	case TE_WIZSPIKE:			// spike hitting wall
-		pos[0] = MSG_ReadCoord ();
-		pos[1] = MSG_ReadCoord ();
-		pos[2] = MSG_ReadCoord ();
-		break;
-
 	case TE_KNIGHTSPIKE:			// spike hitting wall
-		pos[0] = MSG_ReadCoord ();
-		pos[1] = MSG_ReadCoord ();
-		pos[2] = MSG_ReadCoord ();
-		break;
-
 	case TE_SPIKE:			// spike hitting wall
-		pos[0] = MSG_ReadCoord ();
-		pos[1] = MSG_ReadCoord ();
-		pos[2] = MSG_ReadCoord ();
-		break;
 	case TE_SUPERSPIKE:			// super spike hitting wall
-		pos[0] = MSG_ReadCoord ();
-		pos[1] = MSG_ReadCoord ();
-		pos[2] = MSG_ReadCoord ();
-		break;
-
 	case TE_GUNSHOT:			// bullet hitting wall
-		pos[0] = MSG_ReadCoord ();
-		pos[1] = MSG_ReadCoord ();
-		pos[2] = MSG_ReadCoord ();
-		break;
-
 	case TE_EXPLOSION:			// rocket explosion
-		pos[0] = MSG_ReadCoord ();
-		pos[1] = MSG_ReadCoord ();
-		pos[2] = MSG_ReadCoord ();
-		break;
-
 	case TE_TAREXPLOSION:			// tarbaby explosion
+	case TE_LAVASPLASH:
+	case TE_TELEPORT:
+	case TE_EXPLOSION2:				// color mapped explosion
+		// Entities with single param - position
 		pos[0] = MSG_ReadCoord ();
 		pos[1] = MSG_ReadCoord ();
 		pos[2] = MSG_ReadCoord ();
+		eventEntity = G_CreateEventEdict(pos, svc_temp_entity);
+		eventEntity->s.eType = type;
 		break;
 
 	case TE_LIGHTNING1:				// lightning bolts
-		SV_ProcessBeam ("progs/bolt.mdl");
-		break;
-
 	case TE_LIGHTNING2:				// lightning bolts
-		SV_ProcessBeam ("progs/bolt2.mdl");
-		break;
-
 	case TE_LIGHTNING3:				// lightning bolts
-		SV_ProcessBeam ("progs/bolt3.mdl");
-		break;
-
-// PGM 01/21/97
 	case TE_BEAM:				// grappling hook beam
-		SV_ProcessBeam ("progs/beam.mdl");
-		break;
-// PGM 01/21/97
-
-	case TE_LAVASPLASH:
+		ent = MSG_ReadShort ();
 		pos[0] = MSG_ReadCoord ();
 		pos[1] = MSG_ReadCoord ();
 		pos[2] = MSG_ReadCoord ();
-		break;
-
-	case TE_TELEPORT:
-		pos[0] = MSG_ReadCoord ();
-		pos[1] = MSG_ReadCoord ();
-		pos[2] = MSG_ReadCoord ();
-		break;
-
-	case TE_EXPLOSION2:				// color mapped explosion
-		pos[0] = MSG_ReadCoord ();
-		pos[1] = MSG_ReadCoord ();
-		pos[2] = MSG_ReadCoord ();
+		pos2[0] = MSG_ReadCoord ();
+		pos2[1] = MSG_ReadCoord ();
+		pos2[2] = MSG_ReadCoord ();
+		eventEntity = G_CreateEventEdict(pos, svc_temp_entity);
+		eventEntity->s.eType = type;
+		VectorCopy(pos2, eventEntity->s.origin2);
 		break;
 
 	default:
