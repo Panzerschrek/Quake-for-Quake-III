@@ -21,7 +21,6 @@ Foundation, Inc., 59 Temple Place - Suite 330, Boston, MA  02111-1307, USA.
 // sbar.c -- status bar code
 
 #include "cg_local.h"
-#include "q_client.h"
 #include "sbar.h"
 
 float sb_scale = 1.0f;
@@ -278,7 +277,7 @@ Sbar_DrawPicStretched
 void Sbar_DrawPicStretched (float x, float y, float w, float h, qhandle_t pic)
 {
 	y*= sb_scale;
-	if (cl.gametype == GAME_DEATHMATCH)
+	if (cg.gametype == GAME_DEATHMATCH)
 		trap_R_DrawStretchPic (x * sb_scale /* + ((cg.refdef.width - SBAR_WIDTH)>>1)*/, y + (cg.refdef.height-SBAR_HEIGHT * sb_scale), w * sb_scale, h * sb_scale, 0.0, 0.0, 1.0, 1.0, pic);
 	else
 		trap_R_DrawStretchPic (x * sb_scale + (cg.refdef.width - SBAR_WIDTH * sb_scale) * 0.5f, y + (cg.refdef.height-SBAR_HEIGHT * sb_scale), w * sb_scale, h * sb_scale, 0.0, 0.0, 1.0, 1.0, pic);
@@ -305,7 +304,7 @@ void Sbar_DrawCharacter (float x, float y, int num)
 {
 	x *= sb_scale;
 	y *= sb_scale;
-	if (cl.gametype == GAME_DEATHMATCH)
+	if (cg.gametype == GAME_DEATHMATCH)
 		Draw_CharacterScaled ( x/*+ ((cg.refdef.width - SBAR_WIDTH)>>1) */ + 4 , y + cg.refdef.height-SBAR_HEIGHT * sb_scale, sb_scale, num);
 	else
 		Draw_CharacterScaled ( x + (cg.refdef.width - SBAR_WIDTH * sb_scale) * 0.5f + 4 , y + cg.refdef.height-SBAR_HEIGHT * sb_scale, sb_scale, num);
@@ -320,7 +319,7 @@ void Sbar_DrawString (int x, int y, char *str)
 {
 	x *= sb_scale;
 	y *= sb_scale;
-	if (cl.gametype == GAME_DEATHMATCH)
+	if (cg.gametype == GAME_DEATHMATCH)
 		Draw_StringScaled (x /*+ ((cg.refdef.width - SBAR_WIDTH)>>1)*/, y+ cg.refdef.height-SBAR_HEIGHT * sb_scale, sb_scale, str);
 	else
 		Draw_StringScaled (x + (cg.refdef.width - SBAR_WIDTH * sb_scale) * 0.5f, y+ cg.refdef.height-SBAR_HEIGHT * sb_scale, sb_scale, str);
@@ -417,9 +416,9 @@ void Sbar_SortFrags (void)
 
 // sort by frags
 	scoreboardlines = 0;
-	for (i=0 ; i<cl.maxclients ; i++)
+	for (i=0 ; i<cg.maxclients ; i++)
 	{
-		if (cl.scores[i].name[0])
+		if (cg.scores[i].name[0])
 		{
 			fragsort[scoreboardlines] = i;
 			scoreboardlines++;
@@ -428,7 +427,7 @@ void Sbar_SortFrags (void)
 
 	for (i=0 ; i<scoreboardlines ; i++)
 		for (j=0 ; j<scoreboardlines-1-i ; j++)
-			if (cl.scores[fragsort[j]].frags < cl.scores[fragsort[j+1]].frags)
+			if (cg.scores[fragsort[j]].frags < cg.scores[fragsort[j+1]].frags)
 			{
 				k = fragsort[j];
 				fragsort[j] = fragsort[j+1];
@@ -460,7 +459,7 @@ void Sbar_UpdateScoreboard (void)
 	for (i=0 ; i<scoreboardlines; i++)
 	{
 		k = fragsort[i];
-		s = &cl.scores[k];
+		s = &cg.scores[k];
 		Com_sprintf (&scoreboardtext[i][1], 20, "%3i %s", s->frags, s->name);
 
 		top = s->colors & 0xf0;
@@ -490,16 +489,16 @@ void Sbar_SoloScoreboard (void)
 	Sbar_DrawString (8, 12, str);
 
 // time
-	minutes = cl.time / 60;
-	seconds = cl.time - 60*minutes;
+	minutes = cg.time / 60;
+	seconds = cg.time - 60*minutes;
 	tens = seconds / 10;
 	units = seconds - 10*tens;
 	Com_sprintf (str, sizeof(str), "Time :%3i:%i%i", minutes, tens, units);
 	Sbar_DrawString (184, 4, str);
 
 // draw level name
-	l = strlen (cl.levelname);
-	Sbar_DrawString (232 - l*4, 12, cl.levelname);
+	l = strlen (cg.levelname);
+	Sbar_DrawString (232 - l*4, 12, cg.levelname);
 }
 
 /*
@@ -510,7 +509,7 @@ Sbar_DrawScoreboard
 void Sbar_DrawScoreboard (void)
 {
 	Sbar_SoloScoreboard ();
-	if (cl.gametype == GAME_DEATHMATCH)
+	if (cg.gametype == GAME_DEATHMATCH)
 		Sbar_DeathmatchOverlay ();
 #if 0
 	int		i, j, c;
@@ -519,7 +518,7 @@ void Sbar_DrawScoreboard (void)
 	int		top, bottom;
 	scoreboard_t	*s;
 
-	if (cl.gametype != GAME_DEATHMATCH)
+	if (cg.gametype != GAME_DEATHMATCH)
 	{
 		Sbar_SoloScoreboard ();
 		return;
@@ -534,7 +533,7 @@ void Sbar_DrawScoreboard (void)
 		x = 20*(i&1);
 		y = i/2 * 8;
 
-		s = &cl.scores[fragsort[i]];
+		s = &cg.scores[fragsort[i]];
 		if (!s->name[0])
 			continue;
 
@@ -718,8 +717,8 @@ void Sbar_DrawInventory (void)
 	  for (i=0 ; i<2 ; i++)
 		 if (GetItems() & (1<<(24+i)))
 		 {
-			time = cl.item_gettime[24+i];
-			if (time && time > cl.time - 2 && flashon )
+			time = cg.item_gettime[24+i];
+			if (time && time > cg.time - 2 && flashon )
 			{  // flash frame
 			   sb_updates = 0;
 			}
@@ -727,7 +726,7 @@ void Sbar_DrawInventory (void)
 			{
 			   Sbar_DrawPicStretched (288 + i*16, -16, addon_item_width, addon_item_height, sbar.hsb_items[i]);
 			}
-			if (time && time > cl.time - 2)
+			if (time && time > cg.time - 2)
 			   sb_updates = 0;
 		 }
    }
@@ -739,9 +738,9 @@ void Sbar_DrawInventory (void)
 		{
 			if (GetItems() & (1<<(29+i)))
 			{
-				time = cl.item_gettime[29+i];
+				time = cg.item_gettime[29+i];
 
-				if (time &&	time > cl.time - 2 && flashon )
+				if (time &&	time > cg.time - 2 && flashon )
 				{	// flash frame
 					sb_updates = 0;
 				}
@@ -750,7 +749,7 @@ void Sbar_DrawInventory (void)
 					Sbar_DrawPicStretched (288 + i*16, -16, addon_item_width, addon_item_height, sbar.rsb_items[i]);
 				}
 
-				if (time &&	time > cl.time - 2)
+				if (time &&	time > cg.time - 2)
 					sb_updates = 0;
 			}
 		}
@@ -791,7 +790,7 @@ void Sbar_DrawFrags (void)
 	l = scoreboardlines <= 4 ? scoreboardlines : 4;
 
 	x = 23;
-	if (cl.gametype == GAME_DEATHMATCH)
+	if (cg.gametype == GAME_DEATHMATCH)
 		xofs = 0;
 	else
 		xofs = (cg.refdef.width - SBAR_WIDTH)>>1;
@@ -800,7 +799,7 @@ void Sbar_DrawFrags (void)
 	for (i=0 ; i<l ; i++)
 	{
 		k = fragsort[i];
-		s = &cl.scores[k];
+		s = &cg.scores[k];
 		if (!s->name[0])
 			continue;
 
@@ -821,7 +820,7 @@ void Sbar_DrawFrags (void)
 		Sbar_DrawCharacter ( (x+2)*8 , -24, num[1]);
 		Sbar_DrawCharacter ( (x+3)*8 , -24, num[2]);
 
-		if (k == cl.viewentity - 1)
+		if (k == cg.viewentity - 1)
 		{
 			Sbar_DrawCharacter (x*8+2, -24, 16);
 			Sbar_DrawCharacter ( (x+4)*8-4, -24, 17);
@@ -848,7 +847,7 @@ void Sbar_DrawFace (void)
 // PGM 01/19/97 - team color drawing
 // PGM 03/02/97 - fixed so color swatch only appears in CTF modes
 	if (rogue &&
-		(cl.maxclients != 1) &&
+		(cg.maxclients != 1) &&
 		(teamplay.value>3) &&
 		(teamplay.value<7))
 	{
@@ -857,14 +856,14 @@ void Sbar_DrawFace (void)
 		char			num[12];
 		scoreboard_t	*s;
 
-		s = &cl.scores[cl.viewentity - 1];
+		s = &cg.scores[cg.viewentity - 1];
 		// draw background
 		top = s->colors & 0xf0;
 		bottom = (s->colors & 15)<<4;
 		top = Sbar_ColorForMap (top);
 		bottom = Sbar_ColorForMap (bottom);
 
-		if (cl.gametype == GAME_DEATHMATCH)
+		if (cg.gametype == GAME_DEATHMATCH)
 			xofs = 113;
 		else
 			xofs = ((cg.refdef.width - SBAR_WIDTH)>>1) + 113;
@@ -924,7 +923,7 @@ void Sbar_DrawFace (void)
 	else
 		f = cg.snap.ps.stats[STAT_HEALTH] / 20;
 
-	if (cl.time <= cl.faceanimtime)
+	if (cg.time <= cg.faceanimtime)
 	{
 		anim = 1;
 		sb_updates = 0;		// make sure the anim gets drawn over
@@ -996,7 +995,7 @@ void Sbar_Draw (void)
 	if (sb_lines > 24)
 	{
 		Sbar_DrawInventory ();
-		if (cl.maxclients != 1)
+		if (cg.maxclients != 1)
 			Sbar_DrawFrags ();
 	}
 
@@ -1023,7 +1022,7 @@ void Sbar_Draw (void)
 		if (GetItems() & IT_INVULNERABILITY)
 		{
 			Sbar_DrawNum (24, 0, 666, 3, 1);
-			Sbar_DrawPicStretched (0, 0, armor_width, armor_height, cgs.draw_disc);
+			Sbar_DrawPicStretched (0, 0, armor_width, armor_height, sbar.draw_disc);
 		}
 		else
 		{
@@ -1093,7 +1092,7 @@ void Sbar_Draw (void)
 	}
 
 	if (cg.refdef.width > SBAR_WIDTH) {
-		if (cl.gametype == GAME_DEATHMATCH)
+		if (cg.gametype == GAME_DEATHMATCH)
 			Sbar_MiniDeathmatchOverlay ();
 	}
 }
@@ -1166,7 +1165,7 @@ void Sbar_DeathmatchOverlay (void)
 	for (i=0 ; i<l ; i++)
 	{
 		k = fragsort[i];
-		s = &cl.scores[k];
+		s = &cg.scores[k];
 		if (!s->name[0])
 			continue;
 
@@ -1187,7 +1186,7 @@ void Sbar_DeathmatchOverlay (void)
 		Draw_CharacterScaled ( x + 16 * sb_scale, y, sb_scale, num[1]);
 		Draw_CharacterScaled ( x + 24 * sb_scale, y, sb_scale, num[2]);
 
-		if (k == cl.viewentity - 1)
+		if (k == cg.viewentity - 1)
 			Draw_CharacterScaled ( x - 8 * sb_scale, y, sb_scale, 12);
 
 #if 0
@@ -1196,7 +1195,7 @@ void Sbar_DeathmatchOverlay (void)
 	int				n, minutes, tens, units;
 
 	// draw time
-		total = cl.completed_time - s->entertime;
+		total = cg.completed_time - s->entertime;
 		minutes = (int)total/60;
 		n = total - minutes*60;
 		tens = n/10;
@@ -1246,7 +1245,7 @@ void Sbar_MiniDeathmatchOverlay (void)
 
 	//find us
 	for (i = 0; i < scoreboardlines; i++)
-		if (fragsort[i] == cl.viewentity - 1)
+		if (fragsort[i] == cg.viewentity - 1)
 			break;
 
 	if (i == scoreboardlines) // we're not there
@@ -1263,7 +1262,7 @@ void Sbar_MiniDeathmatchOverlay (void)
 	for (/* */; i < scoreboardlines && y < cg.refdef.height - 8 * sb_scale ; i++)
 	{
 		k = fragsort[i];
-		s = &cl.scores[k];
+		s = &cg.scores[k];
 		if (!s->name[0])
 			continue;
 
@@ -1284,7 +1283,7 @@ void Sbar_MiniDeathmatchOverlay (void)
 		Draw_CharacterScaled ( x + 16 * sb_scale, y, sb_scale, num[1]);
 		Draw_CharacterScaled ( x + 24 * sb_scale, y, sb_scale, num[2]);
 
-		if (k == cl.viewentity - 1) {
+		if (k == cg.viewentity - 1) {
 			Draw_CharacterScaled ( x, y, sb_scale, 16);
 			Draw_CharacterScaled ( x + 32 * sb_scale, y, sb_scale, 17);
 		}
@@ -1295,7 +1294,7 @@ void Sbar_MiniDeathmatchOverlay (void)
 	int				n, minutes, tens, units;
 
 	// draw time
-		total = cl.completed_time - s->entertime;
+		total = cg.completed_time - s->entertime;
 		minutes = (int)total/60;
 		n = total - minutes*60;
 		tens = n/10;
@@ -1327,7 +1326,7 @@ void Sbar_IntermissionOverlay (void)
 	int		num;
 	int		x_ofs;
 
-	if (cl.gametype == GAME_DEATHMATCH)
+	if (cg.gametype == GAME_DEATHMATCH)
 	{
 		Sbar_DeathmatchOverlay ();
 		return;
@@ -1341,20 +1340,20 @@ void Sbar_IntermissionOverlay (void)
 	Draw_TransPicScaled (x_ofs + 0 * sb_scale, 56 * sb_scale, sb_scale, pic);
 
 // time
-	dig = cl.completed_time/60;
+	dig = cg.completed_time/60;
 	Sbar_IntermissionNumber (x_ofs + 160 * sb_scale, 64 * sb_scale, dig, 3, 0);
-	num = cl.completed_time - dig*60;
+	num = cg.completed_time - dig*60;
 	Draw_TransPicScaled (x_ofs + 234 * sb_scale,64 * sb_scale, sb_scale, sbar.sb_colon);
 	Draw_TransPicScaled (x_ofs + 246 * sb_scale,64 * sb_scale, sb_scale, sbar.sb_nums[0][num/10]);
 	Draw_TransPicScaled (x_ofs + 266 * sb_scale,64 * sb_scale, sb_scale, sbar.sb_nums[0][num%10]);
 
-	Sbar_IntermissionNumber (x_ofs + 160 * sb_scale, 104 * sb_scale, cl.stats[STAT_SECRETS], 3, 0);
+	Sbar_IntermissionNumber (x_ofs + 160 * sb_scale, 104 * sb_scale, cg.stats[STAT_SECRETS], 3, 0);
 	Draw_TransPicScaled (x_ofs + 232 * sb_scale, 104 * sb_scale, sb_scale, sbar.sb_slash);
-	Sbar_IntermissionNumber (x_ofs + 240 * sb_scale, 104 * sb_scale, cl.stats[STAT_TOTALSECRETS], 3, 0);
+	Sbar_IntermissionNumber (x_ofs + 240 * sb_scale, 104 * sb_scale, cg.stats[STAT_TOTALSECRETS], 3, 0);
 
-	Sbar_IntermissionNumber (x_ofs + 160 * sb_scale, 144 * sb_scale, cl.stats[STAT_MONSTERS], 3, 0);
+	Sbar_IntermissionNumber (x_ofs + 160 * sb_scale, 144 * sb_scale, cg.stats[STAT_MONSTERS], 3, 0);
 	Draw_TransPicScaled (x_ofs + 232 * sb_scale, 144 * sb_scale, sb_scale, sbar.sb_slash);
-	Sbar_IntermissionNumber (x_ofs + 240 * sb_scale, 144 * sb_scale, cl.stats[STAT_TOTALMONSTERS], 3, 0);
+	Sbar_IntermissionNumber (x_ofs + 240 * sb_scale, 144 * sb_scale, cg.stats[STAT_TOTALMONSTERS], 3, 0);
 #endif
 }
 
