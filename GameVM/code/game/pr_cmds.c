@@ -1440,25 +1440,11 @@ int SV_ModelIndex (char *name);
 void PF_makestatic (void)
 {
 	edict_t	*ent;
-	int		i;
-	
+
 	ent = G_EDICT(OFS_PARM0);
 
-	MSG_WriteByte (&sv.signon,svc_spawnstatic);
-
-	MSG_WriteByte (&sv.signon, SV_ModelIndex(pr_strings + ent->v.model));
-
-	MSG_WriteByte (&sv.signon, ent->v.frame);
-	MSG_WriteByte (&sv.signon, ent->v.colormap);
-	MSG_WriteByte (&sv.signon, ent->v.skin);
-	for (i=0 ; i<3 ; i++)
-	{
-		MSG_WriteCoord(&sv.signon, ent->v.origin[i]);
-		MSG_WriteAngle(&sv.signon, ent->v.angles[i]);
-	}
-
-// throw the entity away now
-	ED_Free (ent);
+	// PANZER - just leave this entity as is.
+	// TODO - set flag for client-side animation?
 }
 
 //=============================================================================
