@@ -513,7 +513,7 @@ void PF_ambientsound (void)
 	float		*pos;
 	float 		vol, attenuation;
 	int			soundnum, i;
-	edict_t		*eventEdict;
+	edict_t		*soundSourceEdict;
 
 	pos = G_VECTOR (OFS_PARM0);			
 	samp = G_STRING(OFS_PARM1);
@@ -532,25 +532,25 @@ void PF_ambientsound (void)
 	}
 
 	// Create separate entity for ambient sound.
-	eventEdict = ED_Alloc();
-	VectorCopy(pos, eventEdict->v.origin);
-	VectorCopy(pos, eventEdict->s.origin);
-	VectorCopy(pos, eventEdict->r.currentOrigin);
+	soundSourceEdict = ED_Alloc();
+	VectorCopy(pos, soundSourceEdict->v.origin);
+	VectorCopy(pos, soundSourceEdict->s.origin);
+	VectorCopy(pos, soundSourceEdict->r.currentOrigin);
 	for(i = 0; i < 3; ++i)
 	{
-		eventEdict->v.mins[i]= eventEdict->r.mins[i]= -64;
-		eventEdict->v.maxs[i]= eventEdict->r.maxs[i]= +64;
+		soundSourceEdict->v.mins[i]= soundSourceEdict->r.mins[i]= -64;
+		soundSourceEdict->v.maxs[i]= soundSourceEdict->r.maxs[i]= +64;
 	}
 
-	eventEdict->s.loopSound = qtrue; // use this field as ambient sound entity indicator.
+	soundSourceEdict->s.loopSound = qtrue; // use this field as ambient sound entity indicator.
 
 	// Reuse some fileds for event params.
-	eventEdict->s.weapon = soundnum;
-	eventEdict->s.legsAnim = vol * 255;
-	eventEdict->s.torsoAnim = attenuation;
-	eventEdict->r.svFlags = SVF_BROADCAST; // Prevent dropping of this event.
+	soundSourceEdict->s.weapon = soundnum;
+	soundSourceEdict->s.legsAnim = vol * 255;
+	soundSourceEdict->s.torsoAnim = attenuation;
+	soundSourceEdict->r.svFlags = SVF_BROADCAST; // Prevent dropping of this event.
 
-	trap_LinkEntity(eventEdict);
+	trap_LinkEntity(soundSourceEdict);
 }
 
 /*
