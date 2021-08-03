@@ -119,6 +119,8 @@ typedef struct {
 
 typedef struct
 {
+	qhandle_t		complete;
+	qhandle_t		inter;
 	qhandle_t		conchars;
 
 	qhandle_t		sb_nums[2][11];
@@ -232,6 +234,7 @@ void Sbar_Init (void);
 void Sbar_Draw (void);
 void Sbar_ShowScores (void);
 void Sbar_DontShowScores (void);
+void Sbar_IntermissionOverlay (void);
 
 
 //===============================================

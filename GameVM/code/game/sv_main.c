@@ -160,6 +160,20 @@ static void SV_ProcessTEnt()
 	}
 }
 
+static void SV_ProcessIntermission()
+{
+	int i;
+
+	i = 0;
+	for( i = 0; i < svs.maxclients; ++ i )
+	{
+		if( !svs.clients[i].active )
+			continue;
+
+		svs.clients[i].ps.pm_type = PM_INTERMISSION;
+	}
+}
+
 static void SV_ProcessBufferMessages(sizebuf_t* buf)
 {
 	int			cmd;
@@ -320,7 +334,7 @@ static void SV_ProcessBufferMessages(sizebuf_t* buf)
 				break;
 
 			case svc_intermission:
-				// TODO - transmit intermission.
+				SV_ProcessIntermission();
 				break;
 
 			case svc_finale:
