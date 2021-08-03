@@ -286,6 +286,18 @@ void SV_SpawnServer()
 
 	sv.edicts = G_Alloc (sv.max_edicts*pr_edict_size);
 
+	sv.datagram.maxsize = sizeof(sv.datagram_buf);
+	sv.datagram.cursize = 0;
+	sv.datagram.data = sv.datagram_buf;
+
+	sv.reliable_datagram.maxsize = sizeof(sv.reliable_datagram_buf);
+	sv.reliable_datagram.cursize = 0;
+	sv.reliable_datagram.data = sv.reliable_datagram_buf;
+
+	sv.signon.maxsize = sizeof(sv.signon_buf);
+	sv.signon.cursize = 0;
+	sv.signon.data = sv.signon_buf;
+
 	sv.state = ss_loading;
 
 	// leave slots at start for clients only
@@ -475,6 +487,9 @@ void G_RunFrame( int levelTime ) {
 
 	// Run Quake1 physics (for all entities)
 	SV_Physics();
+
+	// Process messages generated via "MSG_Write*" functions, convert these messages into event entities.
+	SV_ProcessMessages();
 
 	// Free old events
 	for (i=0 ; i< sv.num_edicts; i++) {

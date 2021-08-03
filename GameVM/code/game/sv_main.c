@@ -140,3 +140,302 @@ int SV_ModelIndex (char *name)
 		G_Error ("SV_ModelIndex: model %s not precached", name);
 	return i;
 }
+
+static void SV_ProcessBeam(const char* model_name)
+{
+	int		ent;
+	vec3_t	start, end;
+
+	ent = MSG_ReadShort ();
+
+	start[0] = MSG_ReadCoord ();
+	start[1] = MSG_ReadCoord ();
+	start[2] = MSG_ReadCoord ();
+
+	end[0] = MSG_ReadCoord ();
+	end[1] = MSG_ReadCoord ();
+	end[2] = MSG_ReadCoord ();
+}
+
+static void SV_ProcessTEnt()
+{
+	int		type;
+	vec3_t	pos;
+
+	// PANZER TODO - convert this messages into temp entities.
+	type = MSG_ReadByte ();
+	switch (type)
+	{
+	case TE_WIZSPIKE:			// spike hitting wall
+		pos[0] = MSG_ReadCoord ();
+		pos[1] = MSG_ReadCoord ();
+		pos[2] = MSG_ReadCoord ();
+		break;
+
+	case TE_KNIGHTSPIKE:			// spike hitting wall
+		pos[0] = MSG_ReadCoord ();
+		pos[1] = MSG_ReadCoord ();
+		pos[2] = MSG_ReadCoord ();
+		break;
+
+	case TE_SPIKE:			// spike hitting wall
+		pos[0] = MSG_ReadCoord ();
+		pos[1] = MSG_ReadCoord ();
+		pos[2] = MSG_ReadCoord ();
+		break;
+	case TE_SUPERSPIKE:			// super spike hitting wall
+		pos[0] = MSG_ReadCoord ();
+		pos[1] = MSG_ReadCoord ();
+		pos[2] = MSG_ReadCoord ();
+		break;
+
+	case TE_GUNSHOT:			// bullet hitting wall
+		pos[0] = MSG_ReadCoord ();
+		pos[1] = MSG_ReadCoord ();
+		pos[2] = MSG_ReadCoord ();
+		break;
+
+	case TE_EXPLOSION:			// rocket explosion
+		pos[0] = MSG_ReadCoord ();
+		pos[1] = MSG_ReadCoord ();
+		pos[2] = MSG_ReadCoord ();
+		break;
+
+	case TE_TAREXPLOSION:			// tarbaby explosion
+		pos[0] = MSG_ReadCoord ();
+		pos[1] = MSG_ReadCoord ();
+		pos[2] = MSG_ReadCoord ();
+		break;
+
+	case TE_LIGHTNING1:				// lightning bolts
+		SV_ProcessBeam ("progs/bolt.mdl");
+		break;
+
+	case TE_LIGHTNING2:				// lightning bolts
+		SV_ProcessBeam ("progs/bolt2.mdl");
+		break;
+
+	case TE_LIGHTNING3:				// lightning bolts
+		SV_ProcessBeam ("progs/bolt3.mdl");
+		break;
+
+// PGM 01/21/97
+	case TE_BEAM:				// grappling hook beam
+		SV_ProcessBeam ("progs/beam.mdl");
+		break;
+// PGM 01/21/97
+
+	case TE_LAVASPLASH:
+		pos[0] = MSG_ReadCoord ();
+		pos[1] = MSG_ReadCoord ();
+		pos[2] = MSG_ReadCoord ();
+		break;
+
+	case TE_TELEPORT:
+		pos[0] = MSG_ReadCoord ();
+		pos[1] = MSG_ReadCoord ();
+		pos[2] = MSG_ReadCoord ();
+		break;
+
+	case TE_EXPLOSION2:				// color mapped explosion
+		pos[0] = MSG_ReadCoord ();
+		pos[1] = MSG_ReadCoord ();
+		pos[2] = MSG_ReadCoord ();
+		break;
+
+	default:
+		G_Error ("CL_ParseTEnt: bad type");
+	}
+}
+
+static void SV_ProcessBufferMessages(sizebuf_t* buf)
+{
+	int			cmd;
+	int			i;
+
+	memcpy(&net_message, buf, sizeof(*buf) );
+
+	MSG_BeginReading();
+
+	while(1)
+	{
+		cmd = MSG_ReadByte ();
+		if (cmd == -1)
+		{
+			break;		// end of message
+		}
+
+		if (msg_badread)
+			G_Error ("SV_ProcessBufferMessages: Bad server message");
+
+		// if the high bit of the command byte is set, it is a fast update
+		// PANZER TODO - parse fast update.
+		if (cmd & 128)
+		{
+			//SHOWNET("fast update");
+			//CL_ParseUpdate (cmd&127);
+			continue;
+		}
+
+		// other commands
+			switch (cmd)
+			{
+			default:
+				G_Error ("CL_ParseServerMessage: Illegible server message\n");
+				break;
+
+			case svc_nop:
+	//			Con_Printf ("svc_nop\n");
+				break;
+
+			case svc_time:
+				MSG_ReadFloat ();
+				break;
+
+			case svc_clientdata:
+				MSG_ReadShort ();
+				break;
+
+			case svc_version:
+				i = MSG_ReadLong ();
+				break;
+
+			case svc_disconnect:
+				break;
+
+			case svc_print:
+				// PANZER TODO - transmit string.
+				MSG_ReadString ();
+				break;
+
+			case svc_centerprint:
+				// PANZER TODO - transmit string.
+				MSG_ReadString ();
+				break;
+
+			case svc_stufftext:
+				// PANZER TODO - transmit string.
+				MSG_ReadString ();
+				break;
+
+			case svc_damage:
+				// PANZER TODO - transmit damage.
+				MSG_ReadByte ();
+				MSG_ReadByte ();
+				MSG_ReadCoord ();
+				MSG_ReadCoord ();
+				MSG_ReadCoord ();
+				break;
+
+			case svc_serverinfo:
+				// Just ignore this - actual QuakeC does not send such message.
+				break;
+
+			case svc_setangle:
+				MSG_ReadAngle();
+				MSG_ReadAngle();
+				MSG_ReadAngle();
+				break;
+
+			case svc_setview:
+				MSG_ReadShort ();
+				break;
+
+			case svc_lightstyle:
+				MSG_ReadByte ();
+				break;
+
+			case svc_sound:
+				// Just ignore this - actual QuakeC does not send such message.
+				break;
+
+			case svc_stopsound:
+				MSG_ReadShort();
+				break;
+
+			case svc_updatename:
+				MSG_ReadByte ();
+				break;
+
+			case svc_updatefrags:
+				MSG_ReadByte ();
+				break;
+
+			case svc_updatecolors:
+				MSG_ReadByte ();
+				break;
+
+			case svc_particle:
+				// Just ignore this - actual QuakeC does not send such message.
+				break;
+
+			case svc_spawnbaseline:
+				// Just ignore this - actual QuakeC does not send such message.
+				break;
+			case svc_spawnstatic:
+				// Just ignore this - actual QuakeC does not send such message.
+				break;
+			case svc_temp_entity:
+				SV_ProcessTEnt ();
+				break;
+
+			case svc_setpause:
+				MSG_ReadByte ();
+				break;
+
+			case svc_signonnum:
+				MSG_ReadByte ();
+				break;
+
+			case svc_killedmonster:
+				break;
+
+			case svc_foundsecret:
+				break;
+
+			case svc_updatestat:
+				MSG_ReadByte ();
+				break;
+
+			case svc_spawnstaticsound:
+				// Just ignore this - actual QuakeC does not send such message.
+				break;
+
+			case svc_cdtrack:
+				MSG_ReadByte ();
+				MSG_ReadByte ();
+				break;
+
+			case svc_intermission:
+				// TODO - transmit intermission.
+				break;
+
+			case svc_finale:
+				// TODO - transmit finale.
+				break;
+
+			case svc_cutscene:
+				// TODO - transmit cutscene.
+				MSG_ReadString ();
+				break;
+
+			case svc_sellscreen:
+				break;
+			}
+
+	}
+
+	buf->cursize = 0;
+}
+
+void SV_ProcessMessages()
+{
+	int i;
+
+	SV_ProcessBufferMessages(&sv.datagram);
+	SV_ProcessBufferMessages(&sv.reliable_datagram);
+	SV_ProcessBufferMessages(&sv.signon);
+
+	for(i = 0; i < svs.maxclients; ++i)
+		SV_ProcessBufferMessages(&svs.clients[i].message);
+}

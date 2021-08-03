@@ -199,6 +199,7 @@ void SV_SendClientMessages (void);
 void SV_ClearDatagram (void);
 
 int SV_ModelIndex (char *name);
+void SV_ProcessMessages();
 
 void SV_SetIdealPitch (void);
 
