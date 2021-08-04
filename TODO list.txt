@@ -1,0 +1,39 @@
+Server:
+* Fix strange behaviour while walking on slopes
+* Fix wrong spawn angles
+* Fix dead bodies collision detection
+* Gimbal lock for player camera
+* Save/Load
+
+Client:
+* Display intermission screen properly - with locked camera and no weapoon
+* Fix deathmatch scoreborad rawing code
+* Dynamic lights
+* Particles
+* Underwater view
+* Damage-based view roll changes
+* View bobbing
+* Client-side view roll calculation (as in original Quake)
+* Client-side animation for static entities
+* Rotation animation for items (weapons, powerups)
+* Music track change during the game (for intermission, etc.)
+* Addons (rogue/hipnotic) support in status bar
+* Status bar weapons blinking on pick-up
+* Rocket trails
+
+Menu UI:
+
+Shaders:
+* Special shader for textures with fullbright pixels
+* Sky shaders
+* Shaders for in-game UI elements (avoid ugly interpolation and power of 2 textures conversion)
+
+Data export:
+* Sprites
+* BSP items models (health boxes, ammo boxes)
+
+Maps:
+* Fix missing light* entities
+* Fix missing polygons
+* Fix crashes of q3map2 while calculating light for some maps
+* Fix missing q3map2-generated shaders
