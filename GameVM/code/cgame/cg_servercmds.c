@@ -63,11 +63,12 @@ static void CG_ServerCommand( void ) {
 	}
 
 	if ( !strcmp( cmd, "print" ) ) {
-		CG_Printf( "CLIENT print %s\n", CG_Argv(1) );
+		CG_Printf( "%s", CG_Argv(1) );
 		return;
 	}
 	else if ( !strcmp( cmd, "centerprint" ) ) {
-		CG_Printf( "CLIENT centerprint %s\n", CG_Argv(1) );
+		cg.centerPrintStartTime = cg.time;
+		strncpy(cg.centerPrintString, CG_Argv(1), sizeof(cg.centerPrintString));
 		return;
 	}
 	else if ( !strcmp( cmd, "stufftext" ) ) {

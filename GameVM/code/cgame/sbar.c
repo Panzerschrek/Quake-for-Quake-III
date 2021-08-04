@@ -985,13 +985,6 @@ void Sbar_Draw (void)
 	Sbar_CalculateScale();
 	Sbar_CalculateLines();
 
-	// PANZER TODO - allow cursor customization.
-	Draw_CharacterScaled(
-		cg.refdef.x + cg.refdef.width  / 2 - 4,
-		cg.refdef.y + cg.refdef.height / 2 - 4,
-		1,
-		'+');
-
 	sb_updates++;
 
 	if (sb_lines > 24)
@@ -1363,6 +1356,72 @@ void Sbar_IntermissionOverlay (void)
 	Sbar_IntermissionNumber (x_ofs + 240 * sb_scale, 144 * sb_scale, cg.snap.ps.stats[Q3_STAT_TOTAL_MONSTERS], 3, 0);
 }
 
+void DrawCrosshair (void)
+{
+	// PANZER TODO - allow cursor customization.
+	Draw_CharacterScaled(
+		cg.refdef.x + cg.refdef.width  / 2 - 4,
+		cg.refdef.y + cg.refdef.height / 2 - 4,
+		1,
+		'+');
+}
+
+void DrawCenterPrint (void)
+{
+	int			lines;
+	const char*	str;
+	int			l;
+	int			j;
+	int			x, y;
+	int			remaining;
+
+	// PANZER TODO - allow centerprint time customization
+	if(cg.centerPrintStartTime + 2000 < cg.time)
+		return;
+
+
+	lines = 1;
+	str = cg.centerPrintString;
+	while (*str)
+	{
+		if (*str == '\n')
+			lines++;
+		str++;
+	}
+
+	// PANZER TODO - support finale text printing.
+
+	str = cg.centerPrintString;
+
+	if (lines <= 4)
+		y = cg.refdef.height*0.35;
+	else
+		y = 48;
+
+	do
+	{
+	// scan the width of the line
+		for (l=0 ; l<40 ; l++)
+			if (str[l] == '\n' || !str[l])
+				break;
+		x = (cg.refdef.width - l*8)/2;
+		for (j=0 ; j<l ; j++, x+=8)
+		{
+			Draw_CharacterScaled (x, y, 1, str[j]);
+			if (!remaining--)
+				return;
+		}
+
+		y += 8;
+
+		while (*str && *str != '\n')
+			str++;
+
+		if (!*str)
+			break;
+		str++;		// skip the \n
+	} while (1);
+}
 
 /*
 ==================

@@ -175,7 +175,11 @@ void CG_DrawActiveFrame( int serverTime, stereoFrame_t stereoView, qboolean demo
 	trap_R_RenderScene( &cg.refdef );
 
 	if( cg.snap.ps.pm_type == PM_NORMAL )
+	{
 		Sbar_Draw();
+		DrawCrosshair();
+		DrawCenterPrint();
+	}
 	else if( cg.snap.ps.pm_type == PM_INTERMISSION )
 		Sbar_IntermissionOverlay();
 }

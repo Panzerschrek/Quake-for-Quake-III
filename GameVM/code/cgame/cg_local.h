@@ -76,6 +76,9 @@ typedef struct {
 
 	scoreboard_t scores[32]; // for max clients.
 
+	int centerPrintStartTime;
+	char centerPrintString[1024];
+
 	// view rendering
 	refdef_t	refdef;
 	vec3_t		refdefViewAngles;		// will be converted to refdef.viewaxis
@@ -235,6 +238,8 @@ void Sbar_Draw (void);
 void Sbar_ShowScores (void);
 void Sbar_DontShowScores (void);
 void Sbar_IntermissionOverlay (void);
+void DrawCrosshair (void);
+void DrawCenterPrint (void);
 
 
 //===============================================
