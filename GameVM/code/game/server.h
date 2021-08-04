@@ -198,6 +198,12 @@ void SV_SendClientMessages (void);
 void SV_ClearDatagram (void);
 
 int SV_ModelIndex (char *name);
+
+// -1 for broadcast.
+void SV_SendPrint(int clientNum, const char* text);
+void SV_SendCenterPrint(int clientNum, const char* text);
+void SV_SendStuffText(int clientNum, const char* text);
+
 void SV_ProcessMessages();
 
 void SV_SetIdealPitch (void);

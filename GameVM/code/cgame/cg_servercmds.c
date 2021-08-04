@@ -63,7 +63,16 @@ static void CG_ServerCommand( void ) {
 	}
 
 	if ( !strcmp( cmd, "print" ) ) {
-		CG_Printf( "%s", CG_Argv(1) );
+		CG_Printf( "CLIENT print %s\n", CG_Argv(1) );
+		return;
+	}
+	else if ( !strcmp( cmd, "centerprint" ) ) {
+		CG_Printf( "CLIENT centerprint %s\n", CG_Argv(1) );
+		return;
+	}
+	else if ( !strcmp( cmd, "stufftext" ) ) {
+		CG_Argv(1);
+		// PANZER TODO - process this command. Generaly this is same sort of command wrapper command.
 		return;
 	}
 

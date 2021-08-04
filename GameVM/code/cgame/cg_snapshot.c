@@ -33,6 +33,8 @@ void CG_ProcessSnapshots( void ) {
 	trap_GetCurrentSnapshotNumber( &n, &snapshotTime );
 	trap_GetSnapshot( n, &cg.snap);
 
+	CG_ExecuteNewServerCommands( cg.snap.serverCommandSequence );
+
 	for( i = 0; i < cg.snap.numEntities; ++i )
 	{
 		entState = &cg.snap.entities[i];

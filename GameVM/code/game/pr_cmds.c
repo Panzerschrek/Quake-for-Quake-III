@@ -278,7 +278,7 @@ void PF_bprint (void)
 	char		*s;
 
 	s = PF_VarString(0);
-	SV_BroadcastPrintf ("%s", s);
+	SV_SendPrint(-1, s);
 }
 
 /*
@@ -293,9 +293,10 @@ sprint(clientent, value)
 void PF_sprint (void)
 {
 	char		*s;
-	client_t	*client;
 	int			entnum;
-	
+
+	// PANZER TODO - create separate function for client text messages printing and call it from here and from messages processing code.
+
 	entnum = G_EDICTNUM(OFS_PARM0);
 	s = PF_VarString(1);
 	
@@ -305,10 +306,7 @@ void PF_sprint (void)
 		return;
 	}
 		
-	client = &svs.clients[entnum-1];
-		
-	MSG_WriteChar (&client->message,svc_print);
-	MSG_WriteString (&client->message, s );
+	SV_SendPrint(entnum-1, s);
 }
 
 
@@ -324,7 +322,6 @@ centerprint(clientent, value)
 void PF_centerprint (void)
 {
 	char		*s;
-	client_t	*client;
 	int			entnum;
 	
 	entnum = G_EDICTNUM(OFS_PARM0);
@@ -335,11 +332,9 @@ void PF_centerprint (void)
 		G_Printf ("tried to sprint to a non-client\n");
 		return;
 	}
-		
-	client = &svs.clients[entnum-1];
-		
-	MSG_WriteChar (&client->message,svc_centerprint);
-	MSG_WriteString (&client->message, s );
+
+	SV_SendCenterPrint(entnum-1, s);
+
 }
 
 
@@ -763,17 +758,13 @@ void PF_stuffcmd (void)
 {
 	int		entnum;
 	char	*str;
-	client_t	*old;
 	
 	entnum = G_EDICTNUM(OFS_PARM0);
 	if (entnum < 1 || entnum > svs.maxclients)
 		PR_RunError ("Parm 0 not a client");
 	str = G_STRING(OFS_PARM1);	
 	
-	old = host_client;
-	host_client = &svs.clients[entnum-1];
-	Host_ClientCommands ("%s", str);
-	host_client = old;
+	SV_SendStuffText(entnum-1, str);
 }
 
 /*

@@ -174,7 +174,36 @@ static void SV_ProcessIntermission()
 	}
 }
 
-static void SV_ProcessBufferMessages(sizebuf_t* buf)
+void SV_SendStringCommand(int clientNum, const char* commandName, const char* commandText)
+{
+	char	command[1024];
+	char	*p;
+
+	// double quotes are bad
+	while ((p = strchr(commandText, '"')) != NULL)
+		*p = '\'';
+
+	Com_sprintf( command, sizeof(command), "%s \"%s\"", commandName, commandText );
+
+	trap_SendServerCommand( clientNum, command );
+}
+
+void SV_SendPrint(int clientNum, const char* text)
+{
+	SV_SendStringCommand(clientNum, "print", text);
+}
+
+void SV_SendCenterPrint(int clientNum, const char* text)
+{
+	SV_SendStringCommand(clientNum, "centerprint", text);
+}
+
+void SV_SendStuffText(int clientNum, const char* text)
+{
+	SV_SendStringCommand(clientNum, "stufftext", text);
+}
+
+static void SV_ProcessBufferMessages(sizebuf_t* buf, int clientNum /* -1 for global messages */)
 {
 	int			cmd;
 	int			i;
@@ -230,18 +259,15 @@ static void SV_ProcessBufferMessages(sizebuf_t* buf)
 				break;
 
 			case svc_print:
-				// PANZER TODO - transmit string.
-				MSG_ReadString ();
+				SV_SendPrint(clientNum, MSG_ReadString());
 				break;
 
 			case svc_centerprint:
-				// PANZER TODO - transmit string.
-				MSG_ReadString ();
+				SV_SendCenterPrint(clientNum, MSG_ReadString());
 				break;
 
 			case svc_stufftext:
-				// PANZER TODO - transmit string.
-				MSG_ReadString ();
+				SV_SendStuffText(clientNum, MSG_ReadString());
 				break;
 
 			case svc_damage:
@@ -359,10 +385,16 @@ void SV_ProcessMessages()
 {
 	int i;
 
-	SV_ProcessBufferMessages(&sv.datagram);
-	SV_ProcessBufferMessages(&sv.reliable_datagram);
-	SV_ProcessBufferMessages(&sv.signon);
+	SV_ProcessBufferMessages(&sv.datagram, -1);
+	SV_ProcessBufferMessages(&sv.reliable_datagram, -1);
+	SV_ProcessBufferMessages(&sv.signon, -1);
 
 	for(i = 0; i < svs.maxclients; ++i)
-		SV_ProcessBufferMessages(&svs.clients[i].message);
+	{
+		if( !svs.clients[i].active ){
+			continue;
+		}
+
+		SV_ProcessBufferMessages(&svs.clients[i].message, i);
+	}
 }
