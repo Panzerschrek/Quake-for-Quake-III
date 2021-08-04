@@ -64,20 +64,20 @@ static void CG_ServerCommand( void ) {
 
 	if ( !strcmp( cmd, "print" ) ) {
 		CG_Printf( "%s", CG_Argv(1) );
-		return;
 	}
 	else if ( !strcmp( cmd, "centerprint" ) ) {
 		cg.centerPrintStartTime = cg.time;
 		strncpy(cg.centerPrintString, CG_Argv(1), sizeof(cg.centerPrintString));
-		return;
 	}
 	else if ( !strcmp( cmd, "stufftext" ) ) {
 		CG_Argv(1);
 		// PANZER TODO - process this command. Generaly this is same sort of command wrapper command.
-		return;
 	}
-
-	CG_Printf( "Unknown client game command: %s\n", cmd );
+	else if ( !strcmp( cmd, "cdtrack" ) ) {
+		CG_StartMusic(atoi(CG_Argv(1)), atoi(CG_Argv(2)));
+	}
+	else
+		CG_Printf( "Unknown client game command: %s\n", cmd );
 }
 
 

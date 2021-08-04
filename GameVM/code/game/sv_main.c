@@ -203,6 +203,18 @@ void SV_SendStuffText(int clientNum, const char* text)
 	SV_SendStringCommand(clientNum, "stufftext", text);
 }
 
+static void SV_ProcessCDTrack(int clientNum)
+{
+	char commandText[32];
+	int track, loopTrack;
+
+	track = MSG_ReadByte ();
+	loopTrack = MSG_ReadByte ();
+
+	Com_sprintf( commandText, sizeof(commandText), "cdtrack %d %d", track, loopTrack );
+	trap_SendServerCommand( clientNum, commandText );
+}
+
 static void SV_ProcessBufferMessages(sizebuf_t* buf, int clientNum /* -1 for global messages */)
 {
 	int			cmd;
@@ -355,8 +367,7 @@ static void SV_ProcessBufferMessages(sizebuf_t* buf, int clientNum /* -1 for glo
 				break;
 
 			case svc_cdtrack:
-				MSG_ReadByte ();
-				MSG_ReadByte ();
+				SV_ProcessCDTrack(clientNum);
 				break;
 
 			case svc_intermission:

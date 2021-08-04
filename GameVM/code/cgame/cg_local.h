@@ -180,6 +180,7 @@ extern	vmCvar_t	teamplay;
 // cg_main.c
 //
 const char *CG_ConfigString( int index );
+void CG_StartMusic(int trackIndex, int loopTrackIndex);
 const char *CG_Argv( int arg );
 
 void QDECL CG_Printf( const char *msg, ... ) __attribute__ ((format (printf, 1, 2)));

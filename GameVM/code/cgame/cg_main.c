@@ -193,13 +193,16 @@ const char *CG_Argv( int arg ) {
 	return buffer;
 }
 
-static void CG_StartMusic(int index) {
+void CG_StartMusic(int trackIndex, int loopTrackIndex) {
 	char trackName[64]= "music/track00";
+	char loopTrackName[64]= "music/track00";
 
-	trackName[11]= '0' + index / 10;
-	trackName[12]= '0' + index % 10;
-	Com_Printf("Starting music track \"%s\"\n", trackName);
-	trap_S_StartBackgroundTrack(trackName, trackName);
+	trackName[11]= '0' + trackIndex / 10;
+	trackName[12]= '0' + trackIndex % 10;
+	loopTrackName[11]= '0' + loopTrackIndex / 10;
+	loopTrackName[12]= '0' + loopTrackIndex % 10;
+	Com_Printf("Starting music track \"%s\" and looping track \"%s\"\n", trackName, loopTrackName);
+	trap_S_StartBackgroundTrack(trackName, loopTrackName);
 }
 
 
@@ -278,7 +281,7 @@ static void CG_RegisterResources( void ) {
 		{
 			int music_index = atoi(musicIndexStr);
 			if(music_index > 0 && music_index < 100 )
-				CG_StartMusic(music_index);
+				CG_StartMusic(music_index, music_index);
 		}
 	}
 
