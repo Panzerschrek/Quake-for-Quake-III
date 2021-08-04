@@ -28,25 +28,6 @@ static vec3_t	playerMins = {-15, -15, -24};
 static vec3_t	playerMaxs = {15, 15, 32};
 
 
-/*
-==================
-SetClientViewAngle
-
-==================
-*/
-void SetClientViewAngle( gclient_t *client, vec3_t angle ) {
-	int			i;
-
-	// set the delta angle
-	for (i=0 ; i<3 ; i++) {
-		int		cmdAngle;
-
-		cmdAngle = ANGLE2SHORT(angle[i]);
-		client->ps.delta_angles[i] = cmdAngle - client->cmd.angles[i];
-	}
-	VectorCopy (angle, client->ps.viewangles);
-}
-
 void ClientUserinfoChanged( int clientNum ) {
 }
 
