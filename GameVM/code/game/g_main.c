@@ -254,9 +254,11 @@ void SV_SpawnServer()
 {
 	edict_t		*ent;
 	char		mapname[MAX_OSPATH];
+	char		mapname_corrected[MAX_OSPATH];
 	int			i;
 
 	trap_Cvar_VariableStringBuffer("mapname", mapname, sizeof(mapname));
+	Com_sprintf(mapname_corrected, sizeof(mapname_corrected), "maps/%s.bsp", mapname);
 
 	//
 	// make cvars consistant
@@ -324,7 +326,7 @@ void SV_SpawnServer()
 	//
 	ent = EDICT_NUM(0);
 	memset (&ent->v, 0, progs->entityfields * 4);
-	ent->v.model = ED_NewString (mapname) - pr_strings;
+	ent->v.model = ED_NewString (mapname_corrected) - pr_strings;
 	ent->v.solid = SOLID_BSP;
 	ent->v.movetype = MOVETYPE_PUSH;
 

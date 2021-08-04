@@ -90,6 +90,7 @@ void Sbar_Init (void)
 
 	sbar.complete = trap_R_RegisterShaderNoMip("gfx/complete.tga");
 	sbar.inter = trap_R_RegisterShaderNoMip("gfx/inter.tga");
+	sbar.finale = trap_R_RegisterShaderNoMip("gfx/finale.tga");
 	sbar.conchars = Draw_PicFromWad("conchars");
 
 	for (i=0 ; i<10 ; i++)
@@ -1374,11 +1375,15 @@ void DrawCenterPrint (void)
 	int			j;
 	int			x, y;
 	int			remaining;
+	qboolean	intermission;
 
 	// PANZER TODO - allow centerprint time customization
-	if(cg.centerPrintStartTime + 2000 < cg.time)
-		return;
+	int printspeed = 8;
 
+	intermission = cg.snap.ps.pm_type == PM_INTERMISSION || cg.snap.ps.pm_type == PM_INTERMISSION_FINALE || cg.snap.ps.pm_type == PM_INTERMISSION_CUTSCENE;
+
+	if(cg.centerPrintStartTime + 2000 < cg.time &&!intermission )
+		return;
 
 	lines = 1;
 	str = cg.centerPrintString;
@@ -1389,14 +1394,17 @@ void DrawCenterPrint (void)
 		str++;
 	}
 
-	// PANZER TODO - support finale text printing.
+	if (intermission)
+		remaining = printspeed * (cg.time - cg.centerPrintStartTime) / 1000.0;
+	else
+		remaining = 9999;
 
 	str = cg.centerPrintString;
 
 	if (lines <= 4)
 		y = cg.refdef.height*0.35;
 	else
-		y = 48;
+		y = 48 * sb_scale;
 
 	do
 	{
@@ -1431,12 +1439,7 @@ Sbar_FinaleOverlay
 */
 void Sbar_FinaleOverlay (void)
 {
-#if 0 // PANZER TODO - fix it
-	qpic_t	*pic;
-
-	scr_copyeverything = 1;
-
-	pic = Draw_CachePic ("gfx/finale.lmp");
-	Draw_TransPic ( (cg.refdef.width-pic->width)/2, 16, pic);
-#endif
+	const int width = 288;
+	const int height = 24;
+	trap_R_DrawStretchPic ( (cg.refdef.width - sb_scale * width)/2, sb_scale * 16, width * sb_scale, height * sb_scale, 0.0f, 0.0f, 1.0f, 1.0f, sbar.finale);
 }

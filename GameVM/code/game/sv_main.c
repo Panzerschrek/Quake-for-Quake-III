@@ -160,7 +160,7 @@ static void SV_ProcessTEnt()
 	}
 }
 
-static void SV_ProcessIntermission()
+static void SV_ProcessIntermission(int intermissionType)
 {
 	int i;
 
@@ -170,7 +170,7 @@ static void SV_ProcessIntermission()
 		if( !svs.clients[i].active )
 			continue;
 
-		svs.clients[i].ps.pm_type = PM_INTERMISSION;
+		svs.clients[i].ps.pm_type = intermissionType;
 	}
 }
 
@@ -371,16 +371,20 @@ static void SV_ProcessBufferMessages(sizebuf_t* buf, int clientNum /* -1 for glo
 				break;
 
 			case svc_intermission:
-				SV_ProcessIntermission();
+				G_Printf("SERVER: intermission\n");
+				SV_ProcessIntermission(PM_INTERMISSION);
 				break;
 
 			case svc_finale:
-				// TODO - transmit finale.
+				G_Printf("SERVER: finale\n");
+				SV_ProcessIntermission(PM_INTERMISSION_FINALE);
+				SV_SendCenterPrint(clientNum, MSG_ReadString());
 				break;
 
 			case svc_cutscene:
-				// TODO - transmit cutscene.
-				MSG_ReadString ();
+				SV_ProcessIntermission(PM_INTERMISSION_CUTSCENE);
+				G_Printf("SERVER: cutscene\n");
+				SV_SendCenterPrint(clientNum, MSG_ReadString());
 				break;
 
 			case svc_sellscreen:

@@ -182,4 +182,9 @@ void CG_DrawActiveFrame( int serverTime, stereoFrame_t stereoView, qboolean demo
 	}
 	else if( cg.snap.ps.pm_type == PM_INTERMISSION )
 		Sbar_IntermissionOverlay();
+	else if( cg.snap.ps.pm_type == PM_INTERMISSION_FINALE )
+	{
+		Sbar_FinaleOverlay();
+		DrawCenterPrint();
+	}
 }

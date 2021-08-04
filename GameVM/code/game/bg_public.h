@@ -88,6 +88,8 @@ typedef enum {
 typedef enum {
 	PM_NORMAL,		// can accelerate and turn
 	PM_INTERMISSION,	// no movement or status bar
+	PM_INTERMISSION_FINALE,
+	PM_INTERMISSION_CUTSCENE,
 } pmtype_t;
 
 
