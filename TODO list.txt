@@ -5,7 +5,6 @@ Server:
 * Save/Load
 
 Client:
-* Display intermission screen properly - with locked camera and no weapoon
 * Fix deathmatch scoreborad rawing code
 * Dynamic lights
 * Particles

@@ -68,30 +68,33 @@ void ClientThink_real( gclient_t *client ) {
 	sv_player->v.button2 = ucmd->upmove > 0;
 	sv_player->v.impulse = ucmd->weapon;
 
-	// Changed "v_angle" using delta calucaltion based on user command.
-	for(i= 0; i < 3; ++i)
+	if( client->ps.pm_type == PM_NORMAL ) // Do not rotate camera in intermission mode.
 	{
-		angle= ((float)ucmd->angles[i]) * (360.0f / 65536.0f);
-		angle_delta = angle - client->prev_cmd_angles[i];
-		client->prev_cmd_angles[i] = angle;
-		sv_player->v.v_angle[i]+= angle_delta;
+		// Changed "v_angle" using delta calucaltion based on user command.
+		for(i= 0; i < 3; ++i)
+		{
+			angle= ((float)ucmd->angles[i]) * (360.0f / 65536.0f);
+			angle_delta = angle - client->prev_cmd_angles[i];
+			client->prev_cmd_angles[i] = angle;
+			sv_player->v.v_angle[i]+= angle_delta;
+		}
+
+		// Clip and correct angles.
+		sv_player->v.v_angle[YAW] = AngleNormalize360(sv_player->v.v_angle[YAW]);
+		sv_player->v.v_angle[PITCH] = AngleNormalize360(sv_player->v.v_angle[PITCH]);
+		if(sv_player->v.v_angle[PITCH] > 180.0f )
+			sv_player->v.v_angle[PITCH]-= 360.0f;
+
+		if( sv_player->v.v_angle[PITCH] > 80 )
+			sv_player->v.v_angle[PITCH] = 80;
+		if( sv_player->v.v_angle[PITCH] < -70 )
+			sv_player->v.v_angle[PITCH] = -70;
+
+		if (sv_player->v.v_angle[ROLL] > 50)
+			sv_player->v.v_angle[ROLL] = 50;
+		if (sv_player->v.v_angle[ROLL] < -50)
+			sv_player->v.v_angle[ROLL] = -50;
 	}
-
-	// Clip and correct angles.
-	sv_player->v.v_angle[YAW] = AngleNormalize360(sv_player->v.v_angle[YAW]);
-	sv_player->v.v_angle[PITCH] = AngleNormalize360(sv_player->v.v_angle[PITCH]);
-	if(sv_player->v.v_angle[PITCH] > 180.0f )
-		sv_player->v.v_angle[PITCH]-= 360.0f;
-
-	if( sv_player->v.v_angle[PITCH] > 80 )
-		sv_player->v.v_angle[PITCH] = 80;
-	if( sv_player->v.v_angle[PITCH] < -70 )
-		sv_player->v.v_angle[PITCH] = -70;
-
-	if (sv_player->v.v_angle[ROLL] > 50)
-		sv_player->v.v_angle[ROLL] = 50;
-	if (sv_player->v.v_angle[ROLL] < -50)
-		sv_player->v.v_angle[ROLL] = -50;
 
 	SV_ClientThink();
 

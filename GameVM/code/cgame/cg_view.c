@@ -38,10 +38,8 @@ static void CG_CalcVrect (void) {
 
 static void CG_OffsetFirstPersonView( void ) {
 	float			*origin;
-	float			*angles;
 
 	origin = cg.refdef.vieworg;
-	angles = cg.refdefViewAngles;
 
 	// add view height
 	origin[2] += cg.snap.ps.viewheight;
@@ -72,6 +70,39 @@ static void CG_CalcViewValues( void ) {
 	VectorCopy( cg.snap.ps.viewangles, cg.refdefViewAngles );
 
 	CG_OffsetFirstPersonView();
+
+	// position eye relative to origin
+	AnglesToAxis( cg.refdefViewAngles, cg.refdef.viewaxis );
+
+	CG_CalcFov();
+}
+
+void V_AddIdle (void)
+{
+	// PANZER TODO - create cvars for these constants.
+	const float v_idlescale = 1.0f;
+	const float v_iroll_cycle = 0.5f;
+	const float v_ipitch_cycle = 1.0f;
+	const float v_iyaw_cycle = 2.0f;
+	const float v_iroll_level = 0.1f;
+	const float v_ipitch_level = 0.3f;
+	const float v_iyaw_level = 0.3f;
+
+	cg.refdefViewAngles[ROLL] += v_idlescale * sin(cg.time / 1000.0f * v_iroll_cycle) * v_iroll_level;
+	cg.refdefViewAngles[PITCH] += v_idlescale * sin(cg.time / 1000.0f * v_ipitch_cycle) * v_ipitch_level;
+	cg.refdefViewAngles[YAW] += v_idlescale * sin(cg.time / 1000.0f * v_iyaw_cycle) * v_iyaw_level;
+}
+
+static void CG_CalcIntermissionViewValues( void ) {
+	memset( &cg.refdef, 0, sizeof( cg.refdef ) );
+
+	// calculate size of 3D view
+	CG_CalcVrect();
+
+	VectorCopy( cg.snap.ps.origin, cg.refdef.vieworg );
+	VectorCopy( cg.snap.ps.viewangles, cg.refdefViewAngles );
+
+	V_AddIdle();
 
 	// position eye relative to origin
 	AnglesToAxis( cg.refdefViewAngles, cg.refdef.viewaxis );
@@ -165,9 +196,13 @@ void CG_DrawActiveFrame( int serverTime, stereoFrame_t stereoView, qboolean demo
 	CG_ProcessSnapshots();
 
 	// build cg.refdef
-	CG_CalcViewValues();
+	if( cg.snap.ps.pm_type == PM_NORMAL )
+		CG_CalcViewValues();
+	else
+		CG_CalcIntermissionViewValues();
 
-	CG_AddViewWeapon( &cg.snap.ps );
+	if( cg.snap.ps.pm_type == PM_NORMAL )
+		CG_AddViewWeapon( &cg.snap.ps );
 
 	cg.refdef.time = cg.time;
 	memcpy( cg.refdef.areamask, cg.snap.areamask, sizeof( cg.refdef.areamask ) );
