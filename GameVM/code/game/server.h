@@ -95,6 +95,8 @@ typedef struct client_s
 
 	vec3_t			wishdir;			// intended motion calced from cmd
 
+	vec3_t			prev_cmd_angles;	// For delta calculation
+
 	sizebuf_t		message;			// can be added to at any time,
 										// copied and clear once per frame
 	byte			msgbuf[MAX_MSGLEN];

@@ -527,9 +527,14 @@ void G_RunFrame( int levelTime ) {
 		}
 		edict = svs.clients[i].edict;
 
-		//G_Printf("Client pos: %f %f %f\n", edict->v.origin[0], edict->v.origin[1], edict->v.origin[2]);
+		if ( edict->v.fixangle )
+		{
+			VectorCopy(edict->v.angles, edict->v.v_angle);
+			edict->v.fixangle = 0;
+		}
+
 		VectorCopy(edict->v.origin, client->ps.origin);
-		VectorCopy(edict->v.angles, client->ps.viewangles);
+		VectorCopy(edict->v.v_angle, client->ps.viewangles);
 		client->ps.viewheight = edict->v.view_ofs[2];
 		client->ps.weapon = SV_ModelIndex(pr_strings + edict->v.weaponmodel);
 		client->ps.weaponstate = edict->v.weaponframe; // Put weapon frame into "weaponstate" field.
