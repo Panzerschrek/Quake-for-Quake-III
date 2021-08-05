@@ -90,6 +90,9 @@ void CG_AddEntities()
 	for ( num = 0 ; num < cg.snap.numEntities ; num++ ) {
 		in_ent = &cg.snap.entities[num];
 
+		if( in_ent->number == cg.snap.ps.clientNum + 1 )
+			continue; // Do not draw player itself.
+
 		memset (&out_ent, 0, sizeof(out_ent));
 		VectorCopy( in_ent->origin, out_ent.origin);
 		VectorCopy( in_ent->origin, out_ent.oldorigin);

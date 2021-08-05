@@ -319,7 +319,7 @@ void SV_SpawnServer()
 		&svs.clients[0].ps, sizeof( svs.clients[0] ) );
 
 	sv.sound_precache[0] = pr_strings;
-	//sv.model_precache[0] = pr_strings; // PANZER TODO - uncomment this
+	sv.model_precache[0] = pr_strings;
 
 	//
 	// load the rest of the entities
@@ -525,6 +525,9 @@ void G_RunFrame( int levelTime ) {
 		if(!client->active || client->edict == NULL) {
 			continue;
 		}
+
+		client->ps.clientNum = i;
+
 		edict = svs.clients[i].edict;
 
 		if ( edict->v.fixangle )
