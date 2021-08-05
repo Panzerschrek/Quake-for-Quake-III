@@ -171,6 +171,7 @@ static void SV_ProcessIntermission(int intermissionType)
 			continue;
 
 		svs.clients[i].ps.pm_type = intermissionType;
+		svs.clients[i].ps.pm_time = sv.time; // Write just rounded seconds.
 	}
 }
 

@@ -66,7 +66,6 @@ typedef struct {
 	int			time;			// this is the time value that the client
 								// is rendering at.
 
-	int			completed_time; // latched at intermission start
 	int			faceanimtime;
 	int			item_gettime[32];	// cl.time of aquiring item, for blinking
 	char		levelname[40];	// for display on solo scoreboard

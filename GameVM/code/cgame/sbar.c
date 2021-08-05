@@ -1185,24 +1185,6 @@ void Sbar_DeathmatchOverlay (void)
 		if (k == cg.viewentity - 1)
 			Draw_CharacterScaled ( x - 8 * sb_scale, y, sb_scale, 12);
 
-#if 0
-{
-	int				total;
-	int				n, minutes, tens, units;
-
-	// draw time
-		total = cg.completed_time - s->entertime;
-		minutes = (int)total/60;
-		n = total - minutes*60;
-		tens = n/10;
-		units = n%10;
-
-		Com_sprintf (num, sizeof(num), "%3i:%i%i", minutes, tens, units);
-
-		Draw_String ( x+48 , y, num);
-}
-#endif
-
 	// draw name
 		Draw_StringScaled (x+64 * sb_scale, y, sb_scale, s->name);
 
@@ -1317,7 +1299,6 @@ Sbar_IntermissionOverlay
 */
 void Sbar_IntermissionOverlay (void)
 {
-	qhandle_t	pic;
 	int		dig;
 	int		num;
 	int		x_ofs;
@@ -1341,9 +1322,9 @@ void Sbar_IntermissionOverlay (void)
 	trap_R_DrawStretchPic (x_ofs + 0 * sb_scale, 56 * sb_scale, 160 * sb_scale, 144 * sb_scale, 0.0f, 0.0f, 1.0f, 1.0f, sbar.inter);
 
 // time
-	dig = cg.completed_time/60;
+	dig = cg.snap.ps.pm_time/60;
 	Sbar_IntermissionNumber (x_ofs + 160 * sb_scale, 64 * sb_scale, dig, 3, 0);
-	num = cg.completed_time - dig*60;
+	num = cg.snap.ps.pm_time - dig*60;
 	trap_R_DrawStretchPic (x_ofs + 234 * sb_scale,64 * sb_scale, colon_width * sb_scale, colon_height * sb_scale, 0.0f, 0.0f, 1.0f, 1.0f, sbar.sb_colon);
 	trap_R_DrawStretchPic (x_ofs + 246 * sb_scale,64 * sb_scale, num_width * sb_scale, num_height * sb_scale, 0.0f, 0.0f, 1.0f, 1.0f, sbar.sb_nums[0][num/10]);
 	trap_R_DrawStretchPic (x_ofs + 266 * sb_scale,64 * sb_scale, num_width * sb_scale, num_height * sb_scale, 0.0f, 0.0f, 1.0f, 1.0f, sbar.sb_nums[0][num%10]);
