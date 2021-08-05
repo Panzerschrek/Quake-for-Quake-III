@@ -278,7 +278,7 @@ void PF_bprint (void)
 	char		*s;
 
 	s = PF_VarString(0);
-	SV_BroadcastPrintf ("%s", s);
+	SV_SendPrint(-1, s);
 }
 
 /*
@@ -293,9 +293,10 @@ sprint(clientent, value)
 void PF_sprint (void)
 {
 	char		*s;
-	client_t	*client;
 	int			entnum;
-	
+
+	// PANZER TODO - create separate function for client text messages printing and call it from here and from messages processing code.
+
 	entnum = G_EDICTNUM(OFS_PARM0);
 	s = PF_VarString(1);
 	
@@ -305,10 +306,7 @@ void PF_sprint (void)
 		return;
 	}
 		
-	client = &svs.clients[entnum-1];
-		
-	MSG_WriteChar (&client->message,svc_print);
-	MSG_WriteString (&client->message, s );
+	SV_SendPrint(entnum-1, s);
 }
 
 
@@ -324,7 +322,6 @@ centerprint(clientent, value)
 void PF_centerprint (void)
 {
 	char		*s;
-	client_t	*client;
 	int			entnum;
 	
 	entnum = G_EDICTNUM(OFS_PARM0);
@@ -335,11 +332,9 @@ void PF_centerprint (void)
 		G_Printf ("tried to sprint to a non-client\n");
 		return;
 	}
-		
-	client = &svs.clients[entnum-1];
-		
-	MSG_WriteChar (&client->message,svc_centerprint);
-	MSG_WriteString (&client->message, s );
+
+	SV_SendCenterPrint(entnum-1, s);
+
 }
 
 
@@ -496,7 +491,8 @@ void PF_particle (void)
 	dir = G_VECTOR(OFS_PARM1);
 	color = G_FLOAT(OFS_PARM2);
 	count = G_FLOAT(OFS_PARM3);
-	SV_StartParticle (org, dir, color, count);
+
+	// PANZER TODO - start particles.
 }
 
 
@@ -513,7 +509,7 @@ void PF_ambientsound (void)
 	float		*pos;
 	float 		vol, attenuation;
 	int			soundnum, i;
-	edict_t		*eventEdict;
+	edict_t		*soundSourceEdict;
 
 	pos = G_VECTOR (OFS_PARM0);			
 	samp = G_STRING(OFS_PARM1);
@@ -532,25 +528,25 @@ void PF_ambientsound (void)
 	}
 
 	// Create separate entity for ambient sound.
-	eventEdict = ED_Alloc();
-	VectorCopy(pos, eventEdict->v.origin);
-	VectorCopy(pos, eventEdict->s.origin);
-	VectorCopy(pos, eventEdict->r.currentOrigin);
+	soundSourceEdict = ED_Alloc();
+	VectorCopy(pos, soundSourceEdict->v.origin);
+	VectorCopy(pos, soundSourceEdict->s.origin);
+	VectorCopy(pos, soundSourceEdict->r.currentOrigin);
 	for(i = 0; i < 3; ++i)
 	{
-		eventEdict->v.mins[i]= eventEdict->r.mins[i]= -64;
-		eventEdict->v.maxs[i]= eventEdict->r.maxs[i]= +64;
+		soundSourceEdict->v.mins[i]= soundSourceEdict->r.mins[i]= -64;
+		soundSourceEdict->v.maxs[i]= soundSourceEdict->r.maxs[i]= +64;
 	}
 
-	eventEdict->s.loopSound = qtrue; // use this field as ambient sound entity indicator.
+	soundSourceEdict->s.loopSound = qtrue; // use this field as ambient sound entity indicator.
 
 	// Reuse some fileds for event params.
-	eventEdict->s.weapon = soundnum;
-	eventEdict->s.legsAnim = vol * 255;
-	eventEdict->s.torsoAnim = attenuation;
-	eventEdict->r.svFlags = SVF_BROADCAST; // Prevent dropping of this event.
+	soundSourceEdict->s.weapon = soundnum;
+	soundSourceEdict->s.legsAnim = vol * 255;
+	soundSourceEdict->s.torsoAnim = attenuation;
+	soundSourceEdict->r.svFlags = SVF_BROADCAST; // Prevent dropping of this event.
 
-	trap_LinkEntity(eventEdict);
+	trap_LinkEntity(soundSourceEdict);
 }
 
 /*
@@ -762,17 +758,13 @@ void PF_stuffcmd (void)
 {
 	int		entnum;
 	char	*str;
-	client_t	*old;
 	
 	entnum = G_EDICTNUM(OFS_PARM0);
 	if (entnum < 1 || entnum > svs.maxclients)
 		PR_RunError ("Parm 0 not a client");
 	str = G_STRING(OFS_PARM1);	
 	
-	old = host_client;
-	host_client = &svs.clients[entnum-1];
-	Host_ClientCommands ("%s", str);
-	host_client = old;
+	SV_SendStuffText(entnum-1, str);
 }
 
 /*
@@ -1440,25 +1432,11 @@ int SV_ModelIndex (char *name);
 void PF_makestatic (void)
 {
 	edict_t	*ent;
-	int		i;
-	
+
 	ent = G_EDICT(OFS_PARM0);
 
-	MSG_WriteByte (&sv.signon,svc_spawnstatic);
-
-	MSG_WriteByte (&sv.signon, SV_ModelIndex(pr_strings + ent->v.model));
-
-	MSG_WriteByte (&sv.signon, ent->v.frame);
-	MSG_WriteByte (&sv.signon, ent->v.colormap);
-	MSG_WriteByte (&sv.signon, ent->v.skin);
-	for (i=0 ; i<3 ; i++)
-	{
-		MSG_WriteCoord(&sv.signon, ent->v.origin[i]);
-		MSG_WriteAngle(&sv.signon, ent->v.angles[i]);
-	}
-
-// throw the entity away now
-	ED_Free (ent);
+	// PANZER - just leave this entity as is.
+	// TODO - set flag for client-side animation?
 }
 
 //=============================================================================

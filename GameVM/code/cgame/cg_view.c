@@ -166,7 +166,6 @@ void CG_DrawActiveFrame( int serverTime, stereoFrame_t stereoView, qboolean demo
 
 	CG_AddViewWeapon( &cg.snap.ps );
 
-
 	cg.refdef.time = cg.time;
 	memcpy( cg.refdef.areamask, cg.snap.areamask, sizeof( cg.refdef.areamask ) );
 
@@ -175,5 +174,17 @@ void CG_DrawActiveFrame( int serverTime, stereoFrame_t stereoView, qboolean demo
 
 	trap_R_RenderScene( &cg.refdef );
 
-	Sbar_Draw();
+	if( cg.snap.ps.pm_type == PM_NORMAL )
+	{
+		Sbar_Draw();
+		DrawCrosshair();
+		DrawCenterPrint();
+	}
+	else if( cg.snap.ps.pm_type == PM_INTERMISSION )
+		Sbar_IntermissionOverlay();
+	else if( cg.snap.ps.pm_type == PM_INTERMISSION_FINALE )
+	{
+		Sbar_FinaleOverlay();
+		DrawCenterPrint();
+	}
 }

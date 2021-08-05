@@ -189,7 +189,6 @@ extern	edict_t		*sv_player;
 
 void SV_Init (void);
 
-void SV_StartParticle (vec3_t org, vec3_t dir, int color, int count);
 void SV_StartSound (edict_t *entity, int channel, char *sample, int volume,
     float attenuation);
 
@@ -199,6 +198,13 @@ void SV_SendClientMessages (void);
 void SV_ClearDatagram (void);
 
 int SV_ModelIndex (char *name);
+
+// -1 for broadcast.
+void SV_SendPrint(int clientNum, const char* text);
+void SV_SendCenterPrint(int clientNum, const char* text);
+void SV_SendStuffText(int clientNum, const char* text);
+
+void SV_ProcessMessages();
 
 void SV_SetIdealPitch (void);
 

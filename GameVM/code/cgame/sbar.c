@@ -88,6 +88,9 @@ void Sbar_Init (void)
 {
 	int		i;
 
+	sbar.complete = trap_R_RegisterShaderNoMip("gfx/complete.tga");
+	sbar.inter = trap_R_RegisterShaderNoMip("gfx/inter.tga");
+	sbar.finale = trap_R_RegisterShaderNoMip("gfx/finale.tga");
 	sbar.conchars = Draw_PicFromWad("conchars");
 
 	for (i=0 ; i<10 ; i++)
@@ -983,13 +986,6 @@ void Sbar_Draw (void)
 	Sbar_CalculateScale();
 	Sbar_CalculateLines();
 
-	// PANZER TODO - allow cursor customization.
-	Draw_CharacterScaled(
-		cg.refdef.x + cg.refdef.width  / 2 - 4,
-		cg.refdef.y + cg.refdef.height / 2 - 4,
-		1,
-		'+');
-
 	sb_updates++;
 
 	if (sb_lines > 24)
@@ -1326,37 +1322,114 @@ void Sbar_IntermissionOverlay (void)
 	int		num;
 	int		x_ofs;
 
+	const int colon_width = 16;
+	const int colon_height = 24;
+	const int num_width = 24;
+	const int num_height = 24;
+	const int slash_width = 16;
+	const int slash_height = 24;
+
 	if (cg.gametype == GAME_DEATHMATCH)
 	{
 		Sbar_DeathmatchOverlay ();
 		return;
 	}
-#if 0 // PANZER TODO - fix it
-	x_ofs = (cg.refdef.width - SBAR_WIDTH * sb_scale) >> 1;
-	pic = Draw_CachePic ("gfx/complete.lmp");
-	Draw_TransPicScaled (x_ofs + 64 * sb_scale, 24 * sb_scale, sb_scale, pic);
 
-	pic = Draw_CachePic ("gfx/inter.lmp");
-	Draw_TransPicScaled (x_ofs + 0 * sb_scale, 56 * sb_scale, sb_scale, pic);
+	x_ofs = (cg.refdef.width - SBAR_WIDTH * sb_scale) * 0.5f;
+	trap_R_DrawStretchPic (x_ofs + 64 * sb_scale, 24 * sb_scale, 192 * sb_scale, 24 * sb_scale, 0.0f, 0.0f, 1.0f, 1.0f, sbar.complete);
+
+	trap_R_DrawStretchPic (x_ofs + 0 * sb_scale, 56 * sb_scale, 160 * sb_scale, 144 * sb_scale, 0.0f, 0.0f, 1.0f, 1.0f, sbar.inter);
 
 // time
 	dig = cg.completed_time/60;
 	Sbar_IntermissionNumber (x_ofs + 160 * sb_scale, 64 * sb_scale, dig, 3, 0);
 	num = cg.completed_time - dig*60;
-	Draw_TransPicScaled (x_ofs + 234 * sb_scale,64 * sb_scale, sb_scale, sbar.sb_colon);
-	Draw_TransPicScaled (x_ofs + 246 * sb_scale,64 * sb_scale, sb_scale, sbar.sb_nums[0][num/10]);
-	Draw_TransPicScaled (x_ofs + 266 * sb_scale,64 * sb_scale, sb_scale, sbar.sb_nums[0][num%10]);
+	trap_R_DrawStretchPic (x_ofs + 234 * sb_scale,64 * sb_scale, colon_width * sb_scale, colon_height * sb_scale, 0.0f, 0.0f, 1.0f, 1.0f, sbar.sb_colon);
+	trap_R_DrawStretchPic (x_ofs + 246 * sb_scale,64 * sb_scale, num_width * sb_scale, num_height * sb_scale, 0.0f, 0.0f, 1.0f, 1.0f, sbar.sb_nums[0][num/10]);
+	trap_R_DrawStretchPic (x_ofs + 266 * sb_scale,64 * sb_scale, num_width * sb_scale, num_height * sb_scale, 0.0f, 0.0f, 1.0f, 1.0f, sbar.sb_nums[0][num%10]);
 
-	Sbar_IntermissionNumber (x_ofs + 160 * sb_scale, 104 * sb_scale, cg.stats[STAT_SECRETS], 3, 0);
-	Draw_TransPicScaled (x_ofs + 232 * sb_scale, 104 * sb_scale, sb_scale, sbar.sb_slash);
-	Sbar_IntermissionNumber (x_ofs + 240 * sb_scale, 104 * sb_scale, cg.stats[STAT_TOTALSECRETS], 3, 0);
+	Sbar_IntermissionNumber (x_ofs + 160 * sb_scale, 104 * sb_scale, cg.snap.ps.stats[Q3_STAT_SECRETS], 3, 0);
+	trap_R_DrawStretchPic (x_ofs + 232 * sb_scale, 104 * sb_scale, slash_width * sb_scale, slash_height * sb_scale, 0.0f, 0.0f, 1.0f, 1.0f, sbar.sb_slash);
+	Sbar_IntermissionNumber (x_ofs + 240 * sb_scale, 104 * sb_scale, cg.snap.ps.stats[Q3_STAT_TOTAL_SECRETS], 3, 0);
 
-	Sbar_IntermissionNumber (x_ofs + 160 * sb_scale, 144 * sb_scale, cg.stats[STAT_MONSTERS], 3, 0);
-	Draw_TransPicScaled (x_ofs + 232 * sb_scale, 144 * sb_scale, sb_scale, sbar.sb_slash);
-	Sbar_IntermissionNumber (x_ofs + 240 * sb_scale, 144 * sb_scale, cg.stats[STAT_TOTALMONSTERS], 3, 0);
-#endif
+	Sbar_IntermissionNumber (x_ofs + 160 * sb_scale, 144 * sb_scale, cg.snap.ps.stats[Q3_STAT_MONSTERS], 3, 0);
+	trap_R_DrawStretchPic (x_ofs + 232 * sb_scale, 144 * sb_scale, slash_width * sb_scale, slash_height * sb_scale, 0.0f, 0.0f, 1.0f, 1.0f, sbar.sb_slash);
+	Sbar_IntermissionNumber (x_ofs + 240 * sb_scale, 144 * sb_scale, cg.snap.ps.stats[Q3_STAT_TOTAL_MONSTERS], 3, 0);
 }
 
+void DrawCrosshair (void)
+{
+	// PANZER TODO - allow cursor customization.
+	Draw_CharacterScaled(
+		cg.refdef.x + cg.refdef.width  / 2 - 4,
+		cg.refdef.y + cg.refdef.height / 2 - 4,
+		1,
+		'+');
+}
+
+void DrawCenterPrint (void)
+{
+	int			lines;
+	const char*	str;
+	int			l;
+	int			j;
+	int			x, y;
+	int			remaining;
+	qboolean	intermission;
+
+	// PANZER TODO - allow centerprint time customization
+	int printspeed = 8;
+
+	intermission = cg.snap.ps.pm_type == PM_INTERMISSION || cg.snap.ps.pm_type == PM_INTERMISSION_FINALE || cg.snap.ps.pm_type == PM_INTERMISSION_CUTSCENE;
+
+	if(cg.centerPrintStartTime + 2000 < cg.time &&!intermission )
+		return;
+
+	lines = 1;
+	str = cg.centerPrintString;
+	while (*str)
+	{
+		if (*str == '\n')
+			lines++;
+		str++;
+	}
+
+	if (intermission)
+		remaining = printspeed * (cg.time - cg.centerPrintStartTime) / 1000.0;
+	else
+		remaining = 9999;
+
+	str = cg.centerPrintString;
+
+	if (lines <= 4)
+		y = cg.refdef.height*0.35;
+	else
+		y = 48 * sb_scale;
+
+	do
+	{
+	// scan the width of the line
+		for (l=0 ; l<40 ; l++)
+			if (str[l] == '\n' || !str[l])
+				break;
+		x = (cg.refdef.width - l*8)/2;
+		for (j=0 ; j<l ; j++, x+=8)
+		{
+			Draw_CharacterScaled (x, y, 1, str[j]);
+			if (!remaining--)
+				return;
+		}
+
+		y += 8;
+
+		while (*str && *str != '\n')
+			str++;
+
+		if (!*str)
+			break;
+		str++;		// skip the \n
+	} while (1);
+}
 
 /*
 ==================
@@ -1366,12 +1439,7 @@ Sbar_FinaleOverlay
 */
 void Sbar_FinaleOverlay (void)
 {
-#if 0 // PANZER TODO - fix it
-	qpic_t	*pic;
-
-	scr_copyeverything = 1;
-
-	pic = Draw_CachePic ("gfx/finale.lmp");
-	Draw_TransPic ( (cg.refdef.width-pic->width)/2, 16, pic);
-#endif
+	const int width = 288;
+	const int height = 24;
+	trap_R_DrawStretchPic ( (cg.refdef.width - sb_scale * width)/2, sb_scale * 16, width * sb_scale, height * sb_scale, 0.0f, 0.0f, 1.0f, 1.0f, sbar.finale);
 }

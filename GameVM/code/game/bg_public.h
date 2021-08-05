@@ -85,5 +85,12 @@ typedef enum {
 	Q3_STAT_MONSTERS,
 } statIndex_t;
 
+typedef enum {
+	PM_NORMAL,		// can accelerate and turn
+	PM_INTERMISSION,	// no movement or status bar
+	PM_INTERMISSION_FINALE,
+	PM_INTERMISSION_CUTSCENE,
+} pmtype_t;
+
 
 #define	EVENT_VALID_MSEC	300

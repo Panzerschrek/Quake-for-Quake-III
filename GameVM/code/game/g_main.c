@@ -254,9 +254,11 @@ void SV_SpawnServer()
 {
 	edict_t		*ent;
 	char		mapname[MAX_OSPATH];
+	char		mapname_corrected[MAX_OSPATH];
 	int			i;
 
 	trap_Cvar_VariableStringBuffer("mapname", mapname, sizeof(mapname));
+	Com_sprintf(mapname_corrected, sizeof(mapname_corrected), "maps/%s.bsp", mapname);
 
 	//
 	// make cvars consistant
@@ -286,6 +288,18 @@ void SV_SpawnServer()
 
 	sv.edicts = G_Alloc (sv.max_edicts*pr_edict_size);
 
+	sv.datagram.maxsize = sizeof(sv.datagram_buf);
+	sv.datagram.cursize = 0;
+	sv.datagram.data = sv.datagram_buf;
+
+	sv.reliable_datagram.maxsize = sizeof(sv.reliable_datagram_buf);
+	sv.reliable_datagram.cursize = 0;
+	sv.reliable_datagram.data = sv.reliable_datagram_buf;
+
+	sv.signon.maxsize = sizeof(sv.signon_buf);
+	sv.signon.cursize = 0;
+	sv.signon.data = sv.signon_buf;
+
 	sv.state = ss_loading;
 
 	// leave slots at start for clients only
@@ -312,7 +326,7 @@ void SV_SpawnServer()
 	//
 	ent = EDICT_NUM(0);
 	memset (&ent->v, 0, progs->entityfields * 4);
-	ent->v.model = ED_NewString (mapname) - pr_strings;
+	ent->v.model = ED_NewString (mapname_corrected) - pr_strings;
 	ent->v.solid = SOLID_BSP;
 	ent->v.movetype = MOVETYPE_PUSH;
 
@@ -475,6 +489,9 @@ void G_RunFrame( int levelTime ) {
 
 	// Run Quake1 physics (for all entities)
 	SV_Physics();
+
+	// Process messages generated via "MSG_Write*" functions, convert these messages into event entities.
+	SV_ProcessMessages();
 
 	// Free old events
 	for (i=0 ; i< sv.num_edicts; i++) {

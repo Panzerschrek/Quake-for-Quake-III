@@ -76,6 +76,9 @@ typedef struct {
 
 	scoreboard_t scores[32]; // for max clients.
 
+	int centerPrintStartTime;
+	char centerPrintString[1024];
+
 	// view rendering
 	refdef_t	refdef;
 	vec3_t		refdefViewAngles;		// will be converted to refdef.viewaxis
@@ -107,10 +110,21 @@ typedef struct {
 
 	// Sounds.
 	qhandle_t gameSounds[MAX_SOUNDS];
+
+	qhandle_t		sfx_wizhit;
+	qhandle_t		sfx_knighthit;
+	qhandle_t		sfx_tink1;
+	qhandle_t		sfx_ric1;
+	qhandle_t		sfx_ric2;
+	qhandle_t		sfx_ric3;
+	qhandle_t		sfx_r_exp3;
 } cgs_t;
 
 typedef struct
 {
+	qhandle_t		complete;
+	qhandle_t		inter;
+	qhandle_t		finale;
 	qhandle_t		conchars;
 
 	qhandle_t		sb_nums[2][11];
@@ -167,6 +181,7 @@ extern	vmCvar_t	teamplay;
 // cg_main.c
 //
 const char *CG_ConfigString( int index );
+void CG_StartMusic(int trackIndex, int loopTrackIndex);
 const char *CG_Argv( int arg );
 
 void QDECL CG_Printf( const char *msg, ... ) __attribute__ ((format (printf, 1, 2)));
@@ -224,6 +239,10 @@ void Sbar_Init (void);
 void Sbar_Draw (void);
 void Sbar_ShowScores (void);
 void Sbar_DontShowScores (void);
+void Sbar_IntermissionOverlay (void);
+void Sbar_FinaleOverlay (void);
+void DrawCrosshair (void);
+void DrawCenterPrint (void);
 
 
 //===============================================

@@ -50,6 +50,10 @@ char *ClientConnect( int clientNum, qboolean firstTime, qboolean isBot ) {
 	client->edict = ent;
 	client->ps.clientNum = clientNum;
 
+	client->message.data = client->msgbuf;
+	client->message.maxsize = sizeof(client->msgbuf);
+	client->message.allowoverflow = qfalse; // PANZER TODO - allow owerflow?
+
 	return NULL;
 }
 
