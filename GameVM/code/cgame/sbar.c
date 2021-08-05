@@ -492,8 +492,8 @@ void Sbar_SoloScoreboard (void)
 	Sbar_DrawString (8, 12, str);
 
 // time
-	minutes = cg.time / 60;
-	seconds = cg.time - 60*minutes;
+	minutes = cg.time / 1000 / 60;
+	seconds = cg.time / 1000 - 60*minutes;
 	tens = seconds / 10;
 	units = seconds - 10*tens;
 	Com_sprintf (str, sizeof(str), "Time :%3i:%i%i", minutes, tens, units);
@@ -721,7 +721,7 @@ void Sbar_DrawInventory (void)
 		 if (GetItems() & (1<<(24+i)))
 		 {
 			time = cg.item_gettime[24+i];
-			if (time && time > cg.time - 2 && flashon )
+			if (time && time > cg.time / 1000 - 2 && flashon )
 			{  // flash frame
 			   sb_updates = 0;
 			}
@@ -729,7 +729,7 @@ void Sbar_DrawInventory (void)
 			{
 			   Sbar_DrawPicStretched (288 + i*16, -16, addon_item_width, addon_item_height, sbar.hsb_items[i]);
 			}
-			if (time && time > cg.time - 2)
+			if (time && time > cg.time / 1000 - 2)
 			   sb_updates = 0;
 		 }
    }
