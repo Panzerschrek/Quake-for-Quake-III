@@ -1472,6 +1472,8 @@ PF_changelevel
 void PF_changelevel (void)
 {
 	char	*s;
+	char command[MAX_STRING_CHARS];
+
 
 // make sure we don't issue two changelevels
 	if (svs.changelevel_issued)
@@ -1479,7 +1481,9 @@ void PF_changelevel (void)
 	svs.changelevel_issued = qtrue;
 	
 	s = G_STRING(OFS_PARM0);
-	trap_Print (va("changelevel %s\n",s));
+
+	Com_sprintf(command, sizeof(command), "map %s\n", s);
+	trap_SendConsoleCommand( EXEC_APPEND, command );
 }
 
 
