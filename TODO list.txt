@@ -1,5 +1,4 @@
 Server:
-* Fix strange behaviour while walking on slopes
 * Fix dead bodies collision detection
 * Gimbal lock for player camera
 * Save/Load

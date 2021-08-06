@@ -175,7 +175,7 @@ returns the blocked flags (1 = floor, 2 = step / wall)
 ==================
 */
 #define	STOP_EPSILON	0.1
-
+#define OVERBOUNCE_DEFAULT 1.05f // PANZER - this is hack to prevent stucking on slopes.
 int ClipVelocity (vec3_t in, vec3_t normal, vec3_t out, float overbounce)
 {
 	float	backoff;
@@ -310,7 +310,7 @@ int SV_FlyMove (edict_t *ent, float time, trace_t *steptrace)
 //
 		for (i=0 ; i<numplanes ; i++)
 		{
-			ClipVelocity (original_velocity, planes[i], new_velocity, 1);
+			ClipVelocity (original_velocity, planes[i], new_velocity, OVERBOUNCE_DEFAULT);
 			for (j=0 ; j<numplanes ; j++)
 				if (j != i)
 				{
@@ -1056,7 +1056,7 @@ void SV_Physics_Toss (edict_t *ent)
 	if (ent->v.movetype == MOVETYPE_BOUNCE)
 		backoff = 1.5;
 	else
-		backoff = 1;
+		backoff = OVERBOUNCE_DEFAULT;
 
 	ClipVelocity (ent->v.velocity, trace.plane.normal, ent->v.velocity, backoff);
 
