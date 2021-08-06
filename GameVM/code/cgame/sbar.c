@@ -227,6 +227,8 @@ void Sbar_Init (void)
 		sbar.rsb_ammo[1] = Draw_PicFromWad ("r_ammomulti");
 		sbar.rsb_ammo[2] = Draw_PicFromWad ("r_ammoplasma");
 	}
+
+	sbar.draw_disc = Draw_PicFromWad("disc");
 }
 
 // Panzer - move here wrappers
