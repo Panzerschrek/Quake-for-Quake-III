@@ -61,6 +61,8 @@ vmCvar_t	sv_aim;
 vmCvar_t	cl_rollspeed;
 vmCvar_t	cl_rollangle;
 
+vmCvar_t	g_registered;
+
 static cvarTable_t		gameCvarTable[] = {
 	// noset vars
 	{ NULL, "gamename", GAMEVERSION , CVAR_SERVERINFO | CVAR_ROM, 0, qfalse  },
@@ -97,6 +99,8 @@ static cvarTable_t		gameCvarTable[] = {
 	{ &cl_rollspeed, "cl_rollspeed", "200", CVAR_SERVERINFO | CVAR_ARCHIVE, 0 },
 	{ &cl_rollangle, "cl_rollangle", "2.0", CVAR_SERVERINFO | CVAR_ARCHIVE, 0 },
 
+	// PANZER TODO - know exact version (trial/registered). Or maybe just say "funck you" to Bethesda and treat the game as registered only?
+	{ &g_registered, "registered", "1.0", CVAR_ARCHIVE, 0 },
 };
 
 static int gameCvarTableSize = ARRAY_LEN( gameCvarTable );
