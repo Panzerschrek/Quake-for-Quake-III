@@ -545,17 +545,22 @@ void R_RocketTrail (vec3_t start, vec3_t end, int type)
 	}
 }
 
+static polyVert_t part_polys_vertices[MAX_PARTICLES * 4];
+static int num_part_polys;
+
 static void R_StartParticles()
 {
+	num_part_polys = 0;
 }
 
-static const vec3_t quad_delta[4] = { { -1, -1, 0 }, { -1, +1, 0 }, { +1, +1, 0 }, { +1, -1, 0 } };
 
 static void R_DrawParticle(particle_t* p)
 {
 	int i, j;
-	polyVert_t verts[4];
+	polyVert_t *verts;
+	static const vec3_t quad_delta[4] = { { -1, -1, 0 }, { -1, +1, 0 }, { +1, +1, 0 }, { +1, -1, 0 } };
 
+	verts= part_polys_vertices + num_part_polys * 4;
 	for(i= 0; i < 4; ++i)
 	{
 		for( j= 0; j < 3; ++j )
@@ -574,11 +579,12 @@ static void R_DrawParticle(particle_t* p)
 		verts[i].st[1]= (quad_delta[i][1] + 1.0f) * 0.5f;
 	}
 
-	trap_R_AddPolyToScene(cgs.particle, 4, verts);
+	++num_part_polys;
 }
 
 static void R_EndParticles()
 {
+	trap_R_AddPolysToScene(cgs.particle, 4, part_polys_vertices, num_part_polys);
 }
 
 /*
@@ -596,6 +602,8 @@ void R_DrawParticles (void)
 	float			time1;
 	float			dvel;
 	float			frametime;
+
+	R_StartParticles();
 	
 	frametime = cg.frametime / 1000.0f;
 	time3 = frametime * 15;
@@ -691,5 +699,7 @@ void R_DrawParticles (void)
 			break;
 		}
 	}
+
+	R_EndParticles();
 }
 
