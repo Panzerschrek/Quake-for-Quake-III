@@ -287,6 +287,7 @@ void CG_DrawActiveFrame( int serverTime, stereoFrame_t stereoView, qboolean demo
 
 	CG_AddEntities();
 	CG_AndAddTEnts();
+	R_DrawParticles();
 
 	// build cg.refdef
 	if( cg.snap.ps.pm_type == PM_NORMAL )

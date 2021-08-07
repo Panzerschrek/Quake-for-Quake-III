@@ -274,7 +274,13 @@ void CG_ParseServerinfo( void );
 // r_part.c
 //
 
+void R_BlobExplosion (vec3_t org);
+void R_ParticleExplosion (vec3_t org);
+void R_ParticleExplosion2 (vec3_t org, int colorStart, int colorLength);
 void R_RunParticleEffect (vec3_t org, vec3_t dir, int color, int count);
+void R_LavaSplash (vec3_t org);
+void R_TeleportSplash (vec3_t org);
+void R_DrawParticles();
 
 //
 // sbar.c
