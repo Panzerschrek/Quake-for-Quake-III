@@ -471,14 +471,15 @@ bool_t model_mdl_load(void *filedata, size_t filesize, model_t *out_model, char 
 		{
 			unsigned char c = skintexstart[i][j];
 
+			// PANZER - save original color for both non-fullbright/fullbright pixels.
+			mesh->skins[i].components[SKIN_DIFFUSE]->pixels[j*4+0] = palette_quake.rgb[c*3+0];
+			mesh->skins[i].components[SKIN_DIFFUSE]->pixels[j*4+1] = palette_quake.rgb[c*3+1];
+			mesh->skins[i].components[SKIN_DIFFUSE]->pixels[j*4+2] = palette_quake.rgb[c*3+2];
+			mesh->skins[i].components[SKIN_DIFFUSE]->pixels[j*4+3] = 255;
+
+			// PANZER - write only fullbright pixels into fullbright skin.
 			if (palette_quake.fullbright_flags[c >> 5] & (1U << (c & 31)))
 			{
-			/* fullbright */
-				mesh->skins[i].components[SKIN_DIFFUSE]->pixels[j*4+0] = 0;
-				mesh->skins[i].components[SKIN_DIFFUSE]->pixels[j*4+1] = 0;
-				mesh->skins[i].components[SKIN_DIFFUSE]->pixels[j*4+2] = 0;
-				mesh->skins[i].components[SKIN_DIFFUSE]->pixels[j*4+3] = 255;
-
 				mesh->skins[i].components[SKIN_FULLBRIGHT]->pixels[j*4+0] = palette_quake.rgb[c*3+0];
 				mesh->skins[i].components[SKIN_FULLBRIGHT]->pixels[j*4+1] = palette_quake.rgb[c*3+1];
 				mesh->skins[i].components[SKIN_FULLBRIGHT]->pixels[j*4+2] = palette_quake.rgb[c*3+2];
@@ -486,12 +487,6 @@ bool_t model_mdl_load(void *filedata, size_t filesize, model_t *out_model, char 
 			}
 			else
 			{
-			/* normal colour */
-				mesh->skins[i].components[SKIN_DIFFUSE]->pixels[j*4+0] = palette_quake.rgb[c*3+0];
-				mesh->skins[i].components[SKIN_DIFFUSE]->pixels[j*4+1] = palette_quake.rgb[c*3+1];
-				mesh->skins[i].components[SKIN_DIFFUSE]->pixels[j*4+2] = palette_quake.rgb[c*3+2];
-				mesh->skins[i].components[SKIN_DIFFUSE]->pixels[j*4+3] = 255;
-
 				mesh->skins[i].components[SKIN_FULLBRIGHT]->pixels[j*4+0] = 0;
 				mesh->skins[i].components[SKIN_FULLBRIGHT]->pixels[j*4+1] = 0;
 				mesh->skins[i].components[SKIN_FULLBRIGHT]->pixels[j*4+2] = 0;

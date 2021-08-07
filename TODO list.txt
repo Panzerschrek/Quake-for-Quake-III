@@ -28,6 +28,8 @@ Shaders:
 Data export:
 * Sprites
 * BSP items models (health boxes, ammo boxes)
+* Properly export textures with fullbright pixels
+* Properly export models textures with fullbright pixels
 
 Maps:
 * Fix missing light* entities
