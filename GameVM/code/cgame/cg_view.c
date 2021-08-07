@@ -139,7 +139,7 @@ void CG_AddEntities()
 	for ( num = 0 ; num < cg.snap.numEntities ; num++ ) {
 		in_ent = &cg.snap.entities[num];
 
-		if( in_ent->number == cg.snap.ps.clientNum + 1 )
+		if( in_ent->number == cg.viewentity )
 			continue; // Do not draw player itself.
 
 		memset (&out_ent, 0, sizeof(out_ent));
@@ -161,6 +161,75 @@ void CG_AddEntities()
 			CG_SetAmbientSound( in_ent );
 	}
 }
+void CG_AndAddTEnts (void)
+{
+	int			i;
+	beam_t		*b;
+	vec3_t		dist, org;
+	float		d;
+	refEntity_t	out_ent;
+	vec3_t		angles;
+	float		yaw, pitch;
+	float		forward;
+
+// update lightning
+	for (i=0, b=cg_beams ; i< MAX_BEAMS ; i++, b++)
+	{
+		if (!b->model || b->endtime < cg.time)
+			continue;
+
+	// if coming from the player, update the start position
+		if (b->entity == cg.viewentity)
+		{
+			VectorCopy (cg.snap.ps.origin, b->start);
+		}
+
+	// calculate pitch and yaw
+		VectorSubtract (b->end, b->start, dist);
+
+		if (dist[1] == 0 && dist[0] == 0)
+		{
+			yaw = 0;
+			if (dist[2] > 0)
+				pitch = 90;
+			else
+				pitch = 270;
+		}
+		else
+		{
+			yaw = (int) (atan2(dist[1], dist[0]) * 180 / M_PI);
+			if (yaw < 0)
+				yaw += 360;
+
+			forward = sqrt (dist[0]*dist[0] + dist[1]*dist[1]);
+			pitch = (int) (atan2(dist[2], forward) * 180 / M_PI);
+			if (pitch < 0)
+				pitch += 360;
+		}
+
+	// add new entities for the lightning
+		VectorCopy (b->start, org);
+		d = VectorNormalize(dist);
+		while (d > 0)
+		{
+			memset (&out_ent, 0, sizeof(out_ent));
+			VectorCopy( org, out_ent.origin);
+			out_ent.hModel = b->model;
+			angles[0] = pitch;
+			angles[1] = yaw;
+			angles[2] = rand()%360;
+			AnglesToAxis( angles, out_ent.axis );
+
+			trap_R_AddRefEntityToScene(&out_ent);
+
+			for (i=0 ; i<3 ; i++)
+				org[i] += dist[i]*30;
+			d -= 30;
+		}
+	}
+
+}
+
 
 /*
 ==============
@@ -210,10 +279,13 @@ void CG_DrawActiveFrame( int serverTime, stereoFrame_t stereoView, qboolean demo
 	// let the client system know what our weapon and zoom settings are
 	trap_SetUserCmdValue( cg.weaponSelect, 1.0f );
 
-	CG_AddEntities();
-
 	// set up cg.snap and possibly cg.nextSnap
 	CG_ProcessSnapshots();
+
+	cg.viewentity = cg.snap.ps.clientNum + 1;
+
+	CG_AddEntities();
+	CG_AndAddTEnts();
 
 	// build cg.refdef
 	if( cg.snap.ps.pm_type == PM_NORMAL )

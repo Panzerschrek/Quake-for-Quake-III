@@ -152,6 +152,7 @@ static void SV_ProcessTEnt()
 		pos2[2] = MSG_ReadCoord ();
 		eventEntity = G_CreateEventEdict(pos, svc_temp_entity);
 		eventEntity->s.eType = type;
+		eventEntity->s.constantLight = ent;
 		VectorCopy(pos2, eventEntity->s.origin2);
 		break;
 

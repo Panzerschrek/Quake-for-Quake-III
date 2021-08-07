@@ -73,10 +73,11 @@ Q_EXPORT intptr_t vmMain( int command, int arg0, int arg1, int arg2, int arg3, i
 // PANZER TODO - init this.
 qboolean		standard_quake, rogue, hipnotic;
 
-cg_t				cg;
-cgs_t				cgs;
-centity_t			cg_entities[MAX_GENTITIES];
-sbar_t				sbar;
+cg_t			cg;
+cgs_t			cgs;
+centity_t		cg_entities[MAX_GENTITIES];
+beam_t			cg_beams[MAX_BEAMS];
+sbar_t			sbar;
 
 vmCvar_t	cg_timescaleFadeEnd;
 vmCvar_t	cg_timescaleFadeSpeed;
@@ -275,6 +276,12 @@ static void CG_RegisterResources( void ) {
 		cgs.gameSounds[i] = trap_S_RegisterSound( soundFileName, qfalse );
 	}
 
+	// Register models for client entities.
+	cgs.bolt = trap_R_RegisterModel("progs/bolt.md3");
+	cgs.bolt2 = trap_R_RegisterModel("progs/bolt2.md3");
+	cgs.bolt3 = trap_R_RegisterModel("progs/bolt3.md3");
+	cgs.beam = trap_R_RegisterModel("progs/beam.md3");
+
 	{
 		const char* musicIndexStr = CG_ConfigString(CS_MUSIC);
 		if(musicIndexStr && musicIndexStr[0] )
@@ -326,6 +333,7 @@ void CG_Init( int serverMessageNum, int serverCommandSequence, int clientNum ) {
 	memset( &cgs, 0, sizeof( cgs ) );
 	memset( &cg, 0, sizeof( cg ) );
 	memset( cg_entities, 0, sizeof( cg_entities ) );
+	memset (cg_beams, 0, sizeof(cg_beams));
 
 	cg.clientNum = clientNum;
 

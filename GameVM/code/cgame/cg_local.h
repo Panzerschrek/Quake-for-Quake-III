@@ -107,6 +107,12 @@ typedef struct {
 	// Separate models.
 	qhandle_t		gameModels[MAX_MODELS];
 
+	// Client entities models
+	qhandle_t		bolt;
+	qhandle_t		bolt2;
+	qhandle_t		bolt3;
+	qhandle_t		beam;
+
 	// Sounds.
 	qhandle_t gameSounds[MAX_SOUNDS];
 
@@ -118,6 +124,15 @@ typedef struct {
 	qhandle_t		sfx_ric3;
 	qhandle_t		sfx_r_exp3;
 } cgs_t;
+
+#define	MAX_BEAMS	24
+typedef struct
+{
+	int			entity;
+	qhandle_t	model;
+	int			endtime;
+	vec3_t		start, end;
+} beam_t;
 
 typedef struct
 {
@@ -166,6 +181,7 @@ typedef struct
 extern	cgs_t			cgs;
 extern	cg_t			cg;
 extern	centity_t		cg_entities[MAX_GENTITIES];
+extern	beam_t			cg_beams[MAX_BEAMS];
 extern sbar_t			sbar;
 
 extern	vmCvar_t		cg_timescaleFadeEnd;

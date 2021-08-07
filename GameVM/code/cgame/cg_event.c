@@ -53,9 +53,40 @@ void CG_SetAmbientSound( entityState_t *ent )
 	trap_S_AddLoopingSound(ent->number, ent->origin, vec3_origin, cgs.gameSounds[soundNum]);
 }
 
-static void CL_ProcessBeam( entityState_t *ent, const char* modelName )
+static void CG_ProcessBeam( entityState_t *ent, qhandle_t model )
 {
-	// PANZER TODO
+	beam_t	*b;
+	int		i;
+	int		entityNum;
+
+	entityNum= ent->constantLight;
+
+	// override any beam with the same entity
+	for (i=0, b=cg_beams ; i< MAX_BEAMS ; i++, b++)
+		if (b->entity == entityNum)
+		{
+			b->entity = entityNum;
+			b->model = model;
+			b->endtime = cg.time + 200;
+			VectorCopy (ent->origin, b->start);
+			VectorCopy (ent->origin2, b->end);
+			return;
+		}
+
+	// find a free beam
+	for (i=0, b=cg_beams ; i< MAX_BEAMS ; i++, b++)
+	{
+		if (!b->model || b->endtime < cg.time)
+		{
+			b->entity = entityNum;
+			b->model = model;
+			b->endtime = cg.time + 200;
+			VectorCopy (ent->origin, b->start);
+			VectorCopy (ent->origin2, b->end);
+			return;
+		}
+	}
+	Com_Printf ("beam list overflow!\n");
 }
 
 static void CG_ProcessTEnt( entityState_t *ent )
@@ -131,20 +162,20 @@ static void CG_ProcessTEnt( entityState_t *ent )
 		break;
 
 	case TE_LIGHTNING1:				// lightning bolts
-		CL_ProcessBeam (ent, "progs/bolt.mdl");
+		CG_ProcessBeam (ent, cgs.bolt);
 		break;
 
 	case TE_LIGHTNING2:				// lightning bolts
-		CL_ProcessBeam (ent, "progs/bolt2.mdl");
+		CG_ProcessBeam (ent, cgs.bolt2);
 		break;
 
 	case TE_LIGHTNING3:				// lightning bolts
-		CL_ProcessBeam (ent, "progs/bolt3.mdl");
+		CG_ProcessBeam (ent, cgs.bolt3);
 		break;
 
 // PGM 01/21/97
 	case TE_BEAM:				// grappling hook beam
-		CL_ProcessBeam (ent, "progs/beam.mdl");
+		CG_ProcessBeam (ent, cgs.beam);
 		break;
 // PGM 01/21/97
 
