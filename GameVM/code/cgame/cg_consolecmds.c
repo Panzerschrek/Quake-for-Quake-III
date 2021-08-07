@@ -85,4 +85,7 @@ void CG_InitConsoleCommands( void ) {
 	for ( i = 0 ; i < ARRAY_LEN( commands ) ; i++ ) {
 		trap_AddCommand( commands[i].cmd );
 	}
+
+	// For server.
+	trap_AddCommand ("noclip");
 }
