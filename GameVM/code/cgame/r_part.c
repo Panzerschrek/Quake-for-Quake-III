@@ -570,7 +570,7 @@ static void R_DrawParticle(particle_t* p)
 		verts[i].st[1]= (quad_delta[i][1] + 1.0f) * 0.5f;
 	}
 
-	trap_R_AddPolyToScene(sbar.draw_disc, 4, verts);
+	trap_R_AddPolyToScene(cgs.particle, 4, verts);
 }
 
 static void R_EndParticles()

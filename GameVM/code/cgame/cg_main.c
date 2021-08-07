@@ -288,6 +288,8 @@ static void CG_RegisterResources( void ) {
 	cgs.bolt3 = trap_R_RegisterModel("progs/bolt3.md3");
 	cgs.beam = trap_R_RegisterModel("progs/beam.md3");
 
+	cgs.particle = trap_R_RegisterShader("textures/particle");
+
 	{
 		const char* musicIndexStr = CG_ConfigString(CS_MUSIC);
 		if(musicIndexStr && musicIndexStr[0] )

@@ -132,6 +132,9 @@ typedef struct {
 	qhandle_t		bolt3;
 	qhandle_t		beam;
 
+	// Various textures.
+	qhandle_t		particle;
+
 	// Sounds.
 	qhandle_t gameSounds[MAX_SOUNDS];
 
