@@ -486,13 +486,19 @@ void PF_particle (void)
 	float		*org, *dir;
 	float		color;
 	float		count;
+	edict_t*	event_edict;
 			
 	org = G_VECTOR(OFS_PARM0);
 	dir = G_VECTOR(OFS_PARM1);
 	color = G_FLOAT(OFS_PARM2);
 	count = G_FLOAT(OFS_PARM3);
 
-	// PANZER TODO - start particles.
+	event_edict = G_CreateEventEdict(org, svc_particle);
+
+	// Reuse some fileds for event params.
+	event_edict->s.weapon = color;
+	event_edict->s.constantLight = count;
+	VectorCopy(dir, event_edict->s.origin2);
 }
 
 

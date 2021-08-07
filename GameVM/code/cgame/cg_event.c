@@ -53,6 +53,11 @@ void CG_SetAmbientSound( entityState_t *ent )
 	trap_S_AddLoopingSound(ent->number, ent->origin, vec3_origin, cgs.gameSounds[soundNum]);
 }
 
+static void CG_ProcessParticle( entityState_t *ent )
+{
+	R_RunParticleEffect(ent->origin, ent->origin2, ent->weapon, ent->constantLight);
+}
+
 static void CG_ProcessBeam( entityState_t *ent, qhandle_t model )
 {
 	beam_t	*b;
@@ -212,6 +217,9 @@ void CG_CheckEvents( entityState_t *ent )
 	{
 	case svc_sound:
 		CG_StartSoundEvent(ent);
+		break;
+	case svc_particle:
+		CG_ProcessParticle(ent);
 		break;
 	case svc_temp_entity:
 		CG_ProcessTEnt(ent);
