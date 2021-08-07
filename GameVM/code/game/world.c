@@ -136,6 +136,8 @@ void SV_LinkEdict (edict_t *ent, qboolean touch_triggers)
 		ent->r.maxs[1] += 15;
 	}
 
+	ent->r.ownerNum = ent->v.owner != 0 ? ent->v.owner : ENTITYNUM_NONE;
+
 	trap_LinkEntity(ent);
 
 // if touch_triggers, touch all entities at this node and decend for more
@@ -182,18 +184,14 @@ SV_Move
 trace_t SV_Move (vec3_t start, vec3_t mins, vec3_t maxs, vec3_t end, int type, edict_t *passedict)
 {
 	trace_t		trace;
-	vec3_t		offset;
-	vec3_t		start_l, end_l;
 	int			contentmask;
+	int			passEdictNum;
 
 // fill in a default trace
 	memset (&trace, 0, sizeof(trace_t));
 	trace.fraction = 1;
 	trace.allsolid = qtrue;
 	VectorCopy (end, trace.endpos);
-
-	VectorSubtract (start, offset, start_l);
-	VectorSubtract (end, offset, end_l);
 
 	// TODO - check these values.
 	if(type == MOVE_NORMAL)
@@ -205,7 +203,20 @@ trace_t SV_Move (vec3_t start, vec3_t mins, vec3_t maxs, vec3_t end, int type, e
 	else
 		contentmask = CONTENTS_SOLID;
 
-	trap_Trace(&trace, start, mins, maxs, end, passedict == NULL ? ENTITYNUM_NONE : NUM_FOR_EDICT(passedict), contentmask);
+	if(passedict == NULL)
+		passEdictNum= ENTITYNUM_NONE;
+	if(passedict->v.owner != 0)
+	{
+		passEdictNum= NUM_FOR_EDICT(PROG_TO_EDICT(passedict->v.owner));
+		passedict->r.ownerNum = passEdictNum;
+	}
+	else
+	{
+		passEdictNum= NUM_FOR_EDICT(passedict);
+		passedict->r.ownerNum= ENTITYNUM_NONE;
+	}
+
+	trap_Trace(&trace, start, mins, maxs, end, passEdictNum, contentmask);
 
 	if(trace.entityNum == ENTITYNUM_WORLD)
 		trace.entityNum = 0;
