@@ -37,19 +37,7 @@ int			r_numparticles;
 
 vec3_t			r_pright, r_pup, r_ppn;
 
-#ifdef GLQUAKE
-
-// 5 * 4 = 20 bytes struct
-// 20 * 3 = 60 bytes per particle
-typedef struct particels_vertex_s
-{
-	float			v[3];
-	unsigned int	color; // packed 4 bytes of rgba
-	short			tc[2];
-} particle_vertex_t;
-
-static particle_vertex_t	*particles_buffer;
-#endif
+byte palette[768];
 
 
 /*
@@ -59,8 +47,18 @@ R_InitParticles
 */
 void R_InitParticles (void)
 {
+	fileHandle_t f;
+
 	r_numparticles = MAX_PARTICLES;
 	R_ClearParticles();
+
+	trap_FS_FOpenFile("palette.lmp", &f, FS_READ );
+	if( !f )
+		Com_Error(ERR_FATAL, "Failed to open palette.lmp");
+
+	trap_FS_Read(palette, sizeof(palette), f);
+	trap_FS_FCloseFile(f);
+
 }
 
 /*
@@ -560,8 +558,9 @@ static void R_DrawParticle(particle_t* p)
 
 	for(i= 0; i < 4; ++i)
 	{
-		verts[i].modulate[0]= verts[i].modulate[1]= verts[i].modulate[2]= 255;
-		verts[i].modulate[3]= 128;
+		for( j= 0; j < 3; ++j )
+			verts[i].modulate[j]= palette[p->color*3 + j];
+		verts[i].modulate[3]= 255;
 
 		for( j= 0; j < 3; ++j )
 			verts[i].xyz[j]= p->org[j] + quad_delta[i][j] * 10.0;
