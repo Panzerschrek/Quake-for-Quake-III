@@ -7,7 +7,6 @@ Client:
 * Fix deathmatch scoreborad rawing code
 * Dynamic lights
 * Particles
-* Underwater view
 * Damage-based view roll changes
 * View bobbing
 * Client-side view roll calculation (as in original Quake)
@@ -17,6 +16,7 @@ Client:
 * Addons (rogue/hipnotic) support in status bar
 * Status bar weapons blinking on pick-up
 * Rocket trails
+* Improved underwater view - much closer to original
 
 Menu UI:
 

@@ -110,6 +110,24 @@ static void CG_CalcIntermissionViewValues( void ) {
 	CG_CalcFov();
 }
 
+#define	WAVE_AMPLITUDE	1
+#define	WAVE_FREQUENCY	0.4
+static int CorrectUnwderwaterView(void) {
+	int inwater;
+	float v, phase;
+
+	inwater = ( trap_CM_PointContents( cg.refdef.vieworg, 0 ) & ( CONTENTS_WATER | CONTENTS_SLIME | CONTENTS_LAVA ) ) != 0;
+	if(inwater )
+	{
+		phase = cg.time / 1000.0 * WAVE_FREQUENCY * M_PI * 2;
+		v = WAVE_AMPLITUDE * sin( phase );
+		cg.refdef.fov_x += v;
+		cg.refdef.fov_y -= v;
+	}
+
+	return inwater;
+}
+
 void CG_AddEntities()
 {
 	int				num;
@@ -175,6 +193,8 @@ void CG_AddViewWeapon( playerState_t *ps ) {
 
 void CG_DrawActiveFrame( int serverTime, stereoFrame_t stereoView, qboolean demoPlayback ) {
 
+	int inwater;
+
 	cg.time = serverTime;
 
 	// update cvars
@@ -201,6 +221,8 @@ void CG_DrawActiveFrame( int serverTime, stereoFrame_t stereoView, qboolean demo
 	else
 		CG_CalcIntermissionViewValues();
 
+	inwater = CorrectUnwderwaterView();
+
 	if( cg.snap.ps.pm_type == PM_NORMAL )
 		CG_AddViewWeapon( &cg.snap.ps );
 
@@ -208,7 +230,7 @@ void CG_DrawActiveFrame( int serverTime, stereoFrame_t stereoView, qboolean demo
 	memcpy( cg.refdef.areamask, cg.snap.areamask, sizeof( cg.refdef.areamask ) );
 
 	// update audio positions
-	trap_S_Respatialize( cg.snap.ps.clientNum, cg.refdef.vieworg, cg.refdef.viewaxis, 0 );
+	trap_S_Respatialize( cg.snap.ps.clientNum, cg.refdef.vieworg, cg.refdef.viewaxis, inwater );
 
 	trap_R_RenderScene( &cg.refdef );
 
