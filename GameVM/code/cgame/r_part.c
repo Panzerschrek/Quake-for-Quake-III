@@ -19,16 +19,12 @@ Foundation, Inc., 59 Temple Place - Suite 330, Boston, MA  02111-1307, USA.
 
 */
 
-#include "quakedef.h"
-#include "r_local.h"
+#include "cg_local.h"
 
 #define MAX_PARTICLES			2048	// default max # of particles at one
 										//  time
 #define ABSOLUTE_MIN_PARTICLES	512		// no fewer than this no matter what's
 										//  on the command line
-
-// Size of particle in world space
-cvar_t	r_particle_size = { "r_particle_size", "2", true };
 
 int		ramp1[8] = {0x6f, 0x6d, 0x6b, 0x69, 0x67, 0x65, 0x63, 0x61};
 int		ramp2[8] = {0x6f, 0x6e, 0x6d, 0x6c, 0x6b, 0x6a, 0x68, 0x66};
@@ -36,7 +32,7 @@ int		ramp3[8] = {0x6d, 0x6b, 6, 5, 4, 3};
 
 particle_t	*active_particles, *free_particles;
 
-particle_t	*particles;
+particle_t	particles[MAX_PARTICLES];
 int			r_numparticles;
 
 vec3_t			r_pright, r_pup, r_ppn;
@@ -63,74 +59,8 @@ R_InitParticles
 */
 void R_InitParticles (void)
 {
-	int		i;
-
-	Cvar_RegisterVariable( &r_particle_size );
-
-	i = COM_CheckParm ("-particles");
-
-	if (i)
-	{
-		r_numparticles = (int)(Q_atoi(com_argv[i+1]));
-		if (r_numparticles < ABSOLUTE_MIN_PARTICLES)
-			r_numparticles = ABSOLUTE_MIN_PARTICLES;
-	}
-	else
-	{
-		r_numparticles = MAX_PARTICLES;
-	}
-
-	particles = (particle_t *)
-			Hunk_AllocName (r_numparticles * sizeof(particle_t), "particles");
-
-#ifdef GLQUAKE
-	particles_buffer = (particle_vertex_t *)
-			Hunk_AllocName( r_numparticles * sizeof(particle_vertex_t) * 3, "partvert" );
-#endif
+	r_numparticles = MAX_PARTICLES;
 }
-
-#ifdef QUAKE2
-void R_DarkFieldParticles (entity_t *ent)
-{
-	int			i, j, k;
-	particle_t	*p;
-	float		vel;
-	vec3_t		dir;
-	vec3_t		org;
-
-	org[0] = ent->origin[0];
-	org[1] = ent->origin[1];
-	org[2] = ent->origin[2];
-	for (i=-16 ; i<16 ; i+=8)
-		for (j=-16 ; j<16 ; j+=8)
-			for (k=0 ; k<32 ; k+=8)
-			{
-				if (!free_particles)
-					return;
-				p = free_particles;
-				free_particles = p->next;
-				p->next = active_particles;
-				active_particles = p;
-		
-				p->die = cl.time + 0.2 + (rand()&7) * 0.02;
-				p->color = 150 + rand()%6;
-				p->type = pt_slowgrav;
-				
-				dir[0] = j*8;
-				dir[1] = i*8;
-				dir[2] = k*8;
-	
-				p->org[0] = org[0] + i + (rand()&3);
-				p->org[1] = org[1] + j + (rand()&3);
-				p->org[2] = org[2] + k + (rand()&3);
-	
-				VectorNormalize (dir);						
-				vel = 50 + (rand()&63);
-				VectorScale (dir, vel, p->vel);
-			}
-}
-#endif
-
 
 /*
 ===============
@@ -145,8 +75,8 @@ float	beamlength = 16;
 vec3_t	avelocity = {23, 7, 3};
 float	partstep = 0.01;
 float	timescale = 0.01;
-
-void R_EntityParticles (entity_t *ent)
+#if 0 // PANZER TODO -fix it
+void R_EntityParticles (entityState_t *ent)
 {
 	int			count;
 	int			i;
@@ -159,22 +89,22 @@ void R_EntityParticles (entity_t *ent)
 	dist = 64;
 	count = 50;
 
-if (!avelocities[0][0])
-{
-for (i=0 ; i<NUMVERTEXNORMALS*3 ; i++)
-avelocities[0][i] = (rand()&255) * 0.01;
-}
+	if (!avelocities[0][0])
+	{
+		for (i=0 ; i<NUMVERTEXNORMALS*3 ; i++)
+		avelocities[0][i] = (rand()&255) * 0.01;
+	}
 
 
 	for (i=0 ; i<NUMVERTEXNORMALS ; i++)
 	{
-		angle = cl.time * avelocities[i][0];
+		angle = cg.time / 1000.0f * avelocities[i][0];
 		sy = sin(angle);
 		cy = cos(angle);
-		angle = cl.time * avelocities[i][1];
+		angle = cg.time / 1000.0f * avelocities[i][1];
 		sp = sin(angle);
 		cp = cos(angle);
-		angle = cl.time * avelocities[i][2];
+		angle = cg.time / 1000.0f * avelocities[i][2];
 		sr = sin(angle);
 		cr = cos(angle);
 	
@@ -189,7 +119,7 @@ avelocities[0][i] = (rand()&255) * 0.01;
 		p->next = active_particles;
 		active_particles = p;
 
-		p->die = cl.time + 0.01;
+		p->die = cg.time / 1000.0f + 0.01;
 		p->color = 0x6f;
 		p->type = pt_explode;
 		
@@ -198,7 +128,7 @@ avelocities[0][i] = (rand()&255) * 0.01;
 		p->org[2] = ent->origin[2] + r_avertexnormals[i][2]*dist + forward[2]*beamlength;			
 	}
 }
-
+#endif
 
 /*
 ===============
@@ -217,55 +147,6 @@ void R_ClearParticles (void)
 	particles[r_numparticles-1].next = NULL;
 }
 
-
-void R_ReadPointFile_f (void)
-{
-	FILE	*f;
-	vec3_t	org;
-	int		r;
-	int		c;
-	particle_t	*p;
-	char	name[MAX_OSPATH];
-	
-	sprintf (name,"maps/%s.pts", sv.name);
-
-	COM_FOpenFile (name, &f);
-	if (!f)
-	{
-		Con_Printf ("couldn't open %s\n", name);
-		return;
-	}
-	
-	Con_Printf ("Reading %s...\n", name);
-	c = 0;
-	for ( ;; )
-	{
-		r = fscanf (f,"%f %f %f\n", &org[0], &org[1], &org[2]);
-		if (r != 3)
-			break;
-		c++;
-		
-		if (!free_particles)
-		{
-			Con_Printf ("Not enough free particles\n");
-			break;
-		}
-		p = free_particles;
-		free_particles = p->next;
-		p->next = active_particles;
-		active_particles = p;
-		
-		p->die = 99999;
-		p->color = (-c)&15;
-		p->type = pt_static;
-		VectorCopy (vec3_origin, p->vel);
-		VectorCopy (org, p->org);
-	}
-
-	fclose (f);
-	Con_Printf ("%i points read\n", c);
-}
-
 /*
 ===============
 R_ParseParticleEffect
@@ -273,6 +154,7 @@ R_ParseParticleEffect
 Parse an effect out of the server message
 ===============
 */
+#if 0 // PANZER TODO - fix it
 void R_ParseParticleEffect (void)
 {
 	vec3_t		org, dir;
@@ -292,7 +174,8 @@ else
 	
 	R_RunParticleEffect (org, dir, color, count);
 }
-	
+#endif
+
 /*
 ===============
 R_ParticleExplosion
@@ -313,7 +196,7 @@ void R_ParticleExplosion (vec3_t org)
 		p->next = active_particles;
 		active_particles = p;
 
-		p->die = cl.time + 5;
+		p->die = cg.time + 5000;
 		p->color = ramp1[0];
 		p->ramp = rand()&3;
 		if (i & 1)
@@ -358,7 +241,7 @@ void R_ParticleExplosion2 (vec3_t org, int colorStart, int colorLength)
 		p->next = active_particles;
 		active_particles = p;
 
-		p->die = cl.time + 0.3;
+		p->die = cg.time + 300;
 		p->color = colorStart + (colorMod % colorLength);
 		colorMod++;
 
@@ -391,7 +274,7 @@ void R_BlobExplosion (vec3_t org)
 		p->next = active_particles;
 		active_particles = p;
 
-		p->die = cl.time + 1 + (rand()&8)*0.05;
+		p->die = cg.time + 1000 + (rand()&8)*50;
 
 		if (i & 1)
 		{
@@ -438,7 +321,7 @@ void R_RunParticleEffect (vec3_t org, vec3_t dir, int color, int count)
 
 		if (count == 1024)
 		{	// rocket explosion
-			p->die = cl.time + 5;
+			p->die = cg.time + 5000;
 			p->color = ramp1[0];
 			p->ramp = rand()&3;
 			if (i & 1)
@@ -462,7 +345,7 @@ void R_RunParticleEffect (vec3_t org, vec3_t dir, int color, int count)
 		}
 		else
 		{
-			p->die = cl.time + 0.1*(rand()%5);
+			p->die = cg.time + 100*(rand()%5);
 			p->color = (color&~7) + (rand()&7);
 			p->type = pt_slowgrav;
 			for (j=0 ; j<3 ; j++)
@@ -499,7 +382,7 @@ void R_LavaSplash (vec3_t org)
 				p->next = active_particles;
 				active_particles = p;
 		
-				p->die = cl.time + 2 + (rand()&31) * 0.02;
+				p->die = cg.time + 2000 + (rand()&31) * 20;
 				p->color = 224 + (rand()&7);
 				p->type = pt_slowgrav;
 				
@@ -541,7 +424,7 @@ void R_TeleportSplash (vec3_t org)
 				p->next = active_particles;
 				active_particles = p;
 		
-				p->die = cl.time + 0.2 + (rand()&7) * 0.02;
+				p->die = cg.time + 200 + (rand()&7) * 20;
 				p->color = 7 + (rand()&7);
 				p->type = pt_slowgrav;
 				
@@ -590,7 +473,7 @@ void R_RocketTrail (vec3_t start, vec3_t end, int type)
 		active_particles = p;
 		
 		VectorCopy (vec3_origin, p->vel);
-		p->die = cl.time + 2;
+		p->die = cg.time + 2000;
 
 		switch (type)
 		{
@@ -619,7 +502,7 @@ void R_RocketTrail (vec3_t start, vec3_t end, int type)
 
 			case 3:
 			case 5:	// tracer
-				p->die = cl.time + 0.5;
+				p->die = cg.time + 500;
 				p->type = pt_static;
 				if (type == 3)
 					p->color = 52 + ((tracercount&4)<<1);
@@ -652,7 +535,7 @@ void R_RocketTrail (vec3_t start, vec3_t end, int type)
 			case 6:	// voor trail
 				p->color = 9*16 + 8 + (rand()&3);
 				p->type = pt_static;
-				p->die = cl.time + 0.3;
+				p->die = cg.time + 300;
 				for (j=0 ; j<3 ; j++)
 					p->org[j] = start[j] + ((rand()&15)-8);
 				break;
@@ -669,7 +552,6 @@ void R_RocketTrail (vec3_t start, vec3_t end, int type)
 R_DrawParticles
 ===============
 */
-extern	cvar_t	sv_gravity;
 
 void R_DrawParticles (void)
 {
@@ -681,42 +563,7 @@ void R_DrawParticles (void)
 	float			dvel;
 	float			frametime;
 	
-#ifdef GLQUAKE
-	vec3_t			up, right;
-	float			scale;
-	float			min_distance, max_distance, half_fov_tan, min_pix_size;
-	particle_vertex_t*	vert;
-
-	vert = particles_buffer;
-
-	GL_Bind(particletexture);
-	glEnable (GL_BLEND);
-	glEnable (GL_ALPHA_TEST);
-
-	if( gl_hatching.value )
-		GL_BindShader( SHADER_PARTICELS_HATCHING );
-
-	VectorScale (vup, 1.5 * r_particle_size.value, up);
-	VectorScale (vright, 1.5 * r_particle_size.value, right);
-
-	half_fov_tan = tan(DEG2RAD(r_refdef.fov_x) * 0.5f );
-
-	// Distance, where size of particle is 1/16 of screen
-	min_distance = 16.0f * r_particle_size.value / ( half_fov_tan * 2.0f );
-
-	// Calculate distance, where size of particle is min_pix_size
-	min_pix_size = (float)r_refdef.vrect.width / 384.0f;
-	if (min_pix_size < 2.0f)
-		min_pix_size = 2.0f;
-	max_distance = r_refdef.vrect.width * r_particle_size.value / ( half_fov_tan * 2.0f * min_pix_size );
-#else
-	D_StartParticles ();
-
-	VectorScale (vright, xscaleshrink, r_pright);
-	VectorScale (vup, yscaleshrink, r_pup);
-	VectorCopy (vpn, r_ppn);
-#endif
-	frametime = cl.time - cl.oldtime;
+	frametime = cg.frametime / 1000.0f;
 	time3 = frametime * 15;
 	time2 = frametime * 10; // 15;
 	time1 = frametime * 5;
@@ -726,7 +573,7 @@ void R_DrawParticles (void)
 	for ( ;; ) 
 	{
 		kill = active_particles;
-		if (kill && kill->die < cl.time)
+		if (kill && kill->die < cg.time)
 		{
 			active_particles = kill->next;
 			kill->next = free_particles;
@@ -741,7 +588,7 @@ void R_DrawParticles (void)
 		for ( ;; )
 		{
 			kill = p->next;
-			if (kill && kill->die < cl.time)
+			if (kill && kill->die < cg.time)
 			{
 				p->next = kill->next;
 				kill->next = free_particles;
@@ -751,34 +598,6 @@ void R_DrawParticles (void)
 			break;
 		}
 
-#ifdef GLQUAKE
-		// hack a scale up to keep particles from disapearing
-		scale = (p->org[0] - r_origin[0])*vpn[0] + (p->org[1] - r_origin[1])*vpn[1]
-			+ (p->org[2] - r_origin[2])*vpn[2];
-		if (scale > 0.0f)
-		{
-			if (scale < min_distance)
-				scale = scale / min_distance;
-			else if (scale > max_distance)
-				scale = scale / max_distance;
-			else
-				scale = 1.0;
-		}
-		
-		VectorCopy(p->org, vert[0].v);
-		vert[0].tc[0] = 0; vert[0].tc[1] = 0;
-
-		VectorMA(p->org, scale, up, vert[1].v);
-		vert[1].tc[0] = 1; vert[1].tc[1] = 0;
-
-		VectorMA(p->org, scale, right, vert[2].v);
-		vert[2].tc[0] = 0; vert[2].tc[1] = 1;
-
-		vert[0].color = vert[1].color = vert[2].color = d_8to24table[(int)p->color];
-		vert += 3;
-#else
-		D_DrawParticle (p);
-#endif
 		p->org[0] += p->vel[0]*frametime;
 		p->org[1] += p->vel[1]*frametime;
 		p->org[2] += p->vel[2]*frametime;
@@ -831,35 +650,10 @@ void R_DrawParticles (void)
 			break;
 
 		case pt_grav:
-#ifdef QUAKE2
-			p->vel[2] -= grav * 20;
-			break;
-#endif
 		case pt_slowgrav:
 			p->vel[2] -= grav;
 			break;
 		}
 	}
-
-#ifdef GLQUAKE
-	glEnableClientState(GL_VERTEX_ARRAY);
-	glEnableClientState(GL_TEXTURE_COORD_ARRAY);
-	glEnableClientState(GL_COLOR_ARRAY);
-
-	glVertexPointer( 3, GL_FLOAT, sizeof(particle_vertex_t), &particles_buffer[0].v[0] );
-	glTexCoordPointer( 2, GL_SHORT, sizeof(particle_vertex_t), &particles_buffer[0].tc[0] );
-	glColorPointer( 4, GL_UNSIGNED_BYTE, sizeof(particle_vertex_t), &particles_buffer[0].color );
-
-	glDrawArrays( GL_TRIANGLES, 0, vert - particles_buffer );
-
-	glDisableClientState(GL_VERTEX_ARRAY);
-	glDisableClientState(GL_TEXTURE_COORD_ARRAY);
-	glDisableClientState(GL_COLOR_ARRAY);
-
-	glDisable (GL_BLEND);
-	glDisable (GL_ALPHA_TEST);
-#else
-	D_EndParticles ();
-#endif
 }
 

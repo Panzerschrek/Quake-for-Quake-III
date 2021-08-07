@@ -87,6 +87,10 @@ vmCvar_t	cg_sbar_lines;
 
 vmCvar_t	teamplay; // PANZER TODO - register it?
 
+vmCvar_t	r_particle_size;
+
+vmCvar_t	sv_gravity;
+
 typedef struct {
 	vmCvar_t	*vmCvar;
 	char		*cvarName;
@@ -102,6 +106,8 @@ static cvarTable_t cvarTable[] = {
 	{ &cg_timescale, "timescale", "1", 0},
 	{ &cg_sbar_scale, "cg_sbar_scale", "1", CVAR_ARCHIVE },
 	{ &cg_sbar_lines, "cg_sbar_lines", "2", CVAR_ARCHIVE },
+	{ &r_particle_size, "r_particle_size", "2", CVAR_ARCHIVE },
+	{ &sv_gravity, "sv_gravity", "800",  CVAR_ARCHIVE }, // PANZER TODO - maybe read this from server info?
 };
 
 static int  cvarTableSize = ARRAY_LEN( cvarTable );
