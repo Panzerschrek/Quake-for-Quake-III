@@ -563,7 +563,12 @@ static void R_DrawParticle(particle_t* p)
 		verts[i].modulate[3]= 255;
 
 		for( j= 0; j < 3; ++j )
-			verts[i].xyz[j]= p->org[j] + quad_delta[i][j] * 10.0;
+			verts[i].xyz[j]=
+				p->org[j] +
+					r_particle_size.value * (
+						cg.refdef.viewaxis[2][j] * quad_delta[i][0] +
+						cg.refdef.viewaxis[1][j] * quad_delta[i][1]);
+
 
 		verts[i].st[0]= (quad_delta[i][0] + 1.0f) * 0.5f;
 		verts[i].st[1]= (quad_delta[i][1] + 1.0f) * 0.5f;
