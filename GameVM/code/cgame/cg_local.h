@@ -274,6 +274,8 @@ void CG_ParseServerinfo( void );
 // r_part.c
 //
 
+void R_InitParticles (void);
+void R_ClearParticles (void);
 void R_BlobExplosion (vec3_t org);
 void R_ParticleExplosion (vec3_t org);
 void R_ParticleExplosion2 (vec3_t org, int colorStart, int colorLength);

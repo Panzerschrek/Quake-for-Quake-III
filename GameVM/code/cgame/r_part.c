@@ -60,6 +60,7 @@ R_InitParticles
 void R_InitParticles (void)
 {
 	r_numparticles = MAX_PARTICLES;
+	R_ClearParticles();
 }
 
 /*
@@ -546,6 +547,35 @@ void R_RocketTrail (vec3_t start, vec3_t end, int type)
 	}
 }
 
+static void R_StartParticles()
+{
+}
+
+static const vec3_t quad_delta[4] = { { -1, -1, 0 }, { -1, +1, 0 }, { +1, +1, 0 }, { +1, -1, 0 } };
+
+static void R_DrawParticle(particle_t* p)
+{
+	int i, j;
+	polyVert_t verts[4];
+
+	for(i= 0; i < 4; ++i)
+	{
+		verts[i].modulate[0]= verts[i].modulate[1]= verts[i].modulate[2]= 255;
+		verts[i].modulate[3]= 128;
+
+		for( j= 0; j < 3; ++j )
+			verts[i].xyz[j]= p->org[j] + quad_delta[i][j] * 10.0;
+
+		verts[i].st[0]= (quad_delta[i][0] + 1.0f) * 0.5f;
+		verts[i].st[1]= (quad_delta[i][1] + 1.0f) * 0.5f;
+	}
+
+	trap_R_AddPolyToScene(sbar.draw_disc, 4, verts);
+}
+
+static void R_EndParticles()
+{
+}
 
 /*
 ===============
@@ -597,6 +627,8 @@ void R_DrawParticles (void)
 			}
 			break;
 		}
+
+		R_DrawParticle(p);
 
 		p->org[0] += p->vel[0]*frametime;
 		p->org[1] += p->vel[1]*frametime;

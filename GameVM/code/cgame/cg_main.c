@@ -365,6 +365,7 @@ void CG_Init( int serverMessageNum, int serverCommandSequence, int clientNum ) {
 
 	CG_RegisterResources();
 	Sbar_Init();
+	R_InitParticles();
 
 	cg.loading = qfalse;	// future players will be deferred
 
