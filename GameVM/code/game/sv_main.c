@@ -117,6 +117,7 @@ static void SV_ProcessTEnt()
 	int		type, ent;
 	vec3_t	pos, pos2;
 	edict_t* eventEntity;
+	int		colorStart, colorLength;
 
 	type = MSG_ReadByte ();
 	switch (type)
@@ -130,13 +131,23 @@ static void SV_ProcessTEnt()
 	case TE_TAREXPLOSION:			// tarbaby explosion
 	case TE_LAVASPLASH:
 	case TE_TELEPORT:
-	case TE_EXPLOSION2:				// color mapped explosion
 		// Entities with single param - position
 		pos[0] = MSG_ReadCoord ();
 		pos[1] = MSG_ReadCoord ();
 		pos[2] = MSG_ReadCoord ();
 		eventEntity = G_CreateEventEdict(pos, svc_temp_entity);
 		eventEntity->s.eType = type;
+		break;
+
+	case TE_EXPLOSION2:				// color mapped explosion
+		pos[0] = MSG_ReadCoord ();
+		pos[1] = MSG_ReadCoord ();
+		pos[2] = MSG_ReadCoord ();
+		colorStart = MSG_ReadByte ();
+		colorLength = MSG_ReadByte ();
+		eventEntity = G_CreateEventEdict(pos, svc_temp_entity);
+		eventEntity->s.eType = type;
+		eventEntity->s.constantLight = colorStart | (colorLength << 8);
 		break;
 
 	case TE_LIGHTNING1:				// lightning bolts

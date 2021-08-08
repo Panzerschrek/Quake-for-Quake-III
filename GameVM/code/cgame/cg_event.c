@@ -194,10 +194,8 @@ static void CG_ProcessTEnt( entityState_t *ent )
 		break;
 
 	case TE_EXPLOSION2:				// color mapped explosion
-		//colorStart = MSG_ReadByte ();
-		//colorLength = MSG_ReadByte ();
-		colorStart = 5;
-		colorLength = 16; // PANZER TODO - fix this
+		colorStart = ent->constantLight & 255;
+		colorLength = ent->constantLight >> 8;
 		R_ParticleExplosion2 (ent->origin, colorStart, colorLength);
 		dl = CL_AllocDlight (0);
 		VectorCopy (ent->origin, dl->origin);
