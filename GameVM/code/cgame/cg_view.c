@@ -133,6 +133,7 @@ void CG_AddEntities()
 	int				num;
 	entityState_t*	in_ent;
 	refEntity_t		out_ent;
+	vec3_t			anglesCorrected;
 
 	// Directly take entities from snapshot and add them to scene.
 
@@ -148,7 +149,12 @@ void CG_AddEntities()
 		memset (&out_ent, 0, sizeof(out_ent));
 		VectorCopy( in_ent->origin, out_ent.origin);
 		VectorCopy( in_ent->origin, out_ent.oldorigin);
-		AnglesToAxis( in_ent->angles, out_ent.axis );
+
+		// I do not know why, but i need to revert pitch to get correct models orientation.
+		anglesCorrected[PITCH]= -AngleNormalize360(in_ent->angles[PITCH]);
+		anglesCorrected[YAW]= AngleNormalize360(in_ent->angles[YAW]);
+		anglesCorrected[ROLL]= AngleNormalize360(in_ent->angles[ROLL]);
+		AnglesToAxis( anglesCorrected, out_ent.axis );
 
 		if ( in_ent->solid == SOLID_BMODEL )
 			out_ent.hModel = cgs.inlineDrawModel[in_ent->modelindex];
