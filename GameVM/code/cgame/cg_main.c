@@ -99,6 +99,10 @@ vmCvar_t	r_particle_size;
 
 vmCvar_t	sv_gravity;
 
+vmCvar_t	v_kicktime;
+vmCvar_t	v_kickroll;
+vmCvar_t	v_kickpitch;
+
 typedef struct {
 	vmCvar_t	*vmCvar;
 	char		*cvarName;
@@ -119,6 +123,10 @@ static cvarTable_t cvarTable[] = {
 	{ &cg_sbar_lines, "cg_sbar_lines", "2", CVAR_ARCHIVE },
 	{ &r_particle_size, "r_particle_size", "2", CVAR_ARCHIVE },
 	{ &sv_gravity, "sv_gravity", "800",  CVAR_ARCHIVE }, // PANZER TODO - maybe read this from server info?
+	{ &v_kicktime, "v_kicktime", "0.5", CVAR_ARCHIVE },
+	{ &v_kickroll, "v_kickroll", "0.6", CVAR_ARCHIVE },
+	{ &v_kickpitch, "v_kickpitch", "0.6", CVAR_ARCHIVE },
+
 };
 
 static int  cvarTableSize = ARRAY_LEN( cvarTable );

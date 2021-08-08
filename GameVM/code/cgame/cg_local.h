@@ -256,6 +256,10 @@ extern	vmCvar_t r_particle_size;
 
 extern	vmCvar_t sv_gravity;
 
+extern	vmCvar_t	v_kicktime;
+extern	vmCvar_t	v_kickroll;
+extern	vmCvar_t	v_kickpitch;
+
 //
 // cg_main.c
 //
@@ -284,6 +288,7 @@ void CG_Weapon_f( void );
 //
 // cg_blend.c
 //
+extern float v_dmg_time, v_dmg_roll, v_dmg_pitch;
 void V_cshift_f (int r, int g, int b, int a);
 void V_BonusFlash_f (void);
 void V_ParseDamage(entityState_t* event);

@@ -16,6 +16,7 @@ cshift_t	cshift_lava = { {255,80,0}, 150 };
 
 static float v_blend[4];
 
+float v_dmg_time, v_dmg_roll, v_dmg_pitch;
 
 /*
 ==================
@@ -49,10 +50,14 @@ void V_BonusFlash_f (void)
 void V_ParseDamage(entityState_t* event)
 {
 	int		armor, blood;
+	float	*from;
+	vec3_t	forward, right, up;
+	float	side;
 	float	count;
 
 	armor = event->constantLight & 255;
 	blood = (event->constantLight >> 8) & 255;
+	from = event->origin2;
 
 	count = blood*0.5 + armor*0.5;
 	if (count < 10)
@@ -84,6 +89,22 @@ void V_ParseDamage(entityState_t* event)
 		cg.cshifts[CSHIFT_DAMAGE].destcolor[1] = 0;
 		cg.cshifts[CSHIFT_DAMAGE].destcolor[2] = 0;
 	}
+
+	//
+	// calculate view angle kicks
+	//
+	VectorSubtract (from, cg.snap.ps.origin, from);
+	VectorNormalize (from);
+
+	AngleVectors (cg.snap.ps.viewangles, forward, right, up);
+
+	side = DotProduct (from, right);
+	v_dmg_roll = count*side*v_kickroll.value;
+
+	side = DotProduct (from, forward);
+	v_dmg_pitch = count*side*v_kickpitch.value;
+
+	v_dmg_time = v_kicktime.value;
 }
 
 void V_CalcBlend (void)
