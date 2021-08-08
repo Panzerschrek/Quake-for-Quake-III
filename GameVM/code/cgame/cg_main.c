@@ -87,6 +87,10 @@ vmCvar_t	cg_sbar_lines;
 
 vmCvar_t	teamplay; // PANZER TODO - register it?
 
+vmCvar_t	r_particle_size;
+
+vmCvar_t	sv_gravity;
+
 typedef struct {
 	vmCvar_t	*vmCvar;
 	char		*cvarName;
@@ -102,6 +106,8 @@ static cvarTable_t cvarTable[] = {
 	{ &cg_timescale, "timescale", "1", 0},
 	{ &cg_sbar_scale, "cg_sbar_scale", "1", CVAR_ARCHIVE },
 	{ &cg_sbar_lines, "cg_sbar_lines", "2", CVAR_ARCHIVE },
+	{ &r_particle_size, "r_particle_size", "2", CVAR_ARCHIVE },
+	{ &sv_gravity, "sv_gravity", "800",  CVAR_ARCHIVE }, // PANZER TODO - maybe read this from server info?
 };
 
 static int  cvarTableSize = ARRAY_LEN( cvarTable );
@@ -282,6 +288,8 @@ static void CG_RegisterResources( void ) {
 	cgs.bolt3 = trap_R_RegisterModel("progs/bolt3.md3");
 	cgs.beam = trap_R_RegisterModel("progs/beam.md3");
 
+	cgs.particle = trap_R_RegisterShader("textures/particle");
+
 	{
 		const char* musicIndexStr = CG_ConfigString(CS_MUSIC);
 		if(musicIndexStr && musicIndexStr[0] )
@@ -359,6 +367,7 @@ void CG_Init( int serverMessageNum, int serverCommandSequence, int clientNum ) {
 
 	CG_RegisterResources();
 	Sbar_Init();
+	R_InitParticles();
 
 	cg.loading = qfalse;	// future players will be deferred
 

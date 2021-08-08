@@ -43,6 +43,25 @@ typedef struct
 	byte	translations[VID_GRADES*256];
 } scoreboard_t;
 
+// Particle types.
+
+typedef enum {
+	pt_static, pt_grav, pt_slowgrav, pt_fire, pt_explode, pt_explode2, pt_blob, pt_blob2
+} ptype_t;
+
+typedef struct particle_s
+{
+// driver-usable fields
+	vec3_t		org;
+	byte		color;
+// drivers never touch the following fields
+	struct particle_s	*next;
+	vec3_t		vel;
+	float		ramp;
+	int			die;
+	ptype_t		type;
+} particle_t;
+
 // The entire cgame module is unloaded and reloaded on each level change,
 // so there is NO persistant data between levels on the client side.
 // If you absolutely need something stored, it can either be kept
@@ -112,6 +131,9 @@ typedef struct {
 	qhandle_t		bolt2;
 	qhandle_t		bolt3;
 	qhandle_t		beam;
+
+	// Various textures.
+	qhandle_t		particle;
 
 	// Sounds.
 	qhandle_t gameSounds[MAX_SOUNDS];
@@ -192,6 +214,11 @@ extern	vmCvar_t		cg_sbar_lines;
 
 extern	vmCvar_t	teamplay;
 
+// Size of particle in world space
+extern	vmCvar_t r_particle_size;
+
+extern	vmCvar_t sv_gravity;
+
 //
 // cg_main.c
 //
@@ -245,6 +272,20 @@ void CG_InitConsoleCommands( void );
 //
 void CG_ExecuteNewServerCommands( int latestSequence );
 void CG_ParseServerinfo( void );
+
+//
+// r_part.c
+//
+
+void R_InitParticles (void);
+void R_ClearParticles (void);
+void R_BlobExplosion (vec3_t org);
+void R_ParticleExplosion (vec3_t org);
+void R_ParticleExplosion2 (vec3_t org, int colorStart, int colorLength);
+void R_RunParticleEffect (vec3_t org, vec3_t dir, int color, int count);
+void R_LavaSplash (vec3_t org);
+void R_TeleportSplash (vec3_t org);
+void R_DrawParticles();
 
 //
 // sbar.c
