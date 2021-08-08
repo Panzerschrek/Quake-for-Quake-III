@@ -24,42 +24,6 @@ Foundation, Inc., 51 Franklin St, Fifth Floor, Boston, MA  02110-1301  USA
 // for a 3D rendering
 #include "cg_local.h"
 
-static void CG_CalcVrect (void) {
-
-	cg.refdef.width = cgs.glconfig.vidWidth;
-	cg.refdef.width &= ~1;
-
-	cg.refdef.height = cgs.glconfig.vidHeight;
-	cg.refdef.height &= ~1;
-
-	cg.refdef.x = 0;
-	cg.refdef.y = 0;
-}
-
-static void CG_OffsetFirstPersonView( void ) {
-	float			*origin;
-
-	origin = cg.refdef.vieworg;
-
-	// add view height
-	origin[2] += cg.snap.ps.viewheight;
-}
-
-static void CG_CalcFov( void ) {
-	float	x;
-	float	fov_x, fov_y;
-
-	fov_x = 90;
-
-	x = cg.refdef.width / tan( fov_x / 360 * M_PI );
-	fov_y = atan2( cg.refdef.height, x );
-	fov_y = fov_y * 360 / M_PI;
-
-	// set it
-	cg.refdef.fov_x = fov_x;
-	cg.refdef.fov_y = fov_y;
-}
-
 /*
 ==============
 V_CalcViewRoll
@@ -88,7 +52,79 @@ static void V_CalcViewRoll (void)
 		cg.refdefViewAngles[ROLL] = 80;	// dead view angle
 		return;
 	}
+}
 
+/*
+===============
+V_CalcBob
+
+===============
+*/
+float V_CalcBob (void)
+{
+	float	bob;
+	float	cycle, timeS;
+
+	timeS= cg.time / 1000.0f;
+
+	cycle = timeS - (int)(timeS/cl_bobcycle.value)*cl_bobcycle.value;
+	cycle /= cl_bobcycle.value;
+	if (cycle < cl_bobup.value)
+		cycle = M_PI * cycle / cl_bobup.value;
+	else
+		cycle = M_PI + M_PI*(cycle-cl_bobup.value)/(1.0 - cl_bobup.value);
+
+// bob is proportional to velocity in the xy plane
+// (don't count Z, or jumping messes it up)
+
+	bob = sqrt(cg.snap.ps.velocity[0]*cg.snap.ps.velocity[0] + cg.snap.ps.velocity[1]*cg.snap.ps.velocity[1]) * cl_bob.value;
+//Con_Printf ("speed: %5.1f\n", Length(cl.velocity));
+	bob = bob*0.3 + bob*0.7*sin(cycle);
+	if (bob > 4)
+		bob = 4;
+	else if (bob < -7)
+		bob = -7;
+	return bob;
+
+}
+
+static void CG_CalcVrect (void) {
+
+	cg.refdef.width = cgs.glconfig.vidWidth;
+	cg.refdef.width &= ~1;
+
+	cg.refdef.height = cgs.glconfig.vidHeight;
+	cg.refdef.height &= ~1;
+
+	cg.refdef.x = 0;
+	cg.refdef.y = 0;
+}
+
+static void CG_OffsetFirstPersonView( void ) {
+	float			*origin;
+	float			bob;
+
+	origin = cg.refdef.vieworg;
+
+	bob = V_CalcBob();
+
+	// add view height
+	origin[2] += cg.snap.ps.viewheight + V_CalcBob();
+}
+
+static void CG_CalcFov( void ) {
+	float	x;
+	float	fov_x, fov_y;
+
+	fov_x = 90;
+
+	x = cg.refdef.width / tan( fov_x / 360 * M_PI );
+	fov_y = atan2( cg.refdef.height, x );
+	fov_y = fov_y * 360 / M_PI;
+
+	// set it
+	cg.refdef.fov_x = fov_x;
+	cg.refdef.fov_y = fov_y;
 }
 
 static void CG_CalcViewValues( void ) {
@@ -281,15 +317,33 @@ Add the weapon, and flash for the player's view
 ==============
 */
 void CG_AddViewWeapon( playerState_t *ps ) {
-	refEntity_t	hand;
-	float		fovOffset;
+	refEntity_t		hand;
+	int				i;
+	float			bob;
+	vec3_t			forward, right, up;
+	vec3_t			angles;
+	vec3_t			origin;
 
-	// TODO - add FOV offset, bobbing.
-	fovOffset = 0;
+	bob = V_CalcBob();
+
+	VectorCopy(ps->origin, origin);
+
+	angles[PITCH] = -cg.snap.ps.viewangles[PITCH];	// because entity pitches are
+											//  actually backward
+	angles[YAW] = cg.snap.ps.viewangles[YAW];
+	angles[ROLL] = cg.snap.ps.viewangles[ROLL];
+
+	AngleVectors (angles, forward, right, up);
+
+	for (i=0 ; i<3 ; i++)
+		origin[i] += forward[i]*bob*0.4;
+	origin[2] += bob;
+
+	// PANZER TODO - adjust veapon position based on status bar size.
 
 	memset (&hand, 0, sizeof(hand));
-	VectorCopy( ps->origin, hand.origin);
-	VectorCopy( ps->origin, hand.oldorigin);
+	VectorCopy(origin, hand.origin);
+	VectorCopy(origin, hand.oldorigin);
 	hand.origin[2] += ps->viewheight;
 	hand.oldorigin[2] += ps->viewheight;
 	AnglesToAxis( ps->viewangles, hand.axis );

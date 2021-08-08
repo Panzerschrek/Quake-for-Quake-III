@@ -9,7 +9,6 @@ Client:
 * Dynamic lights
 * Particles
 * Damage-based view roll changes
-* View bobbing
 * Client-side animation for static entities
 * Rotation animation for items (weapons, powerups)
 * Addons (rogue/hipnotic) support in status bar

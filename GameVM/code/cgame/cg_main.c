@@ -79,6 +79,10 @@ centity_t		cg_entities[MAX_GENTITIES];
 beam_t			cg_beams[MAX_BEAMS];
 sbar_t			sbar;
 
+vmCvar_t		cl_bob;
+vmCvar_t		cl_bobcycle;
+vmCvar_t		cl_bobup;
+
 vmCvar_t	cl_rollspeed;
 vmCvar_t	cl_rollangle;
 
@@ -102,6 +106,9 @@ typedef struct {
 } cvarTable_t;
 
 static cvarTable_t cvarTable[] = {
+	{ &cl_bob, "cl_bob", "0.02", CVAR_SERVERINFO | CVAR_ARCHIVE },
+	{ &cl_bobcycle, "cl_bobcycle", "0.6", CVAR_SERVERINFO | CVAR_ARCHIVE },
+	{ &cl_bobup, "cl_bobup", "0.5", CVAR_SERVERINFO | CVAR_ARCHIVE },
 	{ &cl_rollspeed, "cl_rollspeed", "200", CVAR_SERVERINFO | CVAR_ARCHIVE },
 	{ &cl_rollangle, "cl_rollangle", "2.0", CVAR_SERVERINFO | CVAR_ARCHIVE },
 	{ &cg_timescaleFadeEnd, "cg_timescaleFadeEnd", "1", 0},
