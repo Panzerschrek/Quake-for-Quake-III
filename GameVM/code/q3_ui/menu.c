@@ -18,7 +18,8 @@ along with this program; if not, write to the Free Software
 Foundation, Inc., 59 Temple Place - Suite 330, Boston, MA  02111-1307, USA.
 
 */
-#include "quakedef.h"
+#include "../game/quakedef.h"
+#include "ui_local.h"
 
 #ifdef _WIN32
 #include "winquake.h"
@@ -27,7 +28,46 @@ Foundation, Inc., 59 Temple Place - Suite 330, Boston, MA  02111-1307, USA.
 void (*vid_menudrawfn)(void);
 void (*vid_menukeyfn)(int key);
 
+char *keybindings[256];
+
+int key_dest;
+typedef enum {key_game, key_console, key_message, key_menu} keydest_t;
+
 enum {m_none, m_main, m_singleplayer, m_load, m_save, m_multiplayer, m_setup, m_net, m_options, m_video, m_keys, m_help, m_quit, m_serialconfig, m_modemconfig, m_lanconfig, m_gameoptions, m_search, m_slist} m_state;
+
+typedef struct
+{
+	int			width, height;
+	qhandle_t	handle;
+} qpic_t;
+// Menu graphics.
+struct
+{
+	qpic_t box_tl;
+	qpic_t box_ml;
+	qpic_t box_bl;
+	qpic_t box_tm;
+	qpic_t box_mm;
+	qpic_t box_mm2;
+	qpic_t box_bm;
+	qpic_t box_tr;
+	qpic_t box_mr;
+	qpic_t box_br;
+	qpic_t qplaque;
+	qpic_t mainmenu;
+	qpic_t menudot[6];
+	qpic_t sp_menu;
+	qpic_t p_load;
+	qpic_t p_save;
+	qpic_t p_multi;
+	qpic_t mp_menu;
+	qpic_t bigbox;
+	qpic_t menuplyr;
+	qpic_t netmen1;
+	qpic_t dim_modm;
+	qpic_t netmen2;
+	qpic_t dim_drct;
+} mg;
 
 void M_Menu_Main_f (void);
 	void M_Menu_SinglePlayer_f (void);
@@ -48,6 +88,7 @@ void M_Menu_GameOptions_f (void);
 void M_Menu_Search_f (void);
 void M_Menu_ServerList_f (void);
 
+void M_Draw (void);
 void M_Main_Draw (void);
 	void M_SinglePlayer_Draw (void);
 		void M_Load_Draw (void);
@@ -109,9 +150,11 @@ void M_ConfigureNetSubsystem(void);
 static void M_DetermineScale(void)
 {
 	int		scales[2];
+	glconfig_t gl_config;
+	trap_GetGlconfig(&gl_config);
 	// Calc number of original 320x200 screens in current screen
-	scales[0] = vid.width  / 320;
-	scales[1] = vid.height / 200;
+	scales[0] = gl_config.vidWidth  / 320;
+	scales[1] = gl_config.vidHeight / 200;
 	m_scale = scales[0] < scales[1] ? scales[0] : scales[1];
 }
 
@@ -122,10 +165,12 @@ M_DrawCharacter
 Draws one solid graphics character
 ================
 */
+#if 0 // PANZER TODO - fix this
 void M_DrawCharacter (int cx, int line, int num)
 {
 	Draw_CharacterScaled ( cx * m_scale + ((vid.width - 320 * m_scale)>>1), line * m_scale, m_scale, num);
 }
+#endif
 
 void M_Print (int cx, int cy, char *str)
 {
@@ -147,6 +192,7 @@ void M_PrintWhite (int cx, int cy, char *str)
 	}
 }
 
+#if 0 // PANZER TODO - remove this?
 void M_DrawTransPic (int x, int y, qpic_t *pic)
 {
 	Draw_TransPicScaled (x  * m_scale+ ((vid.width - 320 * m_scale)>>1), y * m_scale, m_scale, pic);
@@ -156,10 +202,11 @@ void M_DrawPic (int x, int y, qpic_t *pic)
 {
 	Draw_PicScaled (x * m_scale + ((vid.width - 320 * m_scale)>>1), y * m_scale, m_scale, pic);
 }
+#endif
 
 byte identityTable[256];
 byte translationTable[256];
-
+#if 0 // PANZER TODO - fix this
 void M_BuildTranslationTable(int top, int bottom)
 {
 	int		j;
@@ -183,12 +230,14 @@ void M_BuildTranslationTable(int top, int bottom)
 		for (j=0 ; j<16 ; j++)
 			dest[BOTTOM_RANGE+j] = source[bottom+15-j];
 }
+#endif
 
-
+#if 0 // PANZER TODO - fix this
 void M_DrawTransPicTranslate (int x, int y, qpic_t *pic)
 {
 	Draw_TransPicTranslateScaled (x * m_scale + ((vid.width - 320 * m_scale)>>1), y * m_scale, m_scale, pic, translationTable);
 }
+#endif
 
 
 void M_DrawTextBox (int x, int y, int width, int lines)
@@ -257,7 +306,7 @@ M_ToggleMenu_f
 */
 void M_ToggleMenu_f (void)
 {
-	m_entersound = true;
+	m_entersound = qtrue;
 
 	if (key_dest == key_menu)
 	{
@@ -292,19 +341,17 @@ void M_Menu_Main_f (void)
 {
 	if (key_dest != key_menu)
 	{
-		m_save_demonum = cls.demonum;
-		cls.demonum = -1;
 	}
 	key_dest = key_menu;
 	m_state = m_main;
-	m_entersound = true;
+	m_entersound = qtrue;
 }
 
 
 void M_Main_Draw (void)
 {
 	int		f;
-	qpic_t	*p;
+	qpic_t*	p;
 
 	M_DrawTransPic (16, 4, Draw_CachePic ("gfx/qplaque.lmp") );
 	p = Draw_CachePic ("gfx/ttl_main.lmp");
@@ -324,9 +371,6 @@ void M_Main_Key (int key)
 	case K_ESCAPE:
 		key_dest = key_game;
 		m_state = m_none;
-		cls.demonum = m_save_demonum;
-		if (cls.demonum != -1 && !cls.demoplayback && cls.state != ca_connected)
-			CL_NextDemo ();
 		break;
 
 	case K_DOWNARROW:
@@ -342,7 +386,7 @@ void M_Main_Key (int key)
 		break;
 
 	case K_ENTER:
-		m_entersound = true;
+		m_entersound = qtrue;
 
 		switch (m_main_cursor)
 		{
@@ -380,7 +424,7 @@ void M_Menu_SinglePlayer_f (void)
 {
 	key_dest = key_menu;
 	m_state = m_singleplayer;
-	m_entersound = true;
+	m_entersound = qtrue;
 }
 
 
@@ -421,7 +465,7 @@ void M_SinglePlayer_Key (int key)
 		break;
 
 	case K_ENTER:
-		m_entersound = true;
+		m_entersound = qtrue;
 
 		switch (m_singleplayer_cursor)
 		{
@@ -431,9 +475,9 @@ void M_SinglePlayer_Key (int key)
 					break;
 			key_dest = key_game;
 			if (sv.active)
-				Cbuf_AddText ("disconnect\n");
-			Cbuf_AddText ("maxplayers 1\n");
-			Cbuf_AddText ("map start\n");
+				trap_Cmd_ExecuteText (EXEC_APPEND, "disconnect\n");
+			trap_Cmd_ExecuteText (EXEC_APPEND,"maxplayers 1\n");
+			trap_Cmd_ExecuteText (EXEC_APPEND,"map start\n");
 			break;
 
 		case 1:
@@ -458,6 +502,7 @@ int		loadable[MAX_SAVEGAMES];
 
 void M_ScanSaves (void)
 {
+#if 0 // PANZER TODO - fix this
 	int		i, j;
 	char	name[MAX_OSPATH];
 	FILE	*f;
@@ -479,14 +524,15 @@ void M_ScanSaves (void)
 		for (j=0 ; j<SAVEGAME_COMMENT_LENGTH ; j++)
 			if (m_filenames[i][j] == '_')
 				m_filenames[i][j] = ' ';
-		loadable[i] = true;
+		loadable[i] = qtrue;
 		fclose (f);
 	}
+#endif
 }
 
 void M_Menu_Load_f (void)
 {
-	m_entersound = true;
+	m_entersound = qtrue;
 	m_state = m_load;
 	key_dest = key_menu;
 	M_ScanSaves ();
@@ -495,13 +541,16 @@ void M_Menu_Load_f (void)
 
 void M_Menu_Save_f (void)
 {
+	// PANZER TODO - check for save possibility
+	/*
 	if (!sv.active)
 		return;
 	if (cl.intermission)
 		return;
 	if (svs.maxclients != 1)
 		return;
-	m_entersound = true;
+	*/
+	m_entersound = qtrue;
 	m_state = m_save;
 	key_dest = key_menu;
 	M_ScanSaves ();
@@ -560,7 +609,7 @@ void M_Load_Key (int k)
 		SCR_BeginLoadingPlaque ();
 
 	// issue the load command
-		Cbuf_AddText (va ("load s%i\n", load_cursor) );
+		trap_Cmd_ExecuteText (EXEC_APPEND, va ("load s%i\n", load_cursor) );
 		return;
 
 	case K_UPARROW:
@@ -593,7 +642,7 @@ void M_Save_Key (int k)
 	case K_ENTER:
 		m_state = m_none;
 		key_dest = key_game;
-		Cbuf_AddText (va("save s%i\n", load_cursor));
+		trap_Cmd_ExecuteText (EXEC_APPEND, va("save s%i\n", load_cursor));
 		return;
 
 	case K_UPARROW:
@@ -625,12 +674,13 @@ void M_Menu_MultiPlayer_f (void)
 {
 	key_dest = key_menu;
 	m_state = m_multiplayer;
-	m_entersound = true;
+	m_entersound = qtrue;
 }
 
 
 void M_MultiPlayer_Draw (void)
 {
+#if 0 // PANZER TODO - fix this
 	int		f;
 	qpic_t	*p;
 
@@ -646,11 +696,13 @@ void M_MultiPlayer_Draw (void)
 	if (serialAvailable || ipxAvailable || tcpipAvailable)
 		return;
 	M_PrintWhite ((320/2) - ((27*8)/2), 148, "No Communications Available");
+#endif
 }
 
 
 void M_MultiPlayer_Key (int key)
 {
+#if 0 // PANZER TODO -fix this
 	switch (key)
 	{
 	case K_ESCAPE:
@@ -670,7 +722,7 @@ void M_MultiPlayer_Key (int key)
 		break;
 
 	case K_ENTER:
-		m_entersound = true;
+		m_entersound = qtrue;
 		switch (m_multiplayer_cursor)
 		{
 		case 0:
@@ -688,6 +740,7 @@ void M_MultiPlayer_Key (int key)
 			break;
 		}
 	}
+#endif
 }
 
 //=============================================================================
@@ -709,11 +762,13 @@ void M_Menu_Setup_f (void)
 {
 	key_dest = key_menu;
 	m_state = m_setup;
-	m_entersound = true;
+	m_entersound = qtrue;
+#if 0 // PANZER TODO - fix this
 	Q_strcpy(setup_myname, cl_name.string);
 	Q_strcpy(setup_hostname, hostname.string);
 	setup_top = setup_oldtop = ((int)cl_color.value) >> 4;
 	setup_bottom = setup_oldbottom = ((int)cl_color.value) & 15;
+#endif
 }
 
 
@@ -806,16 +861,18 @@ forward:
 		if (setup_cursor == 2 || setup_cursor == 3)
 			goto forward;
 
+#if 0 // PANZER TODO - fix this
 		// setup_cursor == 4 (OK)
 		if (Q_strcmp(cl_name.string, setup_myname) != 0)
-			Cbuf_AddText ( va ("name \"%s\"\n", setup_myname) );
+			trap_Cmd_ExecuteText (EXEC_APPEND, va ("name \"%s\"\n", setup_myname) );
 		if (Q_strcmp(hostname.string, setup_hostname) != 0)
 			Cvar_Set("hostname", setup_hostname);
 		if (setup_top != setup_oldtop || setup_bottom != setup_oldbottom)
-			Cbuf_AddText( va ("color %i %i\n", setup_top, setup_bottom) );
-		m_entersound = true;
+			trap_Cmd_ExecuteText (EXEC_APPEND, va ("color %i %i\n", setup_top, setup_bottom) );
+		m_entersound = qtrue;
 		M_Menu_MultiPlayer_f ();
 		break;
+#endif
 
 	case K_BACKSPACE:
 		if (setup_cursor == 0)
@@ -899,7 +956,7 @@ void M_Menu_Net_f (void)
 {
 	key_dest = key_menu;
 	m_state = m_net;
-	m_entersound = true;
+	m_entersound = qtrue;
 	m_net_items = 4;
 
 	if (m_net_cursor >= m_net_items)
@@ -911,6 +968,7 @@ void M_Menu_Net_f (void)
 
 void M_Net_Draw (void)
 {
+#if 0 // PANZER TODO - fix it
 	int		f;
 	qpic_t	*p;
 
@@ -985,11 +1043,13 @@ void M_Net_Draw (void)
 
 	f = (int)(host_time * 10)%6;
 	M_DrawTransPic (54, 32 + m_net_cursor * 20,Draw_CachePic( va("gfx/menudot%i.lmp", f+1 ) ) );
+#endif
 }
 
 
 void M_Net_Key (int k)
 {
+#if 0 // PANZER TODO - fix this
 again:
 	switch (k)
 	{
@@ -1010,7 +1070,7 @@ again:
 		break;
 
 	case K_ENTER:
-		m_entersound = true;
+		m_entersound = qtrue;
 
 		switch (m_net_cursor)
 		{
@@ -1044,6 +1104,7 @@ again:
 		goto again;
 	if (m_net_cursor == 3 && !tcpipAvailable)
 		goto again;
+#endif
 }
 
 //=============================================================================
@@ -1063,7 +1124,7 @@ void M_Menu_Options_f (void)
 {
 	key_dest = key_menu;
 	m_state = m_options;
-	m_entersound = true;
+	m_entersound = qtrue;
 
 #ifdef _WIN32
 	if ((options_cursor == 13) && (modestate != MS_WINDOWED))
@@ -1076,6 +1137,7 @@ void M_Menu_Options_f (void)
 
 void M_AdjustSliders (int dir)
 {
+#if 0 // PANZER TODO - fix this
 	S_LocalSound ("misc/menu3.wav");
 
 	switch (options_cursor)
@@ -1152,6 +1214,7 @@ void M_AdjustSliders (int dir)
 		break;
 #endif
 	}
+#endif
 }
 
 
@@ -1197,6 +1260,7 @@ void M_Options_Draw (void)
 	M_Print (16, 40, "         Go to console");
 	M_Print (16, 48, "     Reset to defaults");
 
+#if 0 // PANZER TODO - fix this
 	M_Print (16, 56, "           Screen size");
 	r = (scr_viewsize.value - 30) / (120 - 30);
 	M_DrawSlider (220, 56, r);
@@ -1231,7 +1295,7 @@ void M_Options_Draw (void)
 
 	if (vid_menudrawfn)
 		M_Print (16, 128, "         Video Options");
-
+#endif
 #ifdef _WIN32
 	if (modestate == MS_WINDOWED)
 	{
@@ -1254,7 +1318,7 @@ void M_Options_Key (int k)
 		break;
 
 	case K_ENTER:
-		m_entersound = true;
+		m_entersound = qtrue;
 		switch (options_cursor)
 		{
 		case 0:
@@ -1265,7 +1329,7 @@ void M_Options_Key (int k)
 			Con_ToggleConsole_f ();
 			break;
 		case 2:
-			Cbuf_AddText ("exec default.cfg\n");
+			trap_Cmd_ExecuteText (EXEC_APPEND, "exec default.cfg\n");
 			break;
 		case 12:
 			M_Menu_Video_f ();
@@ -1352,7 +1416,7 @@ void M_Menu_Keys_f (void)
 {
 	key_dest = key_menu;
 	m_state = m_keys;
-	m_entersound = true;
+	m_entersound = qtrue;
 }
 
 
@@ -1462,7 +1526,7 @@ void M_Keys_Key (int k)
 		S_LocalSound ("misc/menu1.wav");
 		if (k == K_ESCAPE)
 		{
-			bind_grab = false;
+			bind_grab = qfalse;
 		}
 		else if (k != '`')
 		{
@@ -1470,7 +1534,7 @@ void M_Keys_Key (int k)
 			Cbuf_InsertText (cmd);
 		}
 
-		bind_grab = false;
+		bind_grab = qfalse;
 		return;
 	}
 
@@ -1501,7 +1565,7 @@ void M_Keys_Key (int k)
 		S_LocalSound ("misc/menu2.wav");
 		if (keys[1] != -1)
 			M_UnbindCommand (bindnames[keys_cursor][0]);
-		bind_grab = true;
+		bind_grab = qtrue;
 		break;
 
 	case K_BACKSPACE:		// delete bindings
@@ -1519,7 +1583,7 @@ void M_Menu_Video_f (void)
 {
 	key_dest = key_menu;
 	m_state = m_video;
-	m_entersound = true;
+	m_entersound = qtrue;
 }
 
 
@@ -1545,7 +1609,7 @@ void M_Menu_Help_f (void)
 {
 	key_dest = key_menu;
 	m_state = m_help;
-	m_entersound = true;
+	m_entersound = qtrue;
 	help_page = 0;
 }
 
@@ -1567,14 +1631,14 @@ void M_Help_Key (int key)
 
 	case K_UPARROW:
 	case K_RIGHTARROW:
-		m_entersound = true;
+		m_entersound = qtrue;
 		if (++help_page >= NUM_HELP_PAGES)
 			help_page = 0;
 		break;
 
 	case K_DOWNARROW:
 	case K_LEFTARROW:
-		m_entersound = true;
+		m_entersound = qtrue;
 		if (--help_page < 0)
 			help_page = NUM_HELP_PAGES-1;
 		break;
@@ -1645,7 +1709,7 @@ void M_Menu_Quit_f (void)
 	key_dest = key_menu;
 	m_quit_prevstate = m_state;
 	m_state = m_quit;
-	m_entersound = true;
+	m_entersound = qtrue;
 	msgNumber = rand()&7;
 }
 
@@ -1660,7 +1724,7 @@ void M_Quit_Key (int key)
 		if (wasInMenus)
 		{
 			m_state = m_quit_prevstate;
-			m_entersound = true;
+			m_entersound = qtrue;
 		}
 		else
 		{
@@ -1687,7 +1751,7 @@ void M_Quit_Draw (void)
 	if (wasInMenus)
 	{
 		m_state = m_quit_prevstate;
-		m_recursiveDraw = true;
+		m_recursiveDraw = qtrue;
 		M_Draw ();
 		m_state = m_quit;
 	}
@@ -1743,6 +1807,7 @@ char	serialConfig_phone[16];
 
 void M_Menu_SerialConfig_f (void)
 {
+#if 0 // PANZER TODO - fix this
 	int		n;
 	int		port;
 	int		baudrate;
@@ -1750,7 +1815,7 @@ void M_Menu_SerialConfig_f (void)
 
 	key_dest = key_menu;
 	m_state = m_serialconfig;
-	m_entersound = true;
+	m_entersound = qtrue;
 	if (JoiningGame && SerialConfig)
 		serialConfig_cursor = 4;
 	else
@@ -1779,6 +1844,7 @@ void M_Menu_SerialConfig_f (void)
 
 	m_return_onerror = false;
 	m_return_reason[0] = 0;
+#endif
 }
 
 
@@ -1851,6 +1917,7 @@ void M_SerialConfig_Draw (void)
 
 void M_SerialConfig_Key (int key)
 {
+#if 0 // PANZER TODO - fix this
 	int		l;
 
 	switch (key)
@@ -1940,7 +2007,7 @@ forward:
 		if (serialConfig_cursor < 3)
 			goto forward;
 
-		m_entersound = true;
+		m_entersound = qtrue;
 
 		if (serialConfig_cursor == 3)
 		{
@@ -1968,14 +2035,14 @@ forward:
 		}
 
 		m_return_state = m_state;
-		m_return_onerror = true;
+		m_return_onerror = qtrue;
 		key_dest = key_game;
 		m_state = m_none;
 
 		if (SerialConfig)
-			Cbuf_AddText (va ("connect \"%s\"\n", serialConfig_phone));
+			trap_Cmd_ExecuteText (EXEC_APPEND, va ("connect \"%s\"\n", serialConfig_phone));
 		else
-			Cbuf_AddText ("connect\n");
+			trap_Cmd_ExecuteText (EXEC_APPEND, "connect\n");
 		break;
 
 	case K_BACKSPACE:
@@ -2011,6 +2078,7 @@ forward:
 			serialConfig_cursor = 3;
 		else
 			serialConfig_cursor = 5;
+#endif
 }
 
 //=============================================================================
@@ -2027,15 +2095,18 @@ char	modemConfig_hangup [16];
 
 void M_Menu_ModemConfig_f (void)
 {
+#if 0 // PANZER TODO - fix this
 	key_dest = key_menu;
 	m_state = m_modemconfig;
-	m_entersound = true;
+	m_entersound = qtrue;
 	(*GetModemConfig) (0, &modemConfig_dialing, modemConfig_clear, modemConfig_init, modemConfig_hangup);
+#endif
 }
 
 
 void M_ModemConfig_Draw (void)
 {
+#if 0 // PANZER TODO - fix this
 	qpic_t	*p;
 	int		basex;
 
@@ -2072,11 +2143,13 @@ void M_ModemConfig_Draw (void)
 	M_Print (basex+8, modemConfig_cursor_table[4], "OK");
 
 	M_DrawCharacter (basex-8, modemConfig_cursor_table [modemConfig_cursor], 12+((int)(realtime*4)&1));
+#endif
 }
 
 
 void M_ModemConfig_Key (int key)
 {
+#if 0 // PANZER TODO - fix this
 	int		l;
 
 	switch (key)
@@ -2118,13 +2191,13 @@ void M_ModemConfig_Key (int key)
 				modemConfig_dialing = 'T';
 			else
 				modemConfig_dialing = 'P';
-			m_entersound = true;
+			m_entersound = qtrue;
 		}
 
 		if (modemConfig_cursor == 4)
 		{
 			(*SetModemConfig) (0, va ("%c", modemConfig_dialing), modemConfig_clear, modemConfig_init, modemConfig_hangup);
-			m_entersound = true;
+			m_entersound = qtrue;
 			M_Menu_SerialConfig_f ();
 		}
 		break;
@@ -2183,6 +2256,7 @@ void M_ModemConfig_Key (int key)
 			}
 		}
 	}
+#endif
 }
 
 //=============================================================================
@@ -2198,9 +2272,10 @@ char	lanConfig_joinname[22];
 
 void M_Menu_LanConfig_f (void)
 {
+#if 0 // PANZER TODO - fix this
 	key_dest = key_menu;
 	m_state = m_lanconfig;
-	m_entersound = true;
+	m_entersound = qtrue;
 	if (lanConfig_cursor == -1)
 	{
 		if (JoiningGame && TCPIPConfig)
@@ -2215,11 +2290,13 @@ void M_Menu_LanConfig_f (void)
 
 	m_return_onerror = false;
 	m_return_reason[0] = 0;
+#endif
 }
 
 
 void M_LanConfig_Draw (void)
 {
+#if 0 // PANZER TODO - fix this
 	qpic_t	*p;
 	int		basex;
 	char	*startJoin;
@@ -2274,11 +2351,13 @@ void M_LanConfig_Draw (void)
 
 	if (*m_return_reason)
 		M_PrintWhite (basex, 148, m_return_reason);
+#endif
 }
 
 
 void M_LanConfig_Key (int key)
 {
+#if 0 // PANZER TODO - fix this
 	int		l;
 
 	switch (key)
@@ -2305,7 +2384,7 @@ void M_LanConfig_Key (int key)
 		if (lanConfig_cursor == 0)
 			break;
 
-		m_entersound = true;
+		m_entersound = qtrue;
 
 		M_ConfigureNetSubsystem ();
 
@@ -2323,10 +2402,10 @@ void M_LanConfig_Key (int key)
 		if (lanConfig_cursor == 2)
 		{
 			m_return_state = m_state;
-			m_return_onerror = true;
+			m_return_onerror = qtrue;
 			key_dest = key_game;
 			m_state = m_none;
-			Cbuf_AddText ( va ("connect \"%s\"\n", lanConfig_joinname) );
+			trap_Cmd_ExecuteText (EXEC_APPEND, va ("connect \"%s\"\n", lanConfig_joinname) );
 			break;
 		}
 
@@ -2385,6 +2464,7 @@ void M_LanConfig_Key (int key)
 	else
 		lanConfig_port = l;
 	sprintf(lanConfig_portname, "%u", lanConfig_port);
+#endif
 }
 
 //=============================================================================
@@ -2537,14 +2617,14 @@ episode_t	rogueepisodes[] =
 int	startepisode;
 int	startlevel;
 int maxplayers;
-qboolean m_serverInfoMessage = false;
+qboolean m_serverInfoMessage = qfalse;
 double m_serverInfoMessageTime;
 
 void M_Menu_GameOptions_f (void)
 {
 	key_dest = key_menu;
 	m_state = m_gameoptions;
-	m_entersound = true;
+	m_entersound = qtrue;
 	if (maxplayers == 0)
 		maxplayers = svs.maxclients;
 	if (maxplayers < 2)
@@ -2558,6 +2638,7 @@ int		gameoptions_cursor;
 
 void M_GameOptions_Draw (void)
 {
+#if 0 // PANZER TODO - fix it
 	qpic_t	*p;
 	int		x;
 
@@ -2678,11 +2759,13 @@ void M_GameOptions_Draw (void)
 			m_serverInfoMessage = false;
 		}
 	}
+#endif
 }
 
 
 void M_NetStart_Change (int dir)
 {
+#if 0 // PANZER TODO - fix it
 	int count;
 
 	switch (gameoptions_cursor)
@@ -2692,7 +2775,7 @@ void M_NetStart_Change (int dir)
 		if (maxplayers > svs.maxclientslimit)
 		{
 			maxplayers = svs.maxclientslimit;
-			m_serverInfoMessage = true;
+			m_serverInfoMessage = qtrue;
 			m_serverInfoMessageTime = realtime;
 		}
 		if (maxplayers < 2)
@@ -2781,6 +2864,7 @@ void M_NetStart_Change (int dir)
 			startlevel = 0;
 		break;
 	}
+#endif
 }
 
 void M_GameOptions_Key (int key)
@@ -2824,17 +2908,17 @@ void M_GameOptions_Key (int key)
 		if (gameoptions_cursor == 0)
 		{
 			if (sv.active)
-				Cbuf_AddText ("disconnect\n");
-			Cbuf_AddText ("listen 0\n");	// so host_netport will be re-examined
-			Cbuf_AddText ( va ("maxplayers %u\n", maxplayers) );
+				trap_Cmd_ExecuteText (EXEC_APPEND, "disconnect\n");
+			trap_Cmd_ExecuteText (EXEC_APPEND, "listen 0\n");	// so host_netport will be re-examined
+			trap_Cmd_ExecuteText (EXEC_APPEND,  va ("maxplayers %u\n", maxplayers) );
 			SCR_BeginLoadingPlaque ();
 
 			if (hipnotic)
-				Cbuf_AddText ( va ("map %s\n", hipnoticlevels[hipnoticepisodes[startepisode].firstLevel + startlevel].name) );
+				trap_Cmd_ExecuteText (EXEC_APPEND,  va ("map %s\n", hipnoticlevels[hipnoticepisodes[startepisode].firstLevel + startlevel].name) );
 			else if (rogue)
-				Cbuf_AddText ( va ("map %s\n", roguelevels[rogueepisodes[startepisode].firstLevel + startlevel].name) );
+				trap_Cmd_ExecuteText (EXEC_APPEND,  va ("map %s\n", roguelevels[rogueepisodes[startepisode].firstLevel + startlevel].name) );
 			else
-				Cbuf_AddText ( va ("map %s\n", levels[episodes[startepisode].firstLevel + startlevel].name) );
+				trap_Cmd_ExecuteText (EXEC_APPEND,  va ("map %s\n", levels[episodes[startepisode].firstLevel + startlevel].name) );
 
 			return;
 		}
@@ -2847,24 +2931,26 @@ void M_GameOptions_Key (int key)
 //=============================================================================
 /* SEARCH MENU */
 
-qboolean	searchComplete = false;
+qboolean	searchComplete = qfalse;
 double		searchCompleteTime;
 
 void M_Menu_Search_f (void)
 {
+#if 0 // PANZER TODO - fix this
 	key_dest = key_menu;
 	m_state = m_search;
-	m_entersound = false;
-	slistSilent = true;
-	slistLocal = false;
-	searchComplete = false;
+	m_entersound = qfalse;
+	slistSilent = qtrue;
+	slistLocal = qfalse;
+	searchComplete = qfalse;
 	NET_Slist_f();
-
+#endif
 }
 
 
 void M_Search_Draw (void)
 {
+#if 0 // PANZER TODO - fix this
 	qpic_t	*p;
 	int x;
 
@@ -2882,7 +2968,7 @@ void M_Search_Draw (void)
 
 	if (! searchComplete)
 	{
-		searchComplete = true;
+		searchComplete = qtrue;
 		searchCompleteTime = realtime;
 	}
 
@@ -2897,6 +2983,7 @@ void M_Search_Draw (void)
 		return;
 
 	M_Menu_LanConfig_f ();
+#endif
 }
 
 
@@ -2914,16 +3001,17 @@ void M_Menu_ServerList_f (void)
 {
 	key_dest = key_menu;
 	m_state = m_slist;
-	m_entersound = true;
+	m_entersound = qtrue;
 	slist_cursor = 0;
-	m_return_onerror = false;
+	m_return_onerror = qfalse;
 	m_return_reason[0] = 0;
-	slist_sorted = false;
+	slist_sorted = qfalse;
 }
 
 
 void M_ServerList_Draw (void)
 {
+#if 0 // PANZER TODO - fix this
 	int		n;
 	char	string [64];
 	qpic_t	*p;
@@ -2943,7 +3031,7 @@ void M_ServerList_Draw (void)
 						Q_memcpy(&hostcache[i], &temp, sizeof(hostcache_t));
 					}
 		}
-		slist_sorted = true;
+		slist_sorted = qtrue;
 	}
 
 	p = Draw_CachePic ("gfx/p_multi.lmp");
@@ -2960,11 +3048,13 @@ void M_ServerList_Draw (void)
 
 	if (*m_return_reason)
 		M_PrintWhite (16, 148, m_return_reason);
+#endif
 }
 
 
 void M_ServerList_Key (int k)
 {
+#if 0 // PANZER TODO - fix this
 	switch (k)
 	{
 	case K_ESCAPE:
@@ -2994,17 +3084,17 @@ void M_ServerList_Key (int k)
 	case K_ENTER:
 		S_LocalSound ("misc/menu2.wav");
 		m_return_state = m_state;
-		m_return_onerror = true;
+		m_return_onerror = qtrue;
 		slist_sorted = false;
 		key_dest = key_game;
 		m_state = m_none;
-		Cbuf_AddText ( va ("connect \"%s\"\n", hostcache[slist_cursor].cname) );
+		trap_Cmd_ExecuteText (EXEC_APPEND,  va ("connect \"%s\"\n", hostcache[slist_cursor].cname) );
 		break;
 
 	default:
 		break;
 	}
-
+#endif
 }
 
 //=============================================================================
@@ -3038,23 +3128,11 @@ void M_Draw (void)
 
 	if (!m_recursiveDraw)
 	{
-		scr_copyeverything = 1;
-
-		if (scr_con_current)
-		{
-			Draw_ConsoleBackground (vid.height);
-			VID_UnlockBuffer ();
-			S_ExtraUpdate ();
-			VID_LockBuffer ();
-		}
-		else
-			Draw_FadeScreen ();
-
-		scr_fullupdate = 0;
+		Draw_FadeScreen ();
 	}
 	else
 	{
-		m_recursiveDraw = false;
+		m_recursiveDraw = qfalse;
 	}
 
 	switch (m_state)
@@ -3138,7 +3216,7 @@ void M_Draw (void)
 	if (m_entersound)
 	{
 		S_LocalSound ("misc/menu2.wav");
-		m_entersound = false;
+		m_entersound = qfalse;
 	}
 
 	VID_UnlockBuffer ();
@@ -3231,14 +3309,16 @@ void M_Keydown (int key)
 
 void M_ConfigureNetSubsystem(void)
 {
+#if 0 // PANZER TODO - fix this
 // enable/disable net systems to match desired config
 
-	Cbuf_AddText ("stopdemo\n");
+	trap_Cmd_ExecuteText (EXEC_APPEND, "stopdemo\n");
 	if (SerialConfig || DirectConfig)
 	{
-		Cbuf_AddText ("com1 enable\n");
+		trap_Cmd_ExecuteText (EXEC_APPEND, "com1 enable\n");
 	}
 
 	if (IPXConfig || TCPIPConfig)
 		net_hostport = lanConfig_port;
+#endif
 }
