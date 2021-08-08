@@ -28,7 +28,6 @@ Foundation, Inc., 51 Franklin St, Fifth Floor, Boston, MA  02110-1301  USA
 #include "ui_local.h"
 
 uiStatic_t		uis;
-qboolean		m_entersound;		// after a frame, so caching won't disrupt the sound
 
 void QDECL Com_Error( int level, const char *error, ... ) {
 	va_list		argptr;
@@ -106,8 +105,6 @@ void UI_PushMenu( menuframework_s *menu )
 	// default cursor position
 	menu->cursor      = 0;
 	menu->cursor_prev = 0;
-
-	m_entersound = qtrue;
 
 	trap_Key_SetCatcher( KEYCATCH_UI );
 
@@ -1044,6 +1041,7 @@ UI_Init
 =================
 */
 void UI_Init( void ) {
+	M_Init();
 	UI_RegisterCvars();
 
 
@@ -1174,6 +1172,9 @@ UI_Refresh
 */
 void UI_Refresh( int realtime )
 {
+	M_Draw();
+	return;
+
 	uis.frametime = realtime - uis.realtime;
 	uis.realtime  = realtime;
 
@@ -1218,15 +1219,6 @@ void UI_Refresh( int realtime )
 		UI_DrawString( 0, 0, va("(%d,%d)",uis.cursorx,uis.cursory), UI_LEFT|UI_SMALLFONT, colorRed );
 	}
 #endif
-
-	// delay playing the enter sound until after the
-	// menu has been drawn, to avoid delay while
-	// caching images
-	if (m_entersound)
-	{
-		trap_S_StartLocalSound( menu_in_sound, CHAN_LOCAL_SOUND );
-		m_entersound = qfalse;
-	}
 }
 
 void UI_DrawTextBox (int x, int y, int width, int lines)

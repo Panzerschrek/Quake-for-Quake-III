@@ -28,6 +28,9 @@ Foundation, Inc., 59 Temple Place - Suite 330, Boston, MA  02111-1307, USA.
 void (*vid_menudrawfn)(void);
 void (*vid_menukeyfn)(int key);
 
+double		realtime, host_time; // PANZER TODO - remove its usage
+qboolean		standard_quake, rogue, hipnotic; // PANZER TODO - init this.
+
 char *keybindings[256];
 
 int key_dest;
@@ -68,6 +71,48 @@ struct
 	qpic_t netmen2;
 	qpic_t dim_drct;
 } mg;
+
+qpic_t* Draw_CachePic(const char* name)
+{
+	// PANZER - TODO
+	return NULL;
+}
+
+void Draw_FadeScreen (void)
+{
+	// PANZER TODO
+}
+
+char *Key_KeynumToString (int keynum)
+{
+	return "PANZER - TODO";
+}
+
+void S_LocalSound(const char* name)
+{
+	// PANZER TODO - fix this
+}
+
+void Con_ToggleConsole_f(void)
+{
+	// PANZER TODO
+}
+
+qboolean SCR_ModalMessage (const char* message)
+{
+	// PANZER TODO
+	return qtrue;
+}
+
+void SCR_BeginLoadingPlaque (void)
+{
+	// PANZER TODO
+}
+
+void Key_SetBinding (int keynum, char *binding)
+{
+	// PANZER TODO
+}
 
 void M_Menu_Main_f (void);
 	void M_Menu_SinglePlayer_f (void);
@@ -165,12 +210,13 @@ M_DrawCharacter
 Draws one solid graphics character
 ================
 */
-#if 0 // PANZER TODO - fix this
 void M_DrawCharacter (int cx, int line, int num)
 {
+	#if 0 // PANZER TODO - fix this
 	Draw_CharacterScaled ( cx * m_scale + ((vid.width - 320 * m_scale)>>1), line * m_scale, m_scale, num);
+	#endif
 }
-#endif
+
 
 void M_Print (int cx, int cy, char *str)
 {
@@ -192,17 +238,19 @@ void M_PrintWhite (int cx, int cy, char *str)
 	}
 }
 
-#if 0 // PANZER TODO - remove this?
 void M_DrawTransPic (int x, int y, qpic_t *pic)
 {
+#if 0 // PANZER TODO - fix this
 	Draw_TransPicScaled (x  * m_scale+ ((vid.width - 320 * m_scale)>>1), y * m_scale, m_scale, pic);
+#endif
 }
 
 void M_DrawPic (int x, int y, qpic_t *pic)
 {
+#if 0 // PANZER TODO - fix this
 	Draw_PicScaled (x * m_scale + ((vid.width - 320 * m_scale)>>1), y * m_scale, m_scale, pic);
-}
 #endif
+}
 
 byte identityTable[256];
 byte translationTable[256];
@@ -470,12 +518,14 @@ void M_SinglePlayer_Key (int key)
 		switch (m_singleplayer_cursor)
 		{
 		case 0:
+#if 0 // PANZER TODO - fix this
 			if (sv.active)
 				if (!SCR_ModalMessage("Are you sure you want to\nstart a new game?\n"))
 					break;
 			key_dest = key_game;
 			if (sv.active)
 				trap_Cmd_ExecuteText (EXEC_APPEND, "disconnect\n");
+#endif
 			trap_Cmd_ExecuteText (EXEC_APPEND,"maxplayers 1\n");
 			trap_Cmd_ExecuteText (EXEC_APPEND,"map start\n");
 			break;
@@ -797,8 +847,11 @@ void M_Setup_Draw (void)
 	p = Draw_CachePic ("gfx/bigbox.lmp");
 	M_DrawTransPic (160, 64, p);
 	p = Draw_CachePic ("gfx/menuplyr.lmp");
+
+#if 0 // PANZER TODO
 	M_BuildTranslationTable(setup_top*16, setup_bottom*16);
 	M_DrawTransPicTranslate (172, 72, p);
+#endif
 
 	M_DrawCharacter (56, setup_cursor_table [setup_cursor], 12+((int)(realtime*4)&1));
 
@@ -1436,7 +1489,7 @@ void M_FindKeysForCommand (char *command, int *twokeys)
 		b = keybindings[j];
 		if (!b)
 			continue;
-		if (!strncmp (b, command, l) )
+		if (!Q_strncmp (b, command, l) )
 		{
 			twokeys[count] = j;
 			count++;
@@ -1459,7 +1512,7 @@ void M_UnbindCommand (char *command)
 		b = keybindings[j];
 		if (!b)
 			continue;
-		if (!strncmp (b, command, l) )
+		if (!Q_strncmp (b, command, l) )
 			Key_SetBinding (j, "");
 	}
 }
@@ -1530,8 +1583,8 @@ void M_Keys_Key (int k)
 		}
 		else if (k != '`')
 		{
-			sprintf (cmd, "bind \"%s\" \"%s\"\n", Key_KeynumToString (k), bindnames[keys_cursor][0]);
-			Cbuf_InsertText (cmd);
+			Com_sprintf (cmd, sizeof(cmd), "bind \"%s\" \"%s\"\n", Key_KeynumToString (k), bindnames[keys_cursor][0]);
+			trap_Cmd_ExecuteText (EXEC_APPEND, cmd);
 		}
 
 		bind_grab = qfalse;
@@ -1736,7 +1789,9 @@ void M_Quit_Key (int key)
 	case 'Y':
 	case 'y':
 		key_dest = key_console;
+#if 0 // PANZER TODO - fix this
 		Host_Quit_f ();
+#endif
 		break;
 
 	default:
@@ -2286,7 +2341,7 @@ void M_Menu_LanConfig_f (void)
 	if (StartingGame && lanConfig_cursor == 2)
 		lanConfig_cursor = 1;
 	lanConfig_port = DEFAULTnet_hostport;
-	sprintf(lanConfig_portname, "%u", lanConfig_port);
+	Com_sprintf(lanConfig_portname, sizeof(lanConfig_portname), "%u", lanConfig_port);
 
 	m_return_onerror = false;
 	m_return_reason[0] = 0;
@@ -2463,7 +2518,7 @@ void M_LanConfig_Key (int key)
 		l = lanConfig_port;
 	else
 		lanConfig_port = l;
-	sprintf(lanConfig_portname, "%u", lanConfig_port);
+	Com_sprintf(lanConfig_portname, sizeof(lanConfig_portname), "%u", lanConfig_port);
 #endif
 }
 
@@ -2622,6 +2677,7 @@ double m_serverInfoMessageTime;
 
 void M_Menu_GameOptions_f (void)
 {
+#if 0 // PANZER TODO - fix this
 	key_dest = key_menu;
 	m_state = m_gameoptions;
 	m_entersound = qtrue;
@@ -2629,6 +2685,7 @@ void M_Menu_GameOptions_f (void)
 		maxplayers = svs.maxclients;
 	if (maxplayers < 2)
 		maxplayers = svs.maxclientslimit;
+#endif
 }
 
 
@@ -2907,8 +2964,10 @@ void M_GameOptions_Key (int key)
 		S_LocalSound ("misc/menu2.wav");
 		if (gameoptions_cursor == 0)
 		{
+#if 0 // PANZER TODO - fix this
 			if (sv.active)
 				trap_Cmd_ExecuteText (EXEC_APPEND, "disconnect\n");
+#endif
 			trap_Cmd_ExecuteText (EXEC_APPEND, "listen 0\n");	// so host_netport will be re-examined
 			trap_Cmd_ExecuteText (EXEC_APPEND,  va ("maxplayers %u\n", maxplayers) );
 			SCR_BeginLoadingPlaque ();
@@ -3039,9 +3098,9 @@ void M_ServerList_Draw (void)
 	for (n = 0; n < hostCacheCount; n++)
 	{
 		if (hostcache[n].maxusers)
-			sprintf(string, "%-15.15s %-15.15s %2u/%2u\n", hostcache[n].name, hostcache[n].map, hostcache[n].users, hostcache[n].maxusers);
+			Com_sprintf(string, sizeof(string), "%-15.15s %-15.15s %2u/%2u\n", hostcache[n].name, hostcache[n].map, hostcache[n].users, hostcache[n].maxusers);
 		else
-			sprintf(string, "%-15.15s %-15.15s\n", hostcache[n].name, hostcache[n].map);
+			Com_sprintf(string, sizeof(string),"%-15.15s %-15.15s\n", hostcache[n].name, hostcache[n].map);
 		M_Print (16, 32 + 8*n, string);
 	}
 	M_DrawCharacter (0, 32 + slist_cursor*8, 12+((int)(realtime*4)&1));
@@ -3103,6 +3162,7 @@ void M_ServerList_Key (int k)
 
 void M_Init (void)
 {
+#if 0 // PANZER TODO - fix this
 	Cmd_AddCommand ("togglemenu", M_ToggleMenu_f);
 
 	Cmd_AddCommand ("menu_main", M_Menu_Main_f);
@@ -3116,6 +3176,7 @@ void M_Init (void)
 	Cmd_AddCommand ("menu_video", M_Menu_Video_f);
 	Cmd_AddCommand ("help", M_Menu_Help_f);
 	Cmd_AddCommand ("menu_quit", M_Menu_Quit_f);
+#endif
 }
 
 
@@ -3218,10 +3279,6 @@ void M_Draw (void)
 		S_LocalSound ("misc/menu2.wav");
 		m_entersound = qfalse;
 	}
-
-	VID_UnlockBuffer ();
-	S_ExtraUpdate ();
-	VID_LockBuffer ();
 }
 
 

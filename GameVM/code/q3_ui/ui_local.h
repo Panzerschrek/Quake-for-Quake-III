@@ -447,7 +447,6 @@ extern char			*UI_Argv( int arg );
 extern char			*UI_Cvar_VariableString( const char *var_name );
 extern void			UI_Refresh( int time );
 extern void			UI_StartDemoLoop( void );
-extern qboolean		m_entersound;
 extern uiStatic_t	uis;
 
 //

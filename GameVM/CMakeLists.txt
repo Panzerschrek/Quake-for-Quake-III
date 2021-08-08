@@ -44,7 +44,10 @@ add_library(cgame${LIB_SUFFIX} SHARED ${CLIENT_SOURCES} ${CLIENT_SOURCES_MAIN} $
 target_link_libraries(cgame${LIB_SUFFIX} qcommon)
 
 # UI
-file(GLOB UI_SOURCES code/q3_ui/*.c)
+file(GLOB UI_SOURCES
+	code/q3_ui/*.c
+	code/game/bg_lib.c
+	)
 file(GLOB UI_SOURCES_MAIN code/q3_ui/ui_main.c)
 list(REMOVE_ITEM UI_SOURCES ${UI_SOURCES_MAIN})
 file(GLOB UI_HEADERS code/q3_ui/*.h)
