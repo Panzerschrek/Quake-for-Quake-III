@@ -185,7 +185,7 @@ static int CorrectUnwderwaterView(void) {
 	int inwater;
 	float v, phase;
 
-	inwater = ( trap_CM_PointContents( cg.refdef.vieworg, 0 ) & ( CONTENTS_WATER | CONTENTS_SLIME | CONTENTS_LAVA ) ) != 0;
+	inwater = ( cg.viewContents & ( CONTENTS_WATER | CONTENTS_SLIME | CONTENTS_LAVA ) ) != 0;
 	if(inwater )
 	{
 		phase = cg.time / 1000.0 * WAVE_FREQUENCY * M_PI * 2;
@@ -367,7 +367,6 @@ void CG_AddViewWeapon( playerState_t *ps ) {
 	trap_R_AddRefEntityToScene(&hand);
 }
 
-
 void CG_DrawActiveFrame( int serverTime, stereoFrame_t stereoView, qboolean demoPlayback ) {
 
 	int inwater;
@@ -406,6 +405,8 @@ void CG_DrawActiveFrame( int serverTime, stereoFrame_t stereoView, qboolean demo
 	else
 		CG_CalcIntermissionViewValues();
 
+	cg.viewContents = trap_CM_PointContents( cg.refdef.vieworg, 0 );
+
 	inwater = CorrectUnwderwaterView();
 
 	if( cg.snap.ps.pm_type == PM_NORMAL )
@@ -418,6 +419,8 @@ void CG_DrawActiveFrame( int serverTime, stereoFrame_t stereoView, qboolean demo
 	trap_S_Respatialize( cg.snap.ps.clientNum, cg.refdef.vieworg, cg.refdef.viewaxis, inwater );
 
 	trap_R_RenderScene( &cg.refdef );
+
+	CG_DrawPolyBlend();
 
 	if( cg.snap.ps.pm_type == PM_NORMAL )
 	{

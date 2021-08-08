@@ -54,6 +54,10 @@ Cmd_Argc() / Cmd_Argv()
 */
 static void CG_ServerCommand( void ) {
 	const char	*cmd;
+	const char	*arg;
+	const char	*argInternal;
+	char		*ptr;
+	char		buff[MAX_STRING_CHARS];
 
 	cmd = CG_Argv(0);
 
@@ -70,8 +74,27 @@ static void CG_ServerCommand( void ) {
 		strncpy(cg.centerPrintString, CG_Argv(1), sizeof(cg.centerPrintString));
 	}
 	else if ( !strcmp( cmd, "stufftext" ) ) {
-		CG_Argv(1);
-		// PANZER TODO - process this command. Generaly this is same sort of command wrapper command.
+		arg= CG_Argv(1);
+
+
+		strcpy(buff, arg);
+		ptr = buff;
+		argInternal = buff;
+		while(*ptr!= '\0' && !isspace(*ptr))
+			++ptr;
+		if(isspace(*ptr))
+		{
+			*ptr= '\0';
+			++ptr;
+		}
+
+		if( !strcmp(argInternal, "v_cshift") ) {
+			// Unused by at least original Quake.
+			// PANZER TODO - implement this.
+		}
+		else  if( !strcmp(argInternal, "bf") ) {
+			V_BonusFlash_f();
+		}
 	}
 	else if ( !strcmp( cmd, "cdtrack" ) ) {
 		CG_StartMusic(atoi(CG_Argv(1)), atoi(CG_Argv(2)));

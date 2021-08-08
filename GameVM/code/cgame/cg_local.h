@@ -62,6 +62,18 @@ typedef struct particle_s
 	ptype_t		type;
 } particle_t;
 
+#define	CSHIFT_CONTENTS	0
+#define	CSHIFT_DAMAGE	1
+#define	CSHIFT_BONUS	2
+#define	CSHIFT_POWERUP	3
+#define	NUM_CSHIFTS		4
+
+typedef struct
+{
+	int		destcolor[3];
+	int		percent;		// 0-256
+} cshift_t;
+
 // The entire cgame module is unloaded and reloaded on each level change,
 // so there is NO persistant data between levels on the client side.
 // If you absolutely need something stored, it can either be kept
@@ -90,6 +102,9 @@ typedef struct {
 	char		levelname[40];	// for display on solo scoreboard
 	int			viewentity;		// cl_entitites[cl.viewentity] = player
 
+	cshift_t	cshifts[NUM_CSHIFTS];	// color shifts for damage, powerups
+	cshift_t	prev_cshifts[NUM_CSHIFTS];	// and content types
+
 	int weaponSelect;
 
 	scoreboard_t scores[32]; // for max clients.
@@ -99,6 +114,7 @@ typedef struct {
 
 	// view rendering
 	refdef_t	refdef;
+	int			viewContents;
 	vec3_t		refdefViewAngles;		// will be converted to refdef.viewaxis
 } cg_t;
 
@@ -134,6 +150,7 @@ typedef struct {
 
 	// Various textures.
 	qhandle_t		particle;
+	qhandle_t		fullscreen_blend;
 
 	// Sounds.
 	qhandle_t gameSounds[MAX_SOUNDS];
@@ -255,12 +272,22 @@ void CG_KeyEvent(int key, qboolean down);
 void CG_MouseEvent(int x, int y);
 void CG_EventHandling(int type);
 
+int GetItems(void);
+
 //
 // cg_weapons.c
 //
 void CG_NextWeapon_f( void );
 void CG_PrevWeapon_f( void );
 void CG_Weapon_f( void );
+
+//
+// cg_blend.c
+//
+void V_cshift_f (int r, int g, int b, int a);
+void V_BonusFlash_f (void);
+void V_ParseDamage(entityState_t* event);
+void CG_DrawPolyBlend(void);
 
 //
 // cg_dlight.c

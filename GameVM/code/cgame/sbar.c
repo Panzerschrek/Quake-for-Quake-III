@@ -563,10 +563,6 @@ void Sbar_DrawScoreboard (void)
 #endif
 }
 
-static int GetItems()
-{
-	return (cg.snap.ps.stats[STAT_ITEMS_LO] & 65535) | (cg.snap.ps.stats[STAT_ITEMS_HI] << 16);
-}
 
 //=============================================================================
 

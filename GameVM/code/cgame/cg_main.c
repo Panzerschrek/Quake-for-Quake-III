@@ -299,6 +299,7 @@ static void CG_RegisterResources( void ) {
 	cgs.beam = trap_R_RegisterModel("progs/beam.md3");
 
 	cgs.particle = trap_R_RegisterShader("textures/particle");
+	cgs.fullscreen_blend = trap_R_RegisterShaderNoMip("textures/fullscreen_blend");
 
 	{
 		const char* musicIndexStr = CG_ConfigString(CS_MUSIC);
@@ -397,6 +398,10 @@ void CG_Shutdown( void ) {
 	// like closing files or archiving session data
 }
 
+int GetItems()
+{
+	return (cg.snap.ps.stats[STAT_ITEMS_LO] & 65535) | (cg.snap.ps.stats[STAT_ITEMS_HI] << 16);
+}
 
 /*
 ==================

@@ -220,7 +220,11 @@ void CG_CheckEvents( entityState_t *ent )
 	case svc_particle:
 		CG_ProcessParticle(ent);
 		break;
+	case svc_damage:
+		V_ParseDamage(ent);
+		break;
 	case svc_temp_entity:
 		CG_ProcessTEnt(ent);
+		break;
 	}
 }
