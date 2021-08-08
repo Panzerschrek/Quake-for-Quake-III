@@ -33,6 +33,7 @@ target_link_libraries(qagame${LIB_SUFFIX} qcommon)
 file(GLOB CLIENT_SOURCES
 	code/cgame/*.c
 	code/game/bg_lib.c
+	code/game/view.c
 	)
 file(GLOB CLIENT_SOURCES_MAIN code/cgame/cg_main.c)
 list(REMOVE_ITEM CLIENT_SOURCES ${CLIENT_SOURCES_MAIN})
