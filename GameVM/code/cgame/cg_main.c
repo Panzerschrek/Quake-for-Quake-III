@@ -79,6 +79,9 @@ centity_t		cg_entities[MAX_GENTITIES];
 beam_t			cg_beams[MAX_BEAMS];
 sbar_t			sbar;
 
+vmCvar_t	cl_rollspeed;
+vmCvar_t	cl_rollangle;
+
 vmCvar_t	cg_timescaleFadeEnd;
 vmCvar_t	cg_timescaleFadeSpeed;
 vmCvar_t	cg_timescale;
@@ -99,8 +102,8 @@ typedef struct {
 } cvarTable_t;
 
 static cvarTable_t cvarTable[] = {
-	// the following variables are created in other parts of the system,
-	// but we also reference them here
+	{ &cl_rollspeed, "cl_rollspeed", "200", CVAR_SERVERINFO | CVAR_ARCHIVE },
+	{ &cl_rollangle, "cl_rollangle", "2.0", CVAR_SERVERINFO | CVAR_ARCHIVE },
 	{ &cg_timescaleFadeEnd, "cg_timescaleFadeEnd", "1", 0},
 	{ &cg_timescaleFadeSpeed, "cg_timescaleFadeSpeed", "0", 0},
 	{ &cg_timescale, "timescale", "1", 0},

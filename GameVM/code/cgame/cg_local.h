@@ -206,6 +206,9 @@ extern	centity_t		cg_entities[MAX_GENTITIES];
 extern	beam_t			cg_beams[MAX_BEAMS];
 extern sbar_t			sbar;
 
+extern	vmCvar_t		cl_rollspeed;
+extern	vmCvar_t		cl_rollangle;
+
 extern	vmCvar_t		cg_timescaleFadeEnd;
 extern	vmCvar_t		cg_timescaleFadeSpeed;
 extern	vmCvar_t		cg_timescale;

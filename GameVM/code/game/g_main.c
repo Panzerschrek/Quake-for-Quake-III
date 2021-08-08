@@ -542,6 +542,7 @@ void G_RunFrame( int levelTime ) {
 
 		VectorCopy(edict->v.origin, client->ps.origin);
 		VectorCopy(edict->v.v_angle, client->ps.viewangles);
+		VectorCopy(edict->v.velocity, client->ps.velocity);
 		client->ps.viewheight = edict->v.view_ofs[2];
 		client->ps.weapon = SV_ModelIndex(pr_strings + edict->v.weaponmodel);
 		client->ps.weaponstate = edict->v.weaponframe; // Put weapon frame into "weaponstate" field.

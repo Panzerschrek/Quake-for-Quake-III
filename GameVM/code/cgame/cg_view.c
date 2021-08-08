@@ -60,6 +60,37 @@ static void CG_CalcFov( void ) {
 	cg.refdef.fov_y = fov_y;
 }
 
+/*
+==============
+V_CalcViewRoll
+
+Roll is induced by movement and damage
+==============
+*/
+static void V_CalcViewRoll (void)
+{
+	float		side;
+
+	side = V_CalcRoll (cg.refdefViewAngles, cg.snap.ps.velocity);
+	cg.refdefViewAngles[ROLL] += side;
+
+#if 0 // PANZER TODO - fix this
+	if (v_dmg_time > 0)
+	{
+		r_refdef.viewangles[ROLL] += v_dmg_time/v_kicktime.value*v_dmg_roll;
+		r_refdef.viewangles[PITCH] += v_dmg_time/v_kicktime.value*v_dmg_pitch;
+		v_dmg_time -= host_frametime;
+	}
+#endif
+
+	if (cg.snap.ps.stats[STAT_HEALTH] <= 0)
+	{
+		cg.refdefViewAngles[ROLL] = 80;	// dead view angle
+		return;
+	}
+
+}
+
 static void CG_CalcViewValues( void ) {
 	memset( &cg.refdef, 0, sizeof( cg.refdef ) );
 
@@ -70,6 +101,8 @@ static void CG_CalcViewValues( void ) {
 	VectorCopy( cg.snap.ps.viewangles, cg.refdefViewAngles );
 
 	CG_OffsetFirstPersonView();
+
+	V_CalcViewRoll();
 
 	// position eye relative to origin
 	AnglesToAxis( cg.refdefViewAngles, cg.refdef.viewaxis );
