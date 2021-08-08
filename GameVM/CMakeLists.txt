@@ -44,13 +44,13 @@ add_library(cgame${LIB_SUFFIX} SHARED ${CLIENT_SOURCES} ${CLIENT_SOURCES_MAIN} $
 target_link_libraries(cgame${LIB_SUFFIX} qcommon)
 
 # UI
-file(GLOB Q3_UI_SOURCES code/q3_ui/*.c)
-file(GLOB Q3_UI_SOURCES_MAIN code/q3_ui/ui_main.c)
-list(REMOVE_ITEM Q3_UI_SOURCES ${SERVER_SOURCES_MAIN})
-file(GLOB Q3_UI_HEADERS code/q3_ui/*.h)
-file(GLOB Q3_UI_SOURCES_NATIVE code/ui/ui_syscalls.c)
-file(GLOB Q3_UI_SOURCES_VM_ASM code/ui/ui_syscalls.asm)
-add_library(ui${LIB_SUFFIX} SHARED ${Q3_UI_SOURCES} ${Q3_UI_SOURCES_MAIN} ${Q3_UI_HEADERS} ${Q3_UI_SOURCES_NATIVE})
+file(GLOB UI_SOURCES code/q3_ui/*.c)
+file(GLOB UI_SOURCES_MAIN code/q3_ui/ui_main.c)
+list(REMOVE_ITEM UI_SOURCES ${UI_SOURCES_MAIN})
+file(GLOB UI_HEADERS code/q3_ui/*.h)
+file(GLOB UI_SOURCES_NATIVE code/ui/ui_syscalls.c)
+file(GLOB UI_SOURCES_VM_ASM code/ui/ui_syscalls.asm)
+add_library(ui${LIB_SUFFIX} SHARED ${UI_SOURCES} ${UI_SOURCES_MAIN} ${UI_HEADERS} ${UI_SOURCES_NATIVE})
 target_link_libraries(ui${LIB_SUFFIX} qcommon)
 
 
@@ -104,4 +104,27 @@ add_custom_target(
 	cgame.qvm ALL
 	DEPENDS ${CLIENT_LCC_ASM_FILES} ${CLIENT_SOURCES_VM_ASM}
 	COMMAND ${Q3_ASM} -o ${CMAKE_CURRENT_BINARY_DIR}/cgame.qvm ${CLIENT_LCC_ASM_FILES} ${CLIENT_SOURCES_VM_ASM}
+	)
+
+
+# UI VM
+list(APPEND UI_SOURCES_VM ${UI_SOURCES_MAIN})
+list(APPEND UI_SOURCES_VM ${UI_SOURCES})
+list(REMOVE_ITEM UI_SOURCES_VM ${UI_SOURCES_NATIVE})
+list(APPEND UI_SOURCES_VM ${QCOMMON_SOURCES})
+foreach(SOURCE ${UI_SOURCES_VM})
+	file(RELATIVE_PATH SOURCE_REL ${CMAKE_CURRENT_SOURCE_DIR} ${SOURCE})
+	set(OUT_ASM_FILE ${CMAKE_CURRENT_BINARY_DIR}/ui/${SOURCE_REL}.asm)
+	add_custom_command(
+		DEPENDS ${SOURCE}
+		OUTPUT ${OUT_ASM_FILE}
+		COMMAND ${Q3_LCC} ${SOURCE} -o ${OUT_ASM_FILE}
+		)
+	list(APPEND UI_LCC_ASM_FILES ${OUT_ASM_FILE})
+endforeach()
+
+add_custom_target(
+	ui.qvm ALL
+	DEPENDS ${UI_LCC_ASM_FILES} ${UI_SOURCES_VM_ASM}
+	COMMAND ${Q3_ASM} -o ${CMAKE_CURRENT_BINARY_DIR}/cgame.qvm ${UI_LCC_ASM_FILES} ${UI_SOURCES_VM_ASM}
 	)
