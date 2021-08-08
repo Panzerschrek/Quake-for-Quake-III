@@ -77,6 +77,7 @@ cg_t			cg;
 cgs_t			cgs;
 centity_t		cg_entities[MAX_GENTITIES];
 beam_t			cg_beams[MAX_BEAMS];
+dlight_t		cg_dlights[MAX_DLIGHTS];
 sbar_t			sbar;
 
 vmCvar_t		cl_bob;
@@ -351,6 +352,7 @@ void CG_Init( int serverMessageNum, int serverCommandSequence, int clientNum ) {
 	memset( &cg, 0, sizeof( cg ) );
 	memset( cg_entities, 0, sizeof( cg_entities ) );
 	memset (cg_beams, 0, sizeof(cg_beams));
+	memset (cg_dlights, 0, sizeof(cg_dlights));
 
 	cg.clientNum = clientNum;
 

@@ -156,6 +156,18 @@ typedef struct
 	vec3_t		start, end;
 } beam_t;
 
+#define	MAX_DLIGHTS		32
+typedef struct
+{
+	vec3_t	origin;
+	float	radius;
+	int		die;				// stop lighting after this time
+	float	decay;				// drop this each second
+	float	minlight;			// don't add when contributing less
+	int		key;
+} dlight_t;
+
+
 typedef struct
 {
 	qhandle_t		complete;
@@ -204,6 +216,7 @@ extern	cgs_t			cgs;
 extern	cg_t			cg;
 extern	centity_t		cg_entities[MAX_GENTITIES];
 extern	beam_t			cg_beams[MAX_BEAMS];
+extern	dlight_t		cg_dlights[MAX_DLIGHTS];
 extern sbar_t			sbar;
 
 extern	vmCvar_t		cl_bob;
@@ -248,6 +261,14 @@ void CG_EventHandling(int type);
 void CG_NextWeapon_f( void );
 void CG_PrevWeapon_f( void );
 void CG_Weapon_f( void );
+
+//
+// cg_dlight.c
+//
+
+dlight_t *CL_AllocDlight (int key);
+void CL_DecayLights (void);
+
 
 //
 // cg_event.c

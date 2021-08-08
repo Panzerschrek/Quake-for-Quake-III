@@ -98,6 +98,7 @@ static void CG_ProcessTEnt( entityState_t *ent )
 {
 	int rnd;
 	int colorStart, colorLength;
+	dlight_t *dl;
 
 	// PANZER TODO - generate dynamic lights.
 
@@ -114,7 +115,7 @@ static void CG_ProcessTEnt( entityState_t *ent )
 		break;
 
 	case TE_SPIKE:			// spike hitting wall
-		//R_RunParticleEffect (pos, vec3_origin, 0, 10);
+		R_RunParticleEffect (ent->origin, vec3_origin, 0, 10);
 		if ( rand() % 5 )
 			trap_S_StartSound(ent->origin, ENTITYNUM_NONE, CHAN_AUTO, cgs.sfx_tink1);
 		else
@@ -152,11 +153,11 @@ static void CG_ProcessTEnt( entityState_t *ent )
 
 	case TE_EXPLOSION:			// rocket explosion
 		R_ParticleExplosion (ent->origin);
-		//dl = CL_AllocDlight (0);
-		//VectorCopy (pos, dl->origin);
-		//dl->radius = 350;
-		//dl->die = cl.time + 0.5;
-		//dl->decay = 300;
+		dl = CL_AllocDlight (0);
+		VectorCopy (ent->origin, dl->origin);
+		dl->radius = 350;
+		dl->die = cg.time + 500;
+		dl->decay = 300;
 		trap_S_StartSound(ent->origin, ENTITYNUM_NONE, CHAN_AUTO, cgs.sfx_r_exp3);
 		break;
 
@@ -198,11 +199,11 @@ static void CG_ProcessTEnt( entityState_t *ent )
 		colorStart = 5;
 		colorLength = 16; // PANZER TODO - fix this
 		R_ParticleExplosion2 (ent->origin, colorStart, colorLength);
-		//dl = CL_AllocDlight (0);
-		//VectorCopy (pos, dl->origin);
-		//dl->radius = 350;
-		//dl->die = cl.time + 0.5;
-		//dl->decay = 300;
+		dl = CL_AllocDlight (0);
+		VectorCopy (ent->origin, dl->origin);
+		dl->radius = 350;
+		dl->die = cg.time + 500;
+		dl->decay = 300;
 		trap_S_StartSound(ent->origin, ENTITYNUM_NONE, CHAN_AUTO, cgs.sfx_r_exp3);
 		break;
 

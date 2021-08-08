@@ -308,6 +308,18 @@ void CG_AndAddTEnts (void)
 
 }
 
+static void CG_AddDlights(void) {
+	int		i;
+	dlight_t	*l;
+
+	l = cg_dlights;
+	for (i=0 ; i<MAX_DLIGHTS ; i++, l++)
+	{
+		if (l->die < cg.time || !l->radius)
+			continue;
+		trap_R_AddLightToScene(l->origin, l->radius, 1.0f, 1.0f, 1.0f );
+	}
+}
 
 /*
 ==============
@@ -381,8 +393,11 @@ void CG_DrawActiveFrame( int serverTime, stereoFrame_t stereoView, qboolean demo
 
 	cg.viewentity = cg.snap.ps.clientNum + 1;
 
+	CL_DecayLights();
+
 	CG_AddEntities();
 	CG_AndAddTEnts();
+	CG_AddDlights();
 	R_DrawParticles();
 
 	// build cg.refdef
