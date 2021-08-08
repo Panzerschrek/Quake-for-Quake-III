@@ -1,10 +1,11 @@
 Server:
 * Fix dead bodies collision detection
-* Gimbal lock for player camera
 * Save/Load
+* Fix some shot buttons (like on e1m1)
+* Next level transition (with saved player stats)
 
 Client:
-* Fix deathmatch scoreborad rawing code
+* Fix deathmatch scoreborad drawing code
 * Dynamic lights
 * Particles
 * Damage-based view roll changes
@@ -12,7 +13,6 @@ Client:
 * Client-side view roll calculation (as in original Quake)
 * Client-side animation for static entities
 * Rotation animation for items (weapons, powerups)
-* Music track change during the game (for intermission, etc.)
 * Addons (rogue/hipnotic) support in status bar
 * Status bar weapons blinking on pick-up
 * Rocket trails
@@ -30,6 +30,7 @@ Data export:
 * BSP items models (health boxes, ammo boxes)
 * Properly export textures with fullbright pixels
 * Properly export models textures with fullbright pixels
+* Replace '*' in texture names (in maps, wad) with something else, because '*' is not a valid symbol for file names. Also Quake-utilities recognize '/*' as comment start.
 
 Maps:
 * Fix missing light* entities
