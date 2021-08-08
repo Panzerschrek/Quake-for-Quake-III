@@ -139,6 +139,9 @@ void CG_AddEntities()
 	for ( num = 0 ; num < cg.snap.numEntities ; num++ ) {
 		in_ent = &cg.snap.entities[num];
 
+		if( in_ent->modelindex == 0 )
+			continue;
+
 		if( in_ent->number == cg.viewentity )
 			continue; // Do not draw player itself.
 

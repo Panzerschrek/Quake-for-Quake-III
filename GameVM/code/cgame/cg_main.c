@@ -208,7 +208,6 @@ void CG_StartMusic(int trackIndex, int loopTrackIndex) {
 	trackName[12]= '0' + trackIndex % 10;
 	loopTrackName[11]= '0' + loopTrackIndex / 10;
 	loopTrackName[12]= '0' + loopTrackIndex % 10;
-	Com_Printf("Starting music track \"%s\" and looping track \"%s\"\n", trackName, loopTrackName);
 	trap_S_StartBackgroundTrack(trackName, loopTrackName);
 }
 
