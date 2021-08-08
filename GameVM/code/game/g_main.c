@@ -473,8 +473,10 @@ Advances the non-player objects in the world
 ================
 */
 void G_RunFrame( int levelTime ) {
-	int			i;
+	int			i, j;
 	edict_t		*edict;
+	edict_t		*other;
+	edict_t		*event;
 	client_t	*client;
 
 	host_frametime = ( levelTime - level.time ) / 1000.0;
@@ -538,6 +540,18 @@ void G_RunFrame( int levelTime ) {
 		{
 			VectorCopy(edict->v.angles, edict->v.v_angle);
 			edict->v.fixangle = 0;
+		}
+
+		if (edict->v.dmg_take || edict->v.dmg_save)
+		{
+			other = PROG_TO_EDICT(edict->v.dmg_inflictor);
+
+			event= G_CreateEventEdict(edict->v.origin, svc_damage);
+			for (j=0 ; j<3 ; j++)
+				event->s.origin2[j]= other->v.origin[j] + 0.5*(other->v.mins[j] + other->v.maxs[j]);
+			event->s.constantLight= (((int)edict->v.dmg_save) & 255) | ((((int)edict->v.dmg_take) & 255) << 8);
+			edict->v.dmg_take = 0;
+			edict->v.dmg_save = 0;
 		}
 
 		VectorCopy(edict->v.origin, client->ps.origin);
