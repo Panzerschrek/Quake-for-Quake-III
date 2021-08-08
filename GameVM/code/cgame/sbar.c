@@ -575,7 +575,7 @@ void Sbar_DrawInventory (void)
 {
 	int		i;
 	char	num[6];
-	float	time;
+	int		time;
 	int		flashon;
 
 	const int inv_width= SBAR_WIDTH;
@@ -606,11 +606,17 @@ void Sbar_DrawInventory (void)
 	{
 		if (GetItems() & (IT_SHOTGUN<<i) )
 		{
-			// PANZER TODO - add flashing on pick-up.
-			if ( (IT_SHOTGUN<<i) == cg.snap.ps.stats[STAT_ACTIVE_WEAPON] )
-				flashon = 1;
+			time = cg.item_gettime[i];
+			flashon = (cg.time - time) / 100;
+			if (flashon >= 10)
+			{
+				if ( cg.snap.ps.stats[STAT_ACTIVE_WEAPON] == (IT_SHOTGUN<<i)  )
+					flashon = 1;
+				else
+					flashon = 0;
+			}
 			else
-				flashon = 0;
+				flashon = (flashon%5) + 2;
 
 			Sbar_DrawPicStretched (i*24, -16, weapon_width[i], weapon_height, sbar.sb_weapons[flashon][i]);
 
@@ -630,11 +636,17 @@ void Sbar_DrawInventory (void)
 	  {
 		 if (GetItems() & (1<<sbar.hipweapons[i]) )
 		 {
-			// PANZER TODO - add flashing on pick-up.
-		   if ( cg.snap.ps.stats[STAT_ACTIVE_WEAPON] == (1<<sbar.hipweapons[i])  )
-			  flashon = 1;
-		   else
-			  flashon = 0;
+			time = cg.item_gettime[sbar.hipweapons[i]];
+			flashon = (cg.time - time) / 100;
+			if (flashon >= 10)
+			{
+				if ( cg.snap.ps.stats[STAT_ACTIVE_WEAPON] == (1<<sbar.hipweapons[i]) )
+					flashon = 1;
+				else
+					flashon = 0;
+			}
+			else
+				flashon = (flashon%5) + 2;
 
 			// check grenade launcher
 			if (i==2)
@@ -704,12 +716,21 @@ void Sbar_DrawInventory (void)
    for (i=0 ; i<6 ; i++)
 	  if (GetItems() & (1<<(17+i)))
 	  {
-		// PANZER TODO - add flashing.
-		 //MED 01/04/97 changed keys
-		if (!hipnotic || (i>1))
-		{
-		   Sbar_DrawPicStretched (192 + i*16, -16, item_width, item_height, sbar.sb_items[i]);
-		}
+		  time = cg.item_gettime[17+i];
+		  if (time && time > cg.time - 2000 && flashon )
+		  {  // flash frame
+			 sb_updates = 0;
+		  }
+		  else
+		  {
+		  //MED 01/04/97 changed keys
+			 if (!hipnotic || (i>1))
+			 {
+				Sbar_DrawPicStretched (192 + i*16, -16, item_width, item_height, sbar.sb_items[i]);
+			 }
+		  }
+		  if (time && time > cg.time - 2000)
+			 sb_updates = 0;
 	  }
    //MED 01/04/97 added hipnotic items
    // hipnotic items
@@ -719,7 +740,7 @@ void Sbar_DrawInventory (void)
 		 if (GetItems() & (1<<(24+i)))
 		 {
 			time = cg.item_gettime[24+i];
-			if (time && time > cg.time / 1000 - 2 && flashon )
+			if (time && time > cg.time - 2000 && flashon )
 			{  // flash frame
 			   sb_updates = 0;
 			}
@@ -727,7 +748,7 @@ void Sbar_DrawInventory (void)
 			{
 			   Sbar_DrawPicStretched (288 + i*16, -16, addon_item_width, addon_item_height, sbar.hsb_items[i]);
 			}
-			if (time && time > cg.time / 1000 - 2)
+			if (time && time > cg.time / 1000 - 2000)
 			   sb_updates = 0;
 		 }
    }
@@ -741,7 +762,7 @@ void Sbar_DrawInventory (void)
 			{
 				time = cg.item_gettime[29+i];
 
-				if (time &&	time > cg.time - 2 && flashon )
+				if (time &&	time > cg.time - 2000 && flashon )
 				{	// flash frame
 					sb_updates = 0;
 				}
@@ -750,7 +771,7 @@ void Sbar_DrawInventory (void)
 					Sbar_DrawPicStretched (288 + i*16, -16, addon_item_width, addon_item_height, sbar.rsb_items[i]);
 				}
 
-				if (time &&	time > cg.time - 2)
+				if (time &&	time > cg.time - 2000)
 					sb_updates = 0;
 			}
 		}
@@ -762,8 +783,15 @@ void Sbar_DrawInventory (void)
 		{
 			if (GetItems() & (1<<(28+i)))
 			{
-				// PANZER TODO - add flashing.
-				Sbar_DrawPicStretched (SBAR_WIDTH-32 + i*8, -16, sigil_width, sigil_height, sbar.sb_sigil[i]);
+				time = cg.item_gettime[28+i];
+				if (time &&	time > cg.time - 2000 && flashon )
+				{	// flash frame
+					sb_updates = 0;
+				}
+				else
+					Sbar_DrawPicStretched (SBAR_WIDTH-32 + i*8, -16, sigil_width, sigil_height, sbar.sb_sigil[i]);
+				if (time &&	time > cg.time - 2000)
+					sb_updates = 0;
 			}
 		}
 	}

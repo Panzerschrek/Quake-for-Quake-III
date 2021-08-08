@@ -26,8 +26,9 @@ Foundation, Inc., 51 Franklin St, Fifth Floor, Boston, MA  02110-1301  USA
 #include "cg_local.h"
 
 void CG_ProcessSnapshots( void ) {
-	int				i, n, event_unique_id;
+	int				i, j, n, event_unique_id;
 	int snapshotTime;
+	int items;
 	entityState_t* entState;
 	centity_t*	cent;
 	trap_GetCurrentSnapshotNumber( &n, &snapshotTime );
@@ -56,6 +57,15 @@ void CG_ProcessSnapshots( void ) {
 			cent->prev_unique_event_id = event_unique_id;
 			CG_CheckEvents( &cg.snap.entities[i] );
 		}
+	}
+
+	items = GetItems();
+	if(cg.old_items != items)
+	{
+		for (j=0 ; j<32 ; j++)
+			if ( (items & (1<<j)) && !(cg.old_items & (1<<j)))
+				cg.item_gettime[j] = cg.time;
+		cg.old_items = items;
 	}
 }
 

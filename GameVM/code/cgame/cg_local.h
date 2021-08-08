@@ -98,6 +98,7 @@ typedef struct {
 								// is rendering at.
 
 	int			faceanimtime;
+	int			old_items;
 	int			item_gettime[32];	// cl.time of aquiring item, for blinking
 	char		levelname[40];	// for display on solo scoreboard
 	int			viewentity;		// cl_entitites[cl.viewentity] = player

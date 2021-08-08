@@ -9,9 +9,7 @@ Client:
 * Client-side animation for static entities
 * Rotation animation for items (weapons, powerups)
 * Addons (rogue/hipnotic) support in status bar
-* Status bar weapons blinking on pick-up
 * Rockets particle trails and lights
-* Improved underwater view - much closer to original
 
 Menu UI:
 
