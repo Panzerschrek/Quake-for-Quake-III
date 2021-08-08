@@ -18,6 +18,7 @@ edict_t* G_CreateEventEdict(vec3_t origin, int eventType)
 
 	e->eventTime = level.time;
 	e->s.event = eventType;
+	e->r.contents= 0;
 
 	// Give unique ids for all events to distinguish different events for same entity number on client.
 
