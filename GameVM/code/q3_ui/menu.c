@@ -35,40 +35,14 @@ typedef enum {key_game, key_console, key_message, key_menu} keydest_t;
 
 enum {m_none, m_main, m_singleplayer, m_load, m_save, m_multiplayer, m_setup, m_net, m_options, m_video, m_keys, m_help, m_quit, m_serialconfig, m_modemconfig, m_lanconfig, m_gameoptions, m_search, m_slist} m_state;
 
+qhandle_t conchars;
+
 typedef struct
 {
 	int			width, height;
 	qhandle_t	material;
 	char		name[MAX_OSPATH];
 } qpic_t;
-// Menu graphics.
-struct
-{
-	qpic_t box_tl;
-	qpic_t box_ml;
-	qpic_t box_bl;
-	qpic_t box_tm;
-	qpic_t box_mm;
-	qpic_t box_mm2;
-	qpic_t box_bm;
-	qpic_t box_tr;
-	qpic_t box_mr;
-	qpic_t box_br;
-	qpic_t qplaque;
-	qpic_t mainmenu;
-	qpic_t menudot[6];
-	qpic_t sp_menu;
-	qpic_t p_load;
-	qpic_t p_save;
-	qpic_t p_multi;
-	qpic_t mp_menu;
-	qpic_t bigbox;
-	qpic_t menuplyr;
-	qpic_t netmen1;
-	qpic_t dim_modm;
-	qpic_t netmen2;
-	qpic_t dim_drct;
-} mg;
 
 typedef struct _TargaHeader {
 	unsigned char 	id_length, colormap_type, image_type;
@@ -281,6 +255,27 @@ static void M_DetermineScale(void)
 	m_scale = scales[0] < scales[1] ? scales[0] : scales[1];
 }
 
+void Draw_CharacterScaled (float x, float y, float scale, int num)
+{
+	float	row, col;
+
+	num &= 255;
+	if( num == ' ' )
+		return;
+
+	row = num>>4;
+	col = num&15;
+
+	trap_R_DrawStretchPic(
+		x, y,
+		8 * scale, 8 * scale,
+		col / 16.0f,
+		row / 16.0,
+		col / 16.0 + 1.0 / 16.0,
+		row / 16.0 + 1.0 / 16.0,
+		conchars);
+}
+
 /*
 ================
 M_DrawCharacter
@@ -290,11 +285,12 @@ Draws one solid graphics character
 */
 void M_DrawCharacter (int cx, int line, int num)
 {
-	#if 0 // PANZER TODO - fix this
-	Draw_CharacterScaled ( cx * m_scale + ((vid.width - 320 * m_scale)>>1), line * m_scale, m_scale, num);
-	#endif
+	Draw_CharacterScaled(
+		cx * m_scale + (m_glconfig.vidWidth - 320 * m_scale) * 0.5f,
+		line * m_scale,
+		m_scale,
+		num);
 }
-
 
 void M_Print (int cx, int cy, char *str)
 {
@@ -637,22 +633,26 @@ int		loadable[MAX_SAVEGAMES];
 
 void M_ScanSaves (void)
 {
-#if 0 // PANZER TODO - fix this
-	int		i, j;
+	int		i, j, n;
 	char	name[MAX_OSPATH];
-	FILE	*f;
+	char	buff[MAX_STRING_CHARS];
+	fileHandle_t	f;
 	int		version;
 
 	for (i=0 ; i<MAX_SAVEGAMES ; i++)
 	{
 		strcpy (m_filenames[i], "--- UNUSED SLOT ---");
-		loadable[i] = false;
-		sprintf (name, "%s/s%i.sav", com_gamedir, i);
-		f = fopen (name, "r");
+		loadable[i] = qfalse;
+		Com_sprintf (name, sizeof(name), "s%i.sav", i);
+		f= 0;
+		trap_FS_FOpenFile (name, &f, FS_READ);
 		if (!f)
 			continue;
-		fscanf (f, "%i\n", &version);
-		fscanf (f, "%79s\n", name);
+		trap_FS_Read(buff, sizeof(buff), f);
+		trap_FS_FCloseFile(f);
+
+		sscanf (buff, "%i\n%n", &version, &n);
+		sscanf (buff + n, "%79s\n", name);
 		strncpy (m_filenames[i], name, sizeof(m_filenames[i])-1);
 
 	// change _ back to space
@@ -660,9 +660,7 @@ void M_ScanSaves (void)
 			if (m_filenames[i][j] == '_')
 				m_filenames[i][j] = ' ';
 		loadable[i] = qtrue;
-		fclose (f);
 	}
-#endif
 }
 
 void M_Menu_Load_f (void)
@@ -3251,6 +3249,8 @@ void M_Init (void)
 
 	m_state = m_main;
 	key_dest = key_menu;
+
+	conchars = trap_R_RegisterShaderNoMip("gfx_wad/CONCHARS");
 
 #if 0 // PANZER TODO - fix this
 	Cmd_AddCommand ("togglemenu", M_ToggleMenu_f);
