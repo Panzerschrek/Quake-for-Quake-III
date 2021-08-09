@@ -145,9 +145,37 @@ char *Key_KeynumToString (int keynum)
 	return "PANZER - TODO";
 }
 
+typedef struct {
+	char name[MAX_OSPATH];
+	qhandle_t soundHandle;
+} cached_sound_t;
+
+cached_sound_t m_sounds_cache[256];
+int m_num_cached_sounds;
+
+
+cached_sound_t* S_CacheSound(const char* name)
+{
+	int		i;
+	cached_sound_t *s;
+	char	soundName[MAX_OSPATH];
+
+	for(i = 0; i < m_num_cached_sounds; ++i)
+		if(strcmp(m_sounds_cache[i].name, name) == 0)
+			return &m_sounds_cache[i];
+
+	s = &m_sounds_cache[m_num_cached_sounds];
+	++m_num_cached_sounds;
+	strcpy(s->name, name);
+
+	Com_sprintf(soundName, sizeof(soundName), "sound/%s", name);
+	s->soundHandle = trap_S_RegisterSound(soundName, qfalse);
+	return s;
+}
+
 void S_LocalSound(const char* name)
 {
-	// PANZER TODO - fix this
+	trap_S_StartLocalSound( S_CacheSound(name)->soundHandle, CHAN_LOCAL_SOUND );
 }
 
 void Con_ToggleConsole_f(void)
