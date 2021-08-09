@@ -473,6 +473,7 @@ void M_Menu_Main_f (void)
 	key_dest = key_menu;
 	m_state = m_main;
 	m_entersound = qtrue;
+	trap_Key_SetCatcher( KEYCATCH_UI );
 }
 
 

@@ -54,25 +54,13 @@ qboolean UI_IsFullscreen( void ) {
 	return (trap_Key_GetCatcher() & KEYCATCH_UI) != 0;
 }
 
-static void NeedCDAction( qboolean result ) {
-	if ( !result ) {
-		trap_Cmd_ExecuteText( EXEC_APPEND, "quit\n" );
-	}
-}
-
-static void NeedCDKeyAction( qboolean result ) {
-	if ( !result ) {
-		trap_Cmd_ExecuteText( EXEC_APPEND, "quit\n" );
-	}
-}
-
 void UI_SetActiveMenu( uiMenuCommand_t menu ) {
 	switch ( menu ) {
 	case UIMENU_NONE:
 		UI_ForceMenuOff();
 		return;
 	case UIMENU_MAIN:
-		trap_Key_SetCatcher( KEYCATCH_UI );
+		M_Menu_Main_f();
 		return;
 	case UIMENU_NEED_CD:
 		return;
