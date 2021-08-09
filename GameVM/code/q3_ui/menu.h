@@ -44,4 +44,4 @@ void M_DrawCheckbox (int x, int y, int on);
 void M_DrawCharacter (int cx, int line, int num);
 void M_DrawTextBox (int x, int y, int width, int lines);
 
-
+void M_Menu_Main_f (void);

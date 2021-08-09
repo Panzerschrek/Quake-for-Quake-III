@@ -18,12 +18,7 @@ along with this program; if not, write to the Free Software
 Foundation, Inc., 59 Temple Place - Suite 330, Boston, MA  02111-1307, USA.
 
 */
-#include "../game/quakedef.h"
 #include "ui_local.h"
-
-#ifdef _WIN32
-#include "winquake.h"
-#endif
 
 void (*vid_menudrawfn)(void);
 void (*vid_menukeyfn)(int key);
@@ -636,6 +631,7 @@ void M_SinglePlayer_Key (int key)
 int		load_cursor;		// 0 < load_cursor < MAX_SAVEGAMES
 
 #define	MAX_SAVEGAMES		12
+#define	SAVEGAME_COMMENT_LENGTH	39
 char	m_filenames[MAX_SAVEGAMES][SAVEGAME_COMMENT_LENGTH+1];
 int		loadable[MAX_SAVEGAMES];
 
