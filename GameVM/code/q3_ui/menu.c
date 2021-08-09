@@ -507,6 +507,7 @@ void M_Main_Key (int key)
 	case K_ESCAPE:
 		key_dest = key_game;
 		m_state = m_none;
+		trap_Key_SetCatcher( trap_Key_GetCatcher() & ~KEYCATCH_UI );
 		break;
 
 	case K_DOWNARROW:

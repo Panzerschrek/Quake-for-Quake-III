@@ -813,20 +813,22 @@ void UI_SetActiveMenu( uiMenuCommand_t menu ) {
 		return;
 	case UIMENU_MAIN:
 		UI_MainMenu();
+		/*
+		if( (trap_Key_GetCatcher() & KEYCATCH_UI) == 0 )
+		{
+			Com_Printf("Set KEYCATCH_UI\n");
+			trap_Key_SetCatcher( KEYCATCH_UI );
+		}
+		*/
 		return;
 	case UIMENU_NEED_CD:
-		UI_ConfirmMenu( "Insert the CD", 0, NeedCDAction );
 		return;
 	case UIMENU_BAD_CD_KEY:
-		UI_ConfirmMenu( "Bad CD Key", 0, NeedCDKeyAction );
 		return;
 	case UIMENU_INGAME:
-		/*
-		//GRank
-		UI_RankingsMenu();
-		return;
-		*/
-		trap_Cvar_Set( "cl_paused", "1" );
+		//trap_Cvar_Set( "cl_paused", "1" ); // PANZER TODO - enable pause
+		M_Menu_Main_f();
+		trap_Key_SetCatcher( KEYCATCH_UI );
 		return;
 		
 	case UIMENU_TEAM:
@@ -1028,7 +1030,6 @@ UI_Init
 void UI_Init( void ) {
 	M_Init();
 	UI_RegisterCvars();
-
 
 	// cache redundant calulations
 	trap_GetGlconfig( &uis.glconfig );
