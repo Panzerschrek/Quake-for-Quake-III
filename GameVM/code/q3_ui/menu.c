@@ -3282,7 +3282,10 @@ void M_Draw (void)
 
 	if (!m_recursiveDraw)
 	{
-		Draw_FadeScreen ();
+		if(qfalse) // PANZER TODO - drad fade screen in game only
+			Draw_FadeScreen ();
+		else
+			trap_R_DrawStretchPic(0.0f, 0.0f, m_glconfig.vidWidth, m_glconfig.vidHeight, 0.0f, 0.0f, 1.0f, 1.0f, Draw_CachePic ("gfx/conback.lmp")->material );
 	}
 	else
 	{
