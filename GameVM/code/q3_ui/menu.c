@@ -28,6 +28,8 @@ Foundation, Inc., 59 Temple Place - Suite 330, Boston, MA  02111-1307, USA.
 void (*vid_menudrawfn)(void);
 void (*vid_menukeyfn)(int key);
 
+glconfig_t m_glconfig;
+
 double		realtime, host_time; // PANZER TODO - remove its usage
 qboolean		standard_quake, rogue, hipnotic; // PANZER TODO - init this.
 
@@ -41,7 +43,8 @@ enum {m_none, m_main, m_singleplayer, m_load, m_save, m_multiplayer, m_setup, m_
 typedef struct
 {
 	int			width, height;
-	qhandle_t	handle;
+	qhandle_t	material;
+	char		name[MAX_OSPATH];
 } qpic_t;
 // Menu graphics.
 struct
@@ -72,10 +75,64 @@ struct
 	qpic_t dim_drct;
 } mg;
 
+typedef struct _TargaHeader {
+	unsigned char 	id_length, colormap_type, image_type;
+	unsigned char	colormap_index[2], colormap_length[2];
+	unsigned char	colormap_size;
+	unsigned short	x_origin, y_origin, width, height;
+	unsigned char	pixel_size, attributes;
+} TargaHeader;
+
+qpic_t m_pics_cache[256];
+int m_num_cached_pics;
+
 qpic_t* Draw_CachePic(const char* name)
 {
-	// PANZER - TODO
-	return NULL;
+	int		i;
+	char	fileName[MAX_OSPATH];
+	char	materialName[MAX_OSPATH];
+	int		l;
+	qpic_t*	p;
+	fileHandle_t f;
+	TargaHeader tgaHeader;
+
+	for(i = 0; i < m_num_cached_pics; ++i)
+		if(strcmp(m_pics_cache[i].name, name) == 0)
+			return &m_pics_cache[i];
+
+	p = &m_pics_cache[m_num_cached_pics];
+	++m_num_cached_pics;
+	strcpy(p->name, name);
+
+	l= strlen(name);
+	if(l <= 4 )
+		return p;
+
+	// Cut ".lmp" extension.
+	strcpy(materialName, name);
+	materialName[l-4]= 0;
+
+	// Read image file to know it's size because engine itself does not provide API for that.
+	strcpy(fileName, materialName);
+	strcat(fileName, ".tga");
+
+	f = 0;
+	trap_FS_FOpenFile(fileName, &f, FS_READ);
+	if(f == 0)
+	{
+		Com_Printf("Failed to open pic %s\n", fileName);
+		return p;
+	}
+	trap_FS_Read(&tgaHeader, sizeof(tgaHeader), f);
+	trap_FS_FCloseFile(f);
+
+	p->width = LittleShort(tgaHeader.width);
+	p->height = LittleShort(tgaHeader.height);
+
+	// Load material itself.
+	p->material = trap_R_RegisterShaderNoMip(materialName);
+
+	return p;
 }
 
 void Draw_FadeScreen (void)
@@ -195,11 +252,9 @@ void M_ConfigureNetSubsystem(void);
 static void M_DetermineScale(void)
 {
 	int		scales[2];
-	glconfig_t gl_config;
-	trap_GetGlconfig(&gl_config);
 	// Calc number of original 320x200 screens in current screen
-	scales[0] = gl_config.vidWidth  / 320;
-	scales[1] = gl_config.vidHeight / 200;
+	scales[0] = m_glconfig.vidWidth  / 320;
+	scales[1] = m_glconfig.vidHeight / 200;
 	m_scale = scales[0] < scales[1] ? scales[0] : scales[1];
 }
 
@@ -240,16 +295,21 @@ void M_PrintWhite (int cx, int cy, char *str)
 
 void M_DrawTransPic (int x, int y, qpic_t *pic)
 {
-#if 0 // PANZER TODO - fix this
-	Draw_TransPicScaled (x  * m_scale+ ((vid.width - 320 * m_scale)>>1), y * m_scale, m_scale, pic);
-#endif
+	trap_R_DrawStretchPic (
+		x * m_scale + (m_glconfig.vidWidth - 320 * m_scale) * 0.5f,
+		y * m_scale,
+		pic->width * m_scale,
+		pic->height * m_scale,
+		0.0f,
+		0.0f,
+		1.0f,
+		1.0f,
+		pic->material);
 }
 
 void M_DrawPic (int x, int y, qpic_t *pic)
 {
-#if 0 // PANZER TODO - fix this
-	Draw_PicScaled (x * m_scale + ((vid.width - 320 * m_scale)>>1), y * m_scale, m_scale, pic);
-#endif
+	M_DrawTransPic(x, y, pic);
 }
 
 byte identityTable[256];
@@ -3162,6 +3222,11 @@ void M_ServerList_Key (int k)
 
 void M_Init (void)
 {
+	trap_GetGlconfig( &m_glconfig );
+
+	m_state = m_main;
+	key_dest = key_menu;
+
 #if 0 // PANZER TODO - fix this
 	Cmd_AddCommand ("togglemenu", M_ToggleMenu_f);
 
