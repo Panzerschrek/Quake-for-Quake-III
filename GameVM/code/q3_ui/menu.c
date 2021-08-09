@@ -3380,6 +3380,8 @@ void M_Keydown (int key)
 	switch (m_state)
 	{
 	case m_none:
+		m_state = m_main;
+		key_dest = key_menu;
 		return;
 
 	case m_main:
