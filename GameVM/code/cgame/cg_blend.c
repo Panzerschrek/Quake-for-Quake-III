@@ -209,31 +209,7 @@ void V_CalcPowerupCshift (void)
 
 void V_UpdatePalette (void)
 {
-	int		i, j;
-	qboolean	new;
-	byte	*basepal, *newpal;
-	byte	pal[768];
-	int		r,g,b,a;
-	qboolean force;
-
 	V_CalcPowerupCshift ();
-
-	new = qfalse;
-
-	for (i=0 ; i<NUM_CSHIFTS ; i++)
-	{
-		if (cg.cshifts[i].percent != cg.prev_cshifts[i].percent)
-		{
-			new = qtrue;
-			cg.prev_cshifts[i].percent = cg.cshifts[i].percent;
-		}
-		for (j=0 ; j<3 ; j++)
-			if (cg.cshifts[i].destcolor[j] != cg.prev_cshifts[i].destcolor[j])
-			{
-				new = qtrue;
-				cg.prev_cshifts[i].destcolor[j] = cg.cshifts[i].destcolor[j];
-			}
-	}
 
 	// drop the damage value
 	cg.cshifts[CSHIFT_DAMAGE].percent -= cg.frametime/1000.0f*150;

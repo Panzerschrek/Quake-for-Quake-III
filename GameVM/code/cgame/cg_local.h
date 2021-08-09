@@ -103,8 +103,7 @@ typedef struct {
 	char		levelname[40];	// for display on solo scoreboard
 	int			viewentity;		// cl_entitites[cl.viewentity] = player
 
-	cshift_t	cshifts[NUM_CSHIFTS];	// color shifts for damage, powerups
-	cshift_t	prev_cshifts[NUM_CSHIFTS];	// and content types
+	cshift_t	cshifts[NUM_CSHIFTS];	// color shifts for damage, powerups and content types
 
 	int weaponSelect;
 
