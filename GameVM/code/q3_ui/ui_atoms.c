@@ -783,11 +783,7 @@ void UI_DrawChar( int x, int y, int ch, int style, vec4_t color )
 }
 
 qboolean UI_IsFullscreen( void ) {
-	if ( uis.activemenu && ( trap_Key_GetCatcher() & KEYCATCH_UI ) ) {
-		return uis.activemenu->fullscreen;
-	}
-
-	return qfalse;
+	return (trap_Key_GetCatcher() & KEYCATCH_UI) != 0;
 }
 
 static void NeedCDAction( qboolean result ) {
@@ -812,14 +808,7 @@ void UI_SetActiveMenu( uiMenuCommand_t menu ) {
 		UI_ForceMenuOff();
 		return;
 	case UIMENU_MAIN:
-		UI_MainMenu();
-		/*
-		if( (trap_Key_GetCatcher() & KEYCATCH_UI) == 0 )
-		{
-			Com_Printf("Set KEYCATCH_UI\n");
-			trap_Key_SetCatcher( KEYCATCH_UI );
-		}
-		*/
+		trap_Key_SetCatcher( KEYCATCH_UI );
 		return;
 	case UIMENU_NEED_CD:
 		return;
