@@ -150,7 +150,7 @@ void S_LocalSound(const char* name)
 
 void Con_ToggleConsole_f(void)
 {
-	// PANZER TODO
+	trap_Cmd_ExecuteText (EXEC_APPEND, "toggleconsole");
 }
 
 qboolean SCR_ModalMessage (const char* message)
