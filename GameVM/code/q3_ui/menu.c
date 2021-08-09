@@ -19,6 +19,7 @@ Foundation, Inc., 59 Temple Place - Suite 330, Boston, MA  02111-1307, USA.
 
 */
 #include "ui_local.h"
+#include "../game/bg_lib.h"
 
 void (*vid_menudrawfn)(void);
 void (*vid_menukeyfn)(int key);
@@ -27,8 +28,6 @@ glconfig_t m_glconfig;
 
 double		realtime, host_time; // PANZER TODO - remove its usage
 qboolean		standard_quake, rogue, hipnotic; // PANZER TODO - init this.
-
-char *keybindings[256];
 
 int key_dest;
 typedef enum {key_game, key_console, key_message, key_menu} keydest_t;
@@ -111,7 +110,9 @@ void Draw_FadeScreen (void)
 
 char *Key_KeynumToString (int keynum)
 {
-	return "PANZER - TODO";
+	static char buff[MAX_STRING_CHARS];
+	trap_Key_KeynumToStringBuf(keynum, buff, sizeof(buff));
+	return buff;
 }
 
 typedef struct {
@@ -1525,7 +1526,7 @@ char *bindnames[][2] =
 {
 {"+attack", 		"attack"},
 {"impulse 10", 		"change weapon"},
-{"+jump", 			"jump / swim up"},
+{"+moveup", 		"jump / swim up"},
 {"+forward", 		"walk forward"},
 {"+back", 			"backpedal"},
 {"+left", 			"turn left"},
@@ -1561,7 +1562,7 @@ void M_FindKeysForCommand (char *command, int *twokeys)
 	int		count;
 	int		j;
 	int		l;
-	char	*b;
+	char	b[MAX_STRING_CHARS];
 
 	twokeys[0] = twokeys[1] = -1;
 	l = strlen(command);
@@ -1569,8 +1570,8 @@ void M_FindKeysForCommand (char *command, int *twokeys)
 
 	for (j=0 ; j<256 ; j++)
 	{
-		b = keybindings[j];
-		if (!b)
+		trap_Key_GetBindingBuf(j, b, sizeof(b));
+		if (!b[0])
 			continue;
 		if (!Q_strncmp (b, command, l) )
 		{
@@ -1586,14 +1587,14 @@ void M_UnbindCommand (char *command)
 {
 	int		j;
 	int		l;
-	char	*b;
+	char	b[MAX_STRING_CHARS];
 
 	l = strlen(command);
 
 	for (j=0 ; j<256 ; j++)
 	{
-		b = keybindings[j];
-		if (!b)
+		trap_Key_GetBindingBuf(j, b, sizeof(b));
+		if (!b[0])
 			continue;
 		if (!Q_strncmp (b, command, l) )
 			Key_SetBinding (j, "");
