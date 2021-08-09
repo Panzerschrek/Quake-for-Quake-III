@@ -1874,9 +1874,7 @@ void M_Quit_Key (int key)
 	case 'Y':
 	case 'y':
 		key_dest = key_console;
-#if 0 // PANZER TODO - fix this
-		Host_Quit_f ();
-#endif
+		trap_Cmd_ExecuteText( EXEC_APPEND, "quit\n" );
 		break;
 
 	default:
