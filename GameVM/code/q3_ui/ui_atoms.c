@@ -845,23 +845,8 @@ UI_KeyEvent
 =================
 */
 void UI_KeyEvent( int key, int down ) {
-	sfxHandle_t		s;
-
-	if (!uis.activemenu) {
-		return;
-	}
-
-	if (!down) {
-		return;
-	}
-
-	if (uis.activemenu->key)
-		s = uis.activemenu->key( key );
-	else
-		s = Menu_DefaultKey( uis.activemenu, key );
-
-	if ((s > 0) && (s != menu_null_sound))
-		trap_S_StartLocalSound( s, CHAN_LOCAL_SOUND );
+	if( down )
+		M_Keydown(key);
 }
 
 /*
@@ -1170,55 +1155,12 @@ void UI_UpdateScreen( void ) {
 UI_Refresh
 =================
 */
-void UI_Refresh( int realtime )
+void UI_Refresh( int inRealtime )
 {
+	extern double		realtime, host_time;
+
+	realtime = host_time = inRealtime / 1000.0;
 	M_Draw();
-	return;
-
-	uis.frametime = realtime - uis.realtime;
-	uis.realtime  = realtime;
-
-	if ( !( trap_Key_GetCatcher() & KEYCATCH_UI ) ) {
-		return;
-	}
-
-	UI_UpdateCvars();
-
-	if ( uis.activemenu )
-	{
-		if (uis.activemenu->fullscreen)
-		{
-			// draw the background
-			if( uis.activemenu->showlogo ) {
-				UI_DrawHandlePic( 0, 0, SCREEN_WIDTH, SCREEN_HEIGHT, uis.menuBackShader );
-			}
-			else {
-				UI_DrawHandlePic( 0, 0, SCREEN_WIDTH, SCREEN_HEIGHT, uis.menuBackNoLogoShader );
-			}
-		}
-
-		if (uis.activemenu->draw)
-			uis.activemenu->draw();
-		else
-			Menu_Draw( uis.activemenu );
-
-		if( uis.firstdraw ) {
-			UI_MouseEvent( 0, 0 );
-			uis.firstdraw = qfalse;
-		}
-	}
-
-	// draw cursor
-	UI_SetColor( NULL );
-	UI_DrawHandlePic( uis.cursorx-16, uis.cursory-16, 32, 32, uis.cursor);
-
-#ifndef NDEBUG
-	if (uis.debug)
-	{
-		// cursor coordinates
-		UI_DrawString( 0, 0, va("(%d,%d)",uis.cursorx,uis.cursory), UI_LEFT|UI_SMALLFONT, colorRed );
-	}
-#endif
 }
 
 void UI_DrawTextBox (int x, int y, int width, int lines)
