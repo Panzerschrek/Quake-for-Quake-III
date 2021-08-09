@@ -3208,7 +3208,7 @@ void M_Draw (void)
 		if(qfalse) // PANZER TODO - drad fade screen in game only
 			Draw_FadeScreen ();
 		else
-			trap_R_DrawStretchPic(0.0f, 0.0f, m_glconfig.vidWidth, m_glconfig.vidHeight, 0.0f, 0.0f, 1.0f, 1.0f, Draw_CachePic ("gfx/conback.lmp")->material );
+			M_DrawBackground();
 	}
 	else
 	{
@@ -3300,6 +3300,29 @@ void M_Draw (void)
 	}
 }
 
+void M_DrawBackground (void)
+{
+	trap_R_DrawStretchPic(0.0f, 0.0f, m_glconfig.vidWidth, m_glconfig.vidHeight, 0.0f, 0.0f, 1.0f, 1.0f, Draw_CachePic ("gfx/conback.lmp")->material );
+}
+
+void M_DrawLoadingScreen (void)
+{
+	qpic_t	*pic;
+
+	M_DrawBackground();
+
+	pic = Draw_CachePic ("gfx/loading.lmp");
+	trap_R_DrawStretchPic (
+		(m_glconfig.vidWidth - pic->width * m_scale)/2,
+		(m_glconfig.vidHeight - (48 + pic->height) * m_scale)/2,
+		pic->width * m_scale,
+		pic->height * m_scale,
+		0.0f,
+		0.0f,
+		1.0f,
+		1.0f,
+		pic->material);
+}
 
 void M_Keydown (int key)
 {

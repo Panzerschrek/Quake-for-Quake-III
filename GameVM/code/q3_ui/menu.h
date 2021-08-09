@@ -34,6 +34,8 @@ extern	int	m_activenet;
 void M_Init (void);
 void M_Keydown (int key);
 void M_Draw (void);
+void M_DrawBackground (void);
+void M_DrawLoadingScreen (void);
 void M_ToggleMenu_f (void);
 
 // Menu utility funcs
