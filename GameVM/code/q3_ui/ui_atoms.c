@@ -118,6 +118,7 @@ char *UI_Cvar_VariableString( const char *var_name ) {
 	return buffer;
 }
 
+
 /*
 =================
 UI_ConsoleCommand
@@ -127,8 +128,34 @@ qboolean UI_ConsoleCommand( int realTime ) {
 	char	*cmd;
 
 	cmd = UI_Argv( 0 );
+	if (!strcmp(cmd, "togglemenu"))
+		M_ToggleMenu_f();
+	else if (!strcmp(cmd, "menu_main"))
+		M_Menu_Main_f();
+	else if (!strcmp(cmd, "menu_singleplayer"))
+		M_Menu_SinglePlayer_f();
+	else if (!strcmp(cmd, "menu_load"))
+		M_Menu_Load_f();
+	else if (!strcmp(cmd, "menu_save"))
+		M_Menu_Save_f();
+	else if (!strcmp(cmd, "menu_multiplayer"))
+		M_Menu_MultiPlayer_f();
+	else if (!strcmp(cmd, "menu_setup"))
+		M_Menu_Setup_f();
+	else if (!strcmp(cmd, "menu_options"))
+		M_Menu_Options_f();
+	else if (!strcmp(cmd, "menu_keys"))
+		M_Menu_Keys_f();
+	else if (!strcmp(cmd, "menu_video"))
+		M_Menu_Video_f();
+	else if (!strcmp(cmd, "help"))
+		M_Menu_Help_f();
+	else if (!strcmp(cmd, "menu_quit"))
+		M_Menu_Quit_f();
+	else
+		return qfalse;
 
-	return qfalse;
+	return qtrue;
 }
 
 
