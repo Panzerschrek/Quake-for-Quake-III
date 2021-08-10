@@ -77,8 +77,8 @@ Q_EXPORT intptr_t vmMain( int command, int arg0, int arg1, int arg2, int arg3, i
 		M_DrawLoadingScreen();
 		return 0;
 
-	case UI_HASUNIQUECDKEY:				// mod authors need to observe this
-		return qtrue;  // change this to qfalse for mods!
+	case UI_HASUNIQUECDKEY:
+		return qfalse;  // set this to qfalse for mods!
 	}
 
 	return -1;
