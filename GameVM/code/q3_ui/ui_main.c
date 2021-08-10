@@ -219,3 +219,15 @@ void UI_Refresh( int inRealtime )
 	trap_R_SetColor(NULL);
 	M_Draw();
 }
+
+void UI_CvarSetNum( const char* name, float val )
+{
+	trap_Cvar_Set( name, va("%f", val) );
+}
+
+float UI_CvarGetNum( const char* name )
+{
+	char buff[MAX_STRING_CHARS];
+	trap_Cvar_VariableStringBuffer( name, buff, sizeof(buff) );
+	return atof(buff);
+}

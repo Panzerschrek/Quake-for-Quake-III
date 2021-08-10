@@ -31,7 +31,7 @@ qboolean		standard_quake, rogue, hipnotic; // PANZER TODO - init this.
 
 qboolean m_ingame;
 
-enum {m_none, m_main, m_singleplayer, m_load, m_save, m_multiplayer, m_setup, m_net, m_options, m_video, m_keys, m_help, m_quit, m_serialconfig, m_modemconfig, m_lanconfig, m_gameoptions, m_search, m_slist} m_state;
+enum {m_none, m_main, m_singleplayer, m_load, m_save, m_multiplayer, m_setup, m_net, m_options, m_video, m_keys, m_help, m_quit, m_lanconfig, m_gameoptions, m_search, m_slist} m_state;
 
 qhandle_t conchars;
 qhandle_t fullscreen_blend;
@@ -167,10 +167,7 @@ char		m_return_reason [32];
 
 #define StartingGame	(m_multiplayer_cursor == 1)
 #define JoiningGame		(m_multiplayer_cursor == 0)
-#define SerialConfig	(m_net_cursor == 0)
-#define DirectConfig	(m_net_cursor == 1)
-#define	IPXConfig		(m_net_cursor == 2)
-#define	TCPIPConfig		(m_net_cursor == 3)
+#define	TCPIPConfig		(m_net_cursor == 0)
 
 void M_ConfigureNetSubsystem(void);
 
@@ -753,7 +750,6 @@ void M_Menu_MultiPlayer_f (void)
 
 void M_MultiPlayer_Draw (void)
 {
-#if 0 // PANZER TODO - fix this
 	int		f;
 	qpic_t	*p;
 
@@ -765,17 +761,11 @@ void M_MultiPlayer_Draw (void)
 	f = (int)(host_time * 10)%6;
 
 	M_DrawTransPic (54, 32 + m_multiplayer_cursor * 20,Draw_CachePic( va("gfx/menudot%i.lmp", f+1 ) ) );
-
-	if (serialAvailable || ipxAvailable || tcpipAvailable)
-		return;
-	M_PrintWhite ((320/2) - ((27*8)/2), 148, "No Communications Available");
-#endif
 }
 
 
 void M_MultiPlayer_Key (int key)
 {
-#if 0 // PANZER TODO -fix this
 	switch (key)
 	{
 	case K_ESCAPE:
@@ -799,13 +789,11 @@ void M_MultiPlayer_Key (int key)
 		switch (m_multiplayer_cursor)
 		{
 		case 0:
-			if (serialAvailable || ipxAvailable || tcpipAvailable)
-				M_Menu_Net_f ();
+			M_Menu_Net_f ();
 			break;
 
 		case 1:
-			if (serialAvailable || ipxAvailable || tcpipAvailable)
-				M_Menu_Net_f ();
+			M_Menu_Net_f ();
 			break;
 
 		case 2:
@@ -813,7 +801,6 @@ void M_MultiPlayer_Key (int key)
 			break;
 		}
 	}
-#endif
 }
 
 //=============================================================================
@@ -1001,7 +988,6 @@ forward:
 /* NET MENU */
 
 int	m_net_cursor;
-int m_net_items;
 int m_net_saveHeight;
 
 char *net_helpMessage [] =
@@ -1033,9 +1019,8 @@ void M_Menu_Net_f (void)
 	M_GrabInput();
 	m_state = m_net;
 	m_entersound = qtrue;
-	m_net_items = 4;
 
-	if (m_net_cursor >= m_net_items)
+	if (m_net_cursor >= 1)
 		m_net_cursor = 0;
 	m_net_cursor--;
 	M_Net_Key (K_DOWNARROW);
@@ -1044,7 +1029,6 @@ void M_Menu_Net_f (void)
 
 void M_Net_Draw (void)
 {
-#if 0 // PANZER TODO - fix it
 	int		f;
 	qpic_t	*p;
 
@@ -1054,60 +1038,8 @@ void M_Net_Draw (void)
 
 	f = 32;
 
-	if (serialAvailable)
-	{
-		p = Draw_CachePic ("gfx/netmen1.lmp");
-	}
-	else
-	{
-#ifdef _WIN32
-		p = NULL;
-#else
-		p = Draw_CachePic ("gfx/dim_modm.lmp");
-#endif
-	}
-
-	if (p)
-		M_DrawTransPic (72, f, p);
-
-	f += 19;
-
-	if (serialAvailable)
-	{
-		p = Draw_CachePic ("gfx/netmen2.lmp");
-	}
-	else
-	{
-#ifdef _WIN32
-		p = NULL;
-#else
-		p = Draw_CachePic ("gfx/dim_drct.lmp");
-#endif
-	}
-
-	if (p)
-		M_DrawTransPic (72, f, p);
-
-	f += 19;
-	if (ipxAvailable)
-		p = Draw_CachePic ("gfx/netmen3.lmp");
-	else
-		p = Draw_CachePic ("gfx/dim_ipx.lmp");
+	p = Draw_CachePic ("gfx/netmen4.lmp");
 	M_DrawTransPic (72, f, p);
-
-	f += 19;
-	if (tcpipAvailable)
-		p = Draw_CachePic ("gfx/netmen4.lmp");
-	else
-		p = Draw_CachePic ("gfx/dim_tcp.lmp");
-	M_DrawTransPic (72, f, p);
-
-	if (m_net_items == 5)	// JDC, could just be removed
-	{
-		f += 19;
-		p = Draw_CachePic ("gfx/netmen5.lmp");
-		M_DrawTransPic (72, f, p);
-	}
 
 	f = (320-26*8)/2;
 	M_DrawTextBox (f, 134, 24, 4);
@@ -1119,14 +1051,11 @@ void M_Net_Draw (void)
 
 	f = (int)(host_time * 10)%6;
 	M_DrawTransPic (54, 32 + m_net_cursor * 20,Draw_CachePic( va("gfx/menudot%i.lmp", f+1 ) ) );
-#endif
 }
 
 
 void M_Net_Key (int k)
 {
-#if 0 // PANZER TODO - fix this
-again:
 	switch (k)
 	{
 	case K_ESCAPE:
@@ -1135,14 +1064,14 @@ again:
 
 	case K_DOWNARROW:
 		S_LocalSound ("misc/menu1.wav");
-		if (++m_net_cursor >= m_net_items)
+		if (++m_net_cursor >= 1)
 			m_net_cursor = 0;
 		break;
 
 	case K_UPARROW:
 		S_LocalSound ("misc/menu1.wav");
 		if (--m_net_cursor < 0)
-			m_net_cursor = m_net_items - 1;
+			m_net_cursor = 0;
 		break;
 
 	case K_ENTER:
@@ -1151,18 +1080,6 @@ again:
 		switch (m_net_cursor)
 		{
 		case 0:
-			M_Menu_SerialConfig_f ();
-			break;
-
-		case 1:
-			M_Menu_SerialConfig_f ();
-			break;
-
-		case 2:
-			M_Menu_LanConfig_f ();
-			break;
-
-		case 3:
 			M_Menu_LanConfig_f ();
 			break;
 
@@ -1171,16 +1088,6 @@ again:
 			break;
 		}
 	}
-
-	if (m_net_cursor == 0 && !serialAvailable)
-		goto again;
-	if (m_net_cursor == 1 && !serialAvailable)
-		goto again;
-	if (m_net_cursor == 2 && !ipxAvailable)
-		goto again;
-	if (m_net_cursor == 3 && !tcpipAvailable)
-		goto again;
-#endif
 }
 
 //=============================================================================
@@ -1864,477 +1771,6 @@ void M_Quit_Draw (void)
 }
 
 //=============================================================================
-
-/* SERIAL CONFIG MENU */
-
-int		serialConfig_cursor;
-int		serialConfig_cursor_table[] = {48, 64, 80, 96, 112, 132};
-#define	NUM_SERIALCONFIG_CMDS	6
-
-static int ISA_uarts[]	= {0x3f8,0x2f8,0x3e8,0x2e8};
-static int ISA_IRQs[]	= {4,3,4,3};
-int serialConfig_baudrate[] = {9600,14400,19200,28800,38400,57600};
-
-int		serialConfig_comport;
-int		serialConfig_irq ;
-int		serialConfig_baud;
-char	serialConfig_phone[16];
-
-void M_Menu_SerialConfig_f (void)
-{
-#if 0 // PANZER TODO - fix this
-	int		n;
-	int		port;
-	int		baudrate;
-	qboolean	useModem;
-
-	M_GrabInput();
-	m_state = m_serialconfig;
-	m_entersound = qtrue;
-	if (JoiningGame && SerialConfig)
-		serialConfig_cursor = 4;
-	else
-		serialConfig_cursor = 5;
-
-	(*GetComPortConfig) (0, &port, &serialConfig_irq, &baudrate, &useModem);
-
-	// map uart's port to COMx
-	for (n = 0; n < 4; n++)
-		if (ISA_uarts[n] == port)
-			break;
-	if (n == 4)
-	{
-		n = 0;
-		serialConfig_irq = 4;
-	}
-	serialConfig_comport = n + 1;
-
-	// map baudrate to index
-	for (n = 0; n < 6; n++)
-		if (serialConfig_baudrate[n] == baudrate)
-			break;
-	if (n == 6)
-		n = 5;
-	serialConfig_baud = n;
-
-	m_return_onerror = false;
-	m_return_reason[0] = 0;
-#endif
-}
-
-
-void M_SerialConfig_Draw (void)
-{
-	qpic_t	*p;
-	int		basex;
-	char	*startJoin;
-	char	*directModem;
-
-	M_DrawTransPic (16, 4, Draw_CachePic ("gfx/qplaque.lmp") );
-	p = Draw_CachePic ("gfx/p_multi.lmp");
-	basex = (320-p->width)/2;
-	M_DrawPic (basex, 4, p);
-
-	if (StartingGame)
-		startJoin = "New Game";
-	else
-		startJoin = "Join Game";
-	if (SerialConfig)
-		directModem = "Modem";
-	else
-		directModem = "Direct Connect";
-	M_Print (basex, 32, va ("%s - %s", startJoin, directModem));
-	basex += 8;
-
-	M_Print (basex, serialConfig_cursor_table[0], "Port");
-	M_DrawTextBox (160, 40, 4, 1);
-	M_Print (168, serialConfig_cursor_table[0], va("COM%u", serialConfig_comport));
-
-	M_Print (basex, serialConfig_cursor_table[1], "IRQ");
-	M_DrawTextBox (160, serialConfig_cursor_table[1]-8, 1, 1);
-	M_Print (168, serialConfig_cursor_table[1], va("%u", serialConfig_irq));
-
-	M_Print (basex, serialConfig_cursor_table[2], "Baud");
-	M_DrawTextBox (160, serialConfig_cursor_table[2]-8, 5, 1);
-	M_Print (168, serialConfig_cursor_table[2], va("%u", serialConfig_baudrate[serialConfig_baud]));
-
-	if (SerialConfig)
-	{
-		M_Print (basex, serialConfig_cursor_table[3], "Modem Setup...");
-		if (JoiningGame)
-		{
-			M_Print (basex, serialConfig_cursor_table[4], "Phone number");
-			M_DrawTextBox (160, serialConfig_cursor_table[4]-8, 16, 1);
-			M_Print (168, serialConfig_cursor_table[4], serialConfig_phone);
-		}
-	}
-
-	if (JoiningGame)
-	{
-		M_DrawTextBox (basex, serialConfig_cursor_table[5]-8, 7, 1);
-		M_Print (basex+8, serialConfig_cursor_table[5], "Connect");
-	}
-	else
-	{
-		M_DrawTextBox (basex, serialConfig_cursor_table[5]-8, 2, 1);
-		M_Print (basex+8, serialConfig_cursor_table[5], "OK");
-	}
-
-	M_DrawCharacter (basex-8, serialConfig_cursor_table [serialConfig_cursor], 12+((int)(realtime*4)&1));
-
-	if (serialConfig_cursor == 4)
-		M_DrawCharacter (168 + 8*strlen(serialConfig_phone), serialConfig_cursor_table [serialConfig_cursor], 10+((int)(realtime*4)&1));
-
-	if (*m_return_reason)
-		M_PrintWhite (basex, 148, m_return_reason);
-}
-
-
-void M_SerialConfig_Key (int key)
-{
-#if 0 // PANZER TODO - fix this
-	int		l;
-
-	switch (key)
-	{
-	case K_ESCAPE:
-		M_Menu_Net_f ();
-		break;
-
-	case K_UPARROW:
-		S_LocalSound ("misc/menu1.wav");
-		serialConfig_cursor--;
-		if (serialConfig_cursor < 0)
-			serialConfig_cursor = NUM_SERIALCONFIG_CMDS-1;
-		break;
-
-	case K_DOWNARROW:
-		S_LocalSound ("misc/menu1.wav");
-		serialConfig_cursor++;
-		if (serialConfig_cursor >= NUM_SERIALCONFIG_CMDS)
-			serialConfig_cursor = 0;
-		break;
-
-	case K_LEFTARROW:
-		if (serialConfig_cursor > 2)
-			break;
-		S_LocalSound ("misc/menu3.wav");
-
-		if (serialConfig_cursor == 0)
-		{
-			serialConfig_comport--;
-			if (serialConfig_comport == 0)
-				serialConfig_comport = 4;
-			serialConfig_irq = ISA_IRQs[serialConfig_comport-1];
-		}
-
-		if (serialConfig_cursor == 1)
-		{
-			serialConfig_irq--;
-			if (serialConfig_irq == 6)
-				serialConfig_irq = 5;
-			if (serialConfig_irq == 1)
-				serialConfig_irq = 7;
-		}
-
-		if (serialConfig_cursor == 2)
-		{
-			serialConfig_baud--;
-			if (serialConfig_baud < 0)
-				serialConfig_baud = 5;
-		}
-
-		break;
-
-	case K_RIGHTARROW:
-		if (serialConfig_cursor > 2)
-			break;
-forward:
-		S_LocalSound ("misc/menu3.wav");
-
-		if (serialConfig_cursor == 0)
-		{
-			serialConfig_comport++;
-			if (serialConfig_comport > 4)
-				serialConfig_comport = 1;
-			serialConfig_irq = ISA_IRQs[serialConfig_comport-1];
-		}
-
-		if (serialConfig_cursor == 1)
-		{
-			serialConfig_irq++;
-			if (serialConfig_irq == 6)
-				serialConfig_irq = 7;
-			if (serialConfig_irq == 8)
-				serialConfig_irq = 2;
-		}
-
-		if (serialConfig_cursor == 2)
-		{
-			serialConfig_baud++;
-			if (serialConfig_baud > 5)
-				serialConfig_baud = 0;
-		}
-
-		break;
-
-	case K_ENTER:
-		if (serialConfig_cursor < 3)
-			goto forward;
-
-		m_entersound = qtrue;
-
-		if (serialConfig_cursor == 3)
-		{
-			(*SetComPortConfig) (0, ISA_uarts[serialConfig_comport-1], serialConfig_irq, serialConfig_baudrate[serialConfig_baud], SerialConfig);
-
-			M_Menu_ModemConfig_f ();
-			break;
-		}
-
-		if (serialConfig_cursor == 4)
-		{
-			serialConfig_cursor = 5;
-			break;
-		}
-
-		// serialConfig_cursor == 5 (OK/CONNECT)
-		(*SetComPortConfig) (0, ISA_uarts[serialConfig_comport-1], serialConfig_irq, serialConfig_baudrate[serialConfig_baud], SerialConfig);
-
-		M_ConfigureNetSubsystem ();
-
-		if (StartingGame)
-		{
-			M_Menu_GameOptions_f ();
-			break;
-		}
-
-		m_return_state = m_state;
-		m_return_onerror = qtrue;
-		M_UngrabInput();
-		m_state = m_none;
-
-		if (SerialConfig)
-			trap_Cmd_ExecuteText (EXEC_APPEND, va ("connect \"%s\"\n", serialConfig_phone));
-		else
-			trap_Cmd_ExecuteText (EXEC_APPEND, "connect\n");
-		break;
-
-	case K_BACKSPACE:
-		if (serialConfig_cursor == 4)
-		{
-			if (strlen(serialConfig_phone))
-				serialConfig_phone[strlen(serialConfig_phone)-1] = 0;
-		}
-		break;
-
-	default:
-		if (key < 32 || key > 127)
-			break;
-		if (serialConfig_cursor == 4)
-		{
-			l = strlen(serialConfig_phone);
-			if (l < 15)
-			{
-				serialConfig_phone[l+1] = 0;
-				serialConfig_phone[l] = key;
-			}
-		}
-	}
-
-	if (DirectConfig && (serialConfig_cursor == 3 || serialConfig_cursor == 4))
-		if (key == K_UPARROW)
-			serialConfig_cursor = 2;
-		else
-			serialConfig_cursor = 5;
-
-	if (SerialConfig && StartingGame && serialConfig_cursor == 4)
-		if (key == K_UPARROW)
-			serialConfig_cursor = 3;
-		else
-			serialConfig_cursor = 5;
-#endif
-}
-
-//=============================================================================
-/* MODEM CONFIG MENU */
-
-int		modemConfig_cursor;
-int		modemConfig_cursor_table [] = {40, 56, 88, 120, 156};
-#define NUM_MODEMCONFIG_CMDS	5
-
-char	modemConfig_dialing;
-char	modemConfig_clear [16];
-char	modemConfig_init [32];
-char	modemConfig_hangup [16];
-
-void M_Menu_ModemConfig_f (void)
-{
-#if 0 // PANZER TODO - fix this
-	M_GrabInput();
-	m_state = m_modemconfig;
-	m_entersound = qtrue;
-	(*GetModemConfig) (0, &modemConfig_dialing, modemConfig_clear, modemConfig_init, modemConfig_hangup);
-#endif
-}
-
-
-void M_ModemConfig_Draw (void)
-{
-#if 0 // PANZER TODO - fix this
-	qpic_t	*p;
-	int		basex;
-
-	M_DrawTransPic (16, 4, Draw_CachePic ("gfx/qplaque.lmp") );
-	p = Draw_CachePic ("gfx/p_multi.lmp");
-	basex = (320-p->width)/2;
-	M_DrawPic (basex, 4, p);
-	basex += 8;
-
-	if (modemConfig_dialing == 'P')
-		M_Print (basex, modemConfig_cursor_table[0], "Pulse Dialing");
-	else
-		M_Print (basex, modemConfig_cursor_table[0], "Touch Tone Dialing");
-
-	M_Print (basex, modemConfig_cursor_table[1], "Clear");
-	M_DrawTextBox (basex, modemConfig_cursor_table[1]+4, 16, 1);
-	M_Print (basex+8, modemConfig_cursor_table[1]+12, modemConfig_clear);
-	if (modemConfig_cursor == 1)
-		M_DrawCharacter (basex+8 + 8*strlen(modemConfig_clear), modemConfig_cursor_table[1]+12, 10+((int)(realtime*4)&1));
-
-	M_Print (basex, modemConfig_cursor_table[2], "Init");
-	M_DrawTextBox (basex, modemConfig_cursor_table[2]+4, 30, 1);
-	M_Print (basex+8, modemConfig_cursor_table[2]+12, modemConfig_init);
-	if (modemConfig_cursor == 2)
-		M_DrawCharacter (basex+8 + 8*strlen(modemConfig_init), modemConfig_cursor_table[2]+12, 10+((int)(realtime*4)&1));
-
-	M_Print (basex, modemConfig_cursor_table[3], "Hangup");
-	M_DrawTextBox (basex, modemConfig_cursor_table[3]+4, 16, 1);
-	M_Print (basex+8, modemConfig_cursor_table[3]+12, modemConfig_hangup);
-	if (modemConfig_cursor == 3)
-		M_DrawCharacter (basex+8 + 8*strlen(modemConfig_hangup), modemConfig_cursor_table[3]+12, 10+((int)(realtime*4)&1));
-
-	M_DrawTextBox (basex, modemConfig_cursor_table[4]-8, 2, 1);
-	M_Print (basex+8, modemConfig_cursor_table[4], "OK");
-
-	M_DrawCharacter (basex-8, modemConfig_cursor_table [modemConfig_cursor], 12+((int)(realtime*4)&1));
-#endif
-}
-
-
-void M_ModemConfig_Key (int key)
-{
-#if 0 // PANZER TODO - fix this
-	int		l;
-
-	switch (key)
-	{
-	case K_ESCAPE:
-		M_Menu_SerialConfig_f ();
-		break;
-
-	case K_UPARROW:
-		S_LocalSound ("misc/menu1.wav");
-		modemConfig_cursor--;
-		if (modemConfig_cursor < 0)
-			modemConfig_cursor = NUM_MODEMCONFIG_CMDS-1;
-		break;
-
-	case K_DOWNARROW:
-		S_LocalSound ("misc/menu1.wav");
-		modemConfig_cursor++;
-		if (modemConfig_cursor >= NUM_MODEMCONFIG_CMDS)
-			modemConfig_cursor = 0;
-		break;
-
-	case K_LEFTARROW:
-	case K_RIGHTARROW:
-		if (modemConfig_cursor == 0)
-		{
-			if (modemConfig_dialing == 'P')
-				modemConfig_dialing = 'T';
-			else
-				modemConfig_dialing = 'P';
-			S_LocalSound ("misc/menu1.wav");
-		}
-		break;
-
-	case K_ENTER:
-		if (modemConfig_cursor == 0)
-		{
-			if (modemConfig_dialing == 'P')
-				modemConfig_dialing = 'T';
-			else
-				modemConfig_dialing = 'P';
-			m_entersound = qtrue;
-		}
-
-		if (modemConfig_cursor == 4)
-		{
-			(*SetModemConfig) (0, va ("%c", modemConfig_dialing), modemConfig_clear, modemConfig_init, modemConfig_hangup);
-			m_entersound = qtrue;
-			M_Menu_SerialConfig_f ();
-		}
-		break;
-
-	case K_BACKSPACE:
-		if (modemConfig_cursor == 1)
-		{
-			if (strlen(modemConfig_clear))
-				modemConfig_clear[strlen(modemConfig_clear)-1] = 0;
-		}
-
-		if (modemConfig_cursor == 2)
-		{
-			if (strlen(modemConfig_init))
-				modemConfig_init[strlen(modemConfig_init)-1] = 0;
-		}
-
-		if (modemConfig_cursor == 3)
-		{
-			if (strlen(modemConfig_hangup))
-				modemConfig_hangup[strlen(modemConfig_hangup)-1] = 0;
-		}
-		break;
-
-	default:
-		if (key < 32 || key > 127)
-			break;
-
-		if (modemConfig_cursor == 1)
-		{
-			l = strlen(modemConfig_clear);
-			if (l < 15)
-			{
-				modemConfig_clear[l+1] = 0;
-				modemConfig_clear[l] = key;
-			}
-		}
-
-		if (modemConfig_cursor == 2)
-		{
-			l = strlen(modemConfig_init);
-			if (l < 29)
-			{
-				modemConfig_init[l+1] = 0;
-				modemConfig_init[l] = key;
-			}
-		}
-
-		if (modemConfig_cursor == 3)
-		{
-			l = strlen(modemConfig_hangup);
-			if (l < 15)
-			{
-				modemConfig_hangup[l+1] = 0;
-				modemConfig_hangup[l] = key;
-			}
-		}
-	}
-#endif
-}
-
-//=============================================================================
 /* LAN CONFIG MENU */
 
 int		lanConfig_cursor = -1;
@@ -2342,12 +1778,13 @@ int		lanConfig_cursor_table [] = {72, 92, 124};
 #define NUM_LANCONFIG_CMDS	3
 
 int 	lanConfig_port;
+#define DEFAULTnet_hostport 2600
+char		my_tcpip_address[64];
 char	lanConfig_portname[6];
 char	lanConfig_joinname[22];
 
 void M_Menu_LanConfig_f (void)
 {
-#if 0 // PANZER TODO - fix this
 	M_GrabInput();
 	m_state = m_lanconfig;
 	m_entersound = qtrue;
@@ -2363,15 +1800,13 @@ void M_Menu_LanConfig_f (void)
 	lanConfig_port = DEFAULTnet_hostport;
 	Com_sprintf(lanConfig_portname, sizeof(lanConfig_portname), "%u", lanConfig_port);
 
-	m_return_onerror = false;
+	m_return_onerror = qfalse;
 	m_return_reason[0] = 0;
-#endif
 }
 
 
 void M_LanConfig_Draw (void)
 {
-#if 0 // PANZER TODO - fix this
 	qpic_t	*p;
 	int		basex;
 	char	*startJoin;
@@ -2386,18 +1821,12 @@ void M_LanConfig_Draw (void)
 		startJoin = "New Game";
 	else
 		startJoin = "Join Game";
-	if (IPXConfig)
-		protocol = "IPX";
-	else
-		protocol = "TCP/IP";
+	protocol = "TCP/IP";
 	M_Print (basex, 32, va ("%s - %s", startJoin, protocol));
 	basex += 8;
 
 	M_Print (basex, 52, "Address:");
-	if (IPXConfig)
-		M_Print (basex+9*8, 52, my_ipx_address);
-	else
-		M_Print (basex+9*8, 52, my_tcpip_address);
+	M_Print (basex+9*8, 52, my_tcpip_address);
 
 	M_Print (basex, lanConfig_cursor_table[0], "Port");
 	M_DrawTextBox (basex+8*8, lanConfig_cursor_table[0]-8, 6, 1);
@@ -2426,13 +1855,11 @@ void M_LanConfig_Draw (void)
 
 	if (*m_return_reason)
 		M_PrintWhite (basex, 148, m_return_reason);
-#endif
 }
 
 
 void M_LanConfig_Key (int key)
 {
-#if 0 // PANZER TODO - fix this
 	int		l;
 
 	switch (key)
@@ -2528,18 +1955,19 @@ void M_LanConfig_Key (int key)
 	}
 
 	if (StartingGame && lanConfig_cursor == 2)
+	{
 		if (key == K_UPARROW)
 			lanConfig_cursor = 1;
 		else
 			lanConfig_cursor = 0;
+	}
 
-	l =  Q_atoi(lanConfig_portname);
+	l =  atoi(lanConfig_portname);
 	if (l > 65535)
 		l = lanConfig_port;
 	else
 		lanConfig_port = l;
 	Com_sprintf(lanConfig_portname, sizeof(lanConfig_portname), "%u", lanConfig_port);
-#endif
 }
 
 //=============================================================================
@@ -2697,15 +2125,13 @@ double m_serverInfoMessageTime;
 
 void M_Menu_GameOptions_f (void)
 {
-#if 0 // PANZER TODO - fix this
 	M_GrabInput();
 	m_state = m_gameoptions;
 	m_entersound = qtrue;
 	if (maxplayers == 0)
-		maxplayers = svs.maxclients;
+		maxplayers = MAX_CLIENTS;
 	if (maxplayers < 2)
-		maxplayers = svs.maxclientslimit;
-#endif
+		maxplayers = MAX_CLIENTS;
 }
 
 
@@ -2715,9 +2141,8 @@ int		gameoptions_cursor;
 
 void M_GameOptions_Draw (void)
 {
-#if 0 // PANZER TODO - fix it
 	qpic_t	*p;
-	int		x;
+	int		x, var;
 
 	M_DrawTransPic (16, 4, Draw_CachePic ("gfx/qplaque.lmp") );
 	p = Draw_CachePic ("gfx/p_multi.lmp");
@@ -2730,7 +2155,7 @@ void M_GameOptions_Draw (void)
 	M_Print (160, 56, va("%i", maxplayers) );
 
 	M_Print (0, 64, "        Game Type");
-	if (coop.value)
+	if ((int)UI_CvarGetNum("coop"))
 		M_Print (160, 64, "Cooperative");
 	else
 		M_Print (160, 64, "Deathmatch");
@@ -2740,7 +2165,7 @@ void M_GameOptions_Draw (void)
 	{
 		char *msg;
 
-		switch((int)teamplay.value)
+		switch((int)UI_CvarGetNum("teamplay"))
 		{
 			case 1: msg = "No Friendly Fire"; break;
 			case 2: msg = "Friendly Fire"; break;
@@ -2756,7 +2181,7 @@ void M_GameOptions_Draw (void)
 	{
 		char *msg;
 
-		switch((int)teamplay.value)
+		switch((int)UI_CvarGetNum("teamplay"))
 		{
 			case 1: msg = "No Friendly Fire"; break;
 			case 2: msg = "Friendly Fire"; break;
@@ -2766,26 +2191,29 @@ void M_GameOptions_Draw (void)
 	}
 
 	M_Print (0, 80, "            Skill");
-	if (skill.value == 0)
+	var = UI_CvarGetNum("skill");
+	if (var == 0)
 		M_Print (160, 80, "Easy difficulty");
-	else if (skill.value == 1)
+	else if (var == 1)
 		M_Print (160, 80, "Normal difficulty");
-	else if (skill.value == 2)
+	else if (var == 2)
 		M_Print (160, 80, "Hard difficulty");
 	else
 		M_Print (160, 80, "Nightmare difficulty");
 
 	M_Print (0, 88, "       Frag Limit");
-	if (fraglimit.value == 0)
+	var = UI_CvarGetNum("fraglimit");
+	if (var == 0)
 		M_Print (160, 88, "none");
 	else
-		M_Print (160, 88, va("%i frags", (int)fraglimit.value));
+		M_Print (160, 88, va("%i frags", var));
 
 	M_Print (0, 96, "       Time Limit");
-	if (timelimit.value == 0)
+	var = UI_CvarGetNum("timelimit");
+	if (var == 0)
 		M_Print (160, 96, "none");
 	else
-		M_Print (160, 96, va("%i minutes", (int)timelimit.value));
+		M_Print (160, 96, va("%i minutes", var));
 
 	M_Print (0, 112, "         Episode");
    //MED 01/06/97 added hipnotic episodes
@@ -2833,25 +2261,23 @@ void M_GameOptions_Draw (void)
 		}
 		else
 		{
-			m_serverInfoMessage = false;
+			m_serverInfoMessage = qfalse;
 		}
 	}
-#endif
 }
 
 
 void M_NetStart_Change (int dir)
 {
-#if 0 // PANZER TODO - fix it
-	int count;
+	int count, var;
 
 	switch (gameoptions_cursor)
 	{
 	case 1:
 		maxplayers += dir;
-		if (maxplayers > svs.maxclientslimit)
+		if (maxplayers > MAX_CLIENTS)
 		{
-			maxplayers = svs.maxclientslimit;
+			maxplayers = MAX_CLIENTS;
 			m_serverInfoMessage = qtrue;
 			m_serverInfoMessageTime = realtime;
 		}
@@ -2860,7 +2286,7 @@ void M_NetStart_Change (int dir)
 		break;
 
 	case 2:
-		Cvar_SetValue ("coop", coop.value ? 0 : 1);
+		UI_CvarSetNum ("coop", ((int)UI_CvarGetNum("coop")) ? 0 : 1);
 		break;
 
 	case 3:
@@ -2869,35 +2295,40 @@ void M_NetStart_Change (int dir)
 		else
 			count = 2;
 
-		Cvar_SetValue ("teamplay", teamplay.value + dir);
-		if (teamplay.value > count)
-			Cvar_SetValue ("teamplay", 0);
-		else if (teamplay.value < 0)
-			Cvar_SetValue ("teamplay", count);
+		var = UI_CvarGetNum("teamplay") + dir;
+		if (var > count)
+			var = 0;
+		if (var < 0)
+			var = count;
+		UI_CvarSetNum ("teamplay", var);
+
 		break;
 
 	case 4:
-		Cvar_SetValue ("skill", skill.value + dir);
-		if (skill.value > 3)
-			Cvar_SetValue ("skill", 0);
-		if (skill.value < 0)
-			Cvar_SetValue ("skill", 3);
+		var = UI_CvarGetNum("skill") + dir;
+		if (var > 3)
+			var= 0;
+		if (var < 0)
+			var = 3;
+		UI_CvarSetNum ("skill", var);
 		break;
 
 	case 5:
-		Cvar_SetValue ("fraglimit", fraglimit.value + dir*10);
-		if (fraglimit.value > 100)
-			Cvar_SetValue ("fraglimit", 0);
-		if (fraglimit.value < 0)
-			Cvar_SetValue ("fraglimit", 100);
+		var = UI_CvarGetNum("fraglimit") + dir * 10;
+		if (var > 100)
+			var = 0;
+		if (var < 0)
+			var = 100;
+		UI_CvarSetNum ("fraglimit", var);
 		break;
 
 	case 6:
-		Cvar_SetValue ("timelimit", timelimit.value + dir*5);
-		if (timelimit.value > 60)
-			Cvar_SetValue ("timelimit", 0);
-		if (timelimit.value < 0)
-			Cvar_SetValue ("timelimit", 60);
+		var = UI_CvarGetNum("timelimit") + dir*5;
+		if (var > 60)
+			var = 0;
+		if (var < 0)
+			var = 60;
+		UI_CvarSetNum ("timelimit", var);
 		break;
 
 	case 7:
@@ -2909,7 +2340,7 @@ void M_NetStart_Change (int dir)
 	//PGM 03/02/97 added 1 for dmatch episode
 		else if (rogue)
 			count = 4;
-		else if (registered.value)
+		else if (/*registered.value*/ qtrue) // PANZER - always registered
 			count = 7;
 		else
 			count = 2;
@@ -2941,7 +2372,6 @@ void M_NetStart_Change (int dir)
 			startlevel = 0;
 		break;
 	}
-#endif
 }
 
 void M_GameOptions_Key (int key)
@@ -3262,14 +2692,6 @@ void M_Draw (void)
 		M_Quit_Draw ();
 		break;
 
-	case m_serialconfig:
-		M_SerialConfig_Draw ();
-		break;
-
-	case m_modemconfig:
-		M_ModemConfig_Draw ();
-		break;
-
 	case m_lanconfig:
 		M_LanConfig_Draw ();
 		break;
@@ -3373,14 +2795,6 @@ void M_Keydown (int key)
 
 	case m_quit:
 		M_Quit_Key (key);
-		return;
-
-	case m_serialconfig:
-		M_SerialConfig_Key (key);
-		return;
-
-	case m_modemconfig:
-		M_ModemConfig_Key (key);
 		return;
 
 	case m_lanconfig:

@@ -43,6 +43,8 @@ extern qboolean		UI_ConsoleCommand( int realTime );
 extern qboolean		UI_IsFullscreen( void );
 extern void			UI_SetActiveMenu( uiMenuCommand_t menu );
 extern void			UI_Refresh( int time );
+extern void			UI_CvarSetNum( const char* name, float val );
+extern float		UI_CvarGetNum( const char* name );
 
 //
 // ui_syscalls.c
