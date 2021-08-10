@@ -10,8 +10,14 @@ Client:
 * Rotation animation for items (weapons, powerups)
 * Addons (rogue/hipnotic) support in status bar
 * Rockets particle trails and lights
+* Sprite entities
 
 Menu UI:
+* Video settings
+* More additional settings
+* Modal dialog while starting new game if already in game
+* Multiplayer menu improvements
+* Active game detection fixes
 
 Shaders:
 * Special shader for textures with fullbright pixels
