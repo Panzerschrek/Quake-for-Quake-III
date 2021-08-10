@@ -115,26 +115,3 @@ void ClientThink( int clientNum ) {
 
 	ClientThink_real( client );
 }
-
-
-/*
-==============
-ClientEndFrame
-
-Called at the end of each server frame for each connected client
-A fast client will have multiple ClientThink for each ClientEdFrame,
-while a slow client may have multiple ClientEndFrame between ClientThink.
-==============
-*/
-void ClientEndFrame( gclient_t *client ) {
-	int			i;
-
-	// turn off any expired powerups
-	for ( i = 0 ; i < MAX_POWERUPS ; i++ ) {
-		if ( client->ps.powerups[ i ] < level.time ) {
-			client->ps.powerups[ i ] = 0;
-		}
-	}
-}
-
-
