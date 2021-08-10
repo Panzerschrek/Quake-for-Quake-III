@@ -28,9 +28,7 @@ USER INTERFACE MAIN
 =======================================================================
 */
 
-
 #include "ui_local.h"
-
 
 /*
 ================
@@ -86,57 +84,138 @@ Q_EXPORT intptr_t vmMain( int command, int arg0, int arg1, int arg2, int arg3, i
 	return -1;
 }
 
+void QDECL Com_Error( int level, const char *error, ... ) {
+	va_list		argptr;
+	char		text[1024];
 
-/*
-================
-cvars
-================
-*/
+	va_start (argptr, error);
+	Q_vsnprintf (text, sizeof(text), error, argptr);
+	va_end (argptr);
 
-typedef struct {
-	vmCvar_t	*vmCvar;
-	char		*cvarName;
-	char		*defaultString;
-	int			cvarFlags;
-} cvarTable_t;
+	trap_Error( text );
+}
 
-vmCvar_t	ui_ioq3;
+void QDECL Com_Printf( const char *msg, ... ) {
+	va_list		argptr;
+	char		text[1024];
 
-static cvarTable_t		cvarTable[] = {
-	{ &ui_ioq3, "ui_ioq3", "1", CVAR_ROM },
-};
+	va_start (argptr, msg);
+	Q_vsnprintf (text, sizeof(text), msg, argptr);
+	va_end (argptr);
 
-static int cvarTableSize = ARRAY_LEN( cvarTable );
+	trap_Print( text );
+}
 
+qboolean UI_IsFullscreen( void ) {
+	return M_InputGrabbed() && !M_GetInGame();
+}
 
-/*
-=================
-UI_RegisterCvars
-=================
-*/
-void UI_RegisterCvars( void ) {
-	int			i;
-	cvarTable_t	*cv;
+void UI_SetActiveMenu( uiMenuCommand_t menu ) {
+	switch ( menu ) {
+	case UIMENU_NONE:
+		M_SetInGame(qtrue);
+		M_UngrabInput();
+		return;
+	case UIMENU_MAIN:
+		M_SetInGame(qfalse);
+		M_Menu_Main_f();
+		return;
+	case UIMENU_NEED_CD:
+		M_SetInGame(qfalse);
+		return;
+	case UIMENU_BAD_CD_KEY:
+		M_SetInGame(qfalse);
+		return;
+	case UIMENU_INGAME:
+		M_SetInGame(qtrue);
+		M_Menu_Main_f();
+		return;
 
-	for ( i = 0, cv = cvarTable ; i < cvarTableSize ; i++, cv++ ) {
-		trap_Cvar_Register( cv->vmCvar, cv->cvarName, cv->defaultString, cv->cvarFlags );
+	case UIMENU_TEAM:
+	case UIMENU_POSTGAME:
+	default:
+#ifndef NDEBUG
+		Com_Printf("UI_SetActiveMenu: bad enum %d\n", menu );
+#endif
+		break;
 	}
 }
 
 /*
 =================
-UI_UpdateCvars
+UI_KeyEvent
 =================
 */
-void UI_UpdateCvars( void ) {
-	int			i;
-	cvarTable_t	*cv;
+void UI_KeyEvent( int key, int down ) {
+	if( down )
+		M_Keydown(key);
+}
 
-	for ( i = 0, cv = cvarTable ; i < cvarTableSize ; i++, cv++ ) {
-		if ( !cv->vmCvar ) {
-			continue;
-		}
+/*
+=================
+UI_MouseEvent
+=================
+*/
+void UI_MouseEvent( int dx, int dy )
+{
+}
 
-		trap_Cvar_Update( cv->vmCvar );
-	}
+/*
+=================
+UI_ConsoleCommand
+=================
+*/
+qboolean UI_ConsoleCommand( int realTime ) {
+	char	cmd[MAX_STRING_CHARS];
+
+	trap_Argv( 0, cmd, sizeof( cmd ) );
+
+	if (!strcmp(cmd, "menu_main"))
+		M_Menu_Main_f();
+	else if (!strcmp(cmd, "menu_singleplayer"))
+		M_Menu_SinglePlayer_f();
+	else if (!strcmp(cmd, "menu_load"))
+		M_Menu_Load_f();
+	else if (!strcmp(cmd, "menu_save"))
+		M_Menu_Save_f();
+	else if (!strcmp(cmd, "menu_multiplayer"))
+		M_Menu_MultiPlayer_f();
+	else if (!strcmp(cmd, "menu_setup"))
+		M_Menu_Setup_f();
+	else if (!strcmp(cmd, "menu_options"))
+		M_Menu_Options_f();
+	else if (!strcmp(cmd, "menu_keys"))
+		M_Menu_Keys_f();
+	else if (!strcmp(cmd, "menu_video"))
+		M_Menu_Video_f();
+	else if (!strcmp(cmd, "help"))
+		M_Menu_Help_f();
+	else if (!strcmp(cmd, "menu_quit"))
+		M_Menu_Quit_f();
+	else
+		return qfalse;
+
+	return qtrue;
+}
+
+/*
+=================
+UI_Shutdown
+=================
+*/
+void UI_Shutdown( void ) {
+}
+
+/*
+=================
+UI_Refresh
+=================
+*/
+void UI_Refresh( int inRealtime )
+{
+	extern double		realtime, host_time;
+
+	realtime = host_time = inRealtime / 1000.0;
+	trap_R_SetColor(NULL);
+	M_Draw();
 }
