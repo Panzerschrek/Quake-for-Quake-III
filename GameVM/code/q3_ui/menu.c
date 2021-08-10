@@ -21,12 +21,13 @@ Foundation, Inc., 59 Temple Place - Suite 330, Boston, MA  02111-1307, USA.
 #include "ui_local.h"
 #include "../game/bg_lib.h"
 
+// PANZER TODO - add video menu.
 void (*vid_menudrawfn)(void);
 void (*vid_menukeyfn)(int key);
 
 glconfig_t m_glconfig;
 
-double		realtime, host_time; // PANZER TODO - remove its usage
+double		realtime;
 qboolean		standard_quake, rogue, hipnotic; // PANZER TODO - init this.
 
 qboolean m_ingame;
@@ -169,9 +170,6 @@ char		m_return_reason [32];
 #define JoiningGame		(m_multiplayer_cursor == 0)
 #define	TCPIPConfig		(m_net_cursor == 0)
 
-void M_ConfigureNetSubsystem(void);
-
-
 static void M_DetermineScale(void)
 {
 	int		scales[2];
@@ -283,9 +281,7 @@ void M_BuildTranslationTable(int top, int bottom)
 		for (j=0 ; j<16 ; j++)
 			dest[BOTTOM_RANGE+j] = source[bottom+15-j];
 }
-#endif
 
-#if 0 // PANZER TODO - fix this
 void M_DrawTransPicTranslate (int x, int y, qpic_t *pic)
 {
 	Draw_TransPicTranslateScaled (x * m_scale + ((vid.width - 320 * m_scale)>>1), y * m_scale, m_scale, pic, translationTable);
@@ -426,7 +422,7 @@ void M_Main_Draw (void)
 	M_DrawPic ( (320-p->width)/2, 4, p);
 	M_DrawTransPic (72, 32, Draw_CachePic ("gfx/mainmenu.lmp") );
 
-	f = (int)(host_time * 10)%6;
+	f = (int)(realtime * 10)%6;
 
 	M_DrawTransPic (54, 32 + m_main_cursor * 20,Draw_CachePic( va("gfx/menudot%i.lmp", f+1 ) ) );
 }
@@ -506,7 +502,7 @@ void M_SinglePlayer_Draw (void)
 	M_DrawPic ( (320-p->width)/2, 4, p);
 	M_DrawTransPic (72, 32, Draw_CachePic ("gfx/sp_menu.lmp") );
 
-	f = (int)(host_time * 10)%6;
+	f = (int)(realtime * 10)%6;
 
 	M_DrawTransPic (54, 32 + m_singleplayer_cursor * 20,Draw_CachePic( va("gfx/menudot%i.lmp", f+1 ) ) );
 }
@@ -758,7 +754,7 @@ void M_MultiPlayer_Draw (void)
 	M_DrawPic ( (320-p->width)/2, 4, p);
 	M_DrawTransPic (72, 32, Draw_CachePic ("gfx/mp_menu.lmp") );
 
-	f = (int)(host_time * 10)%6;
+	f = (int)(realtime * 10)%6;
 
 	M_DrawTransPic (54, 32 + m_multiplayer_cursor * 20,Draw_CachePic( va("gfx/menudot%i.lmp", f+1 ) ) );
 }
@@ -1049,7 +1045,7 @@ void M_Net_Draw (void)
 	M_Print (f, 158, net_helpMessage[m_net_cursor*4+2]);
 	M_Print (f, 166, net_helpMessage[m_net_cursor*4+3]);
 
-	f = (int)(host_time * 10)%6;
+	f = (int)(realtime * 10)%6;
 	M_DrawTransPic (54, 32 + m_net_cursor * 20,Draw_CachePic( va("gfx/menudot%i.lmp", f+1 ) ) );
 }
 
@@ -1860,8 +1856,6 @@ void M_LanConfig_Key (int key)
 
 		m_entersound = qtrue;
 
-		M_ConfigureNetSubsystem ();
-
 		if (lanConfig_cursor == 1)
 		{
 			if (StartingGame)
@@ -2386,10 +2380,7 @@ void M_GameOptions_Key (int key)
 		S_LocalSound ("misc/menu2.wav");
 		if (gameoptions_cursor == 0)
 		{
-#if 0 // PANZER TODO - fix this
-			if (sv.active)
-				trap_Cmd_ExecuteText (EXEC_APPEND, "disconnect\n");
-#endif
+			trap_Cmd_ExecuteText (EXEC_APPEND, "disconnect\n");
 			trap_Cmd_ExecuteText (EXEC_APPEND, "listen 0\n");	// so host_netport will be re-examined
 			trap_Cmd_ExecuteText (EXEC_APPEND,  va ("maxplayers %u\n", maxplayers) );
 
@@ -2785,21 +2776,4 @@ void M_Keydown (int key)
 		M_ServerList_Key (key);
 		return;
 	}
-}
-
-
-void M_ConfigureNetSubsystem(void)
-{
-#if 0 // PANZER TODO - fix this
-// enable/disable net systems to match desired config
-
-	trap_Cmd_ExecuteText (EXEC_APPEND, "stopdemo\n");
-	if (SerialConfig || DirectConfig)
-	{
-		trap_Cmd_ExecuteText (EXEC_APPEND, "com1 enable\n");
-	}
-
-	if (IPXConfig || TCPIPConfig)
-		net_hostport = lanConfig_port;
-#endif
 }

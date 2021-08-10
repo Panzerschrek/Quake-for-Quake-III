@@ -213,9 +213,9 @@ UI_Refresh
 */
 void UI_Refresh( int inRealtime )
 {
-	extern double		realtime, host_time;
+	extern double		realtime;
 
-	realtime = host_time = inRealtime / 1000.0;
+	realtime = inRealtime / 1000.0;
 	trap_R_SetColor(NULL);
 	M_Draw();
 }
