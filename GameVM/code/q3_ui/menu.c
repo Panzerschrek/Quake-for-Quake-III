@@ -126,7 +126,6 @@ typedef struct {
 cached_sound_t m_sounds_cache[256];
 int m_num_cached_sounds;
 
-
 cached_sound_t* S_CacheSound(const char* name)
 {
 	int		i;
@@ -154,22 +153,6 @@ void S_LocalSound(const char* name)
 void Con_ToggleConsole_f(void)
 {
 	trap_Cmd_ExecuteText (EXEC_APPEND, "toggleconsole");
-}
-
-qboolean SCR_ModalMessage (const char* message)
-{
-	// PANZER TODO
-	return qtrue;
-}
-
-void SCR_BeginLoadingPlaque (void)
-{
-	// PANZER TODO
-}
-
-void Key_SetBinding (int keynum, char *binding)
-{
-	// PANZER TODO
 }
 
 int			m_scale = 1;
@@ -558,14 +541,15 @@ void M_SinglePlayer_Key (int key)
 		switch (m_singleplayer_cursor)
 		{
 		case 0:
-#if 0 // PANZER TODO - fix this
-			if (sv.active)
+			if (m_ingame)
+				/*
 				if (!SCR_ModalMessage("Are you sure you want to\nstart a new game?\n"))
 					break;
+				*/ // PANZER TODO - show this message
 			M_UngrabInput();
-			if (sv.active)
+			if (m_ingame)
 				trap_Cmd_ExecuteText (EXEC_APPEND, "disconnect\n");
-#endif
+
 			trap_Cmd_ExecuteText (EXEC_APPEND,"maxplayers 1\n");
 			trap_Cmd_ExecuteText (EXEC_APPEND,"map start\n");
 			break;
@@ -696,10 +680,6 @@ void M_Load_Key (int k)
 			return;
 		m_state = m_none;
 		M_UngrabInput();
-
-	// Host_Loadgame_f can't bring up the loading plaque because too much
-	// stack space has been used, so do it now
-		SCR_BeginLoadingPlaque ();
 
 	// issue the load command
 		trap_Cmd_ExecuteText (EXEC_APPEND, va ("load s%i\n", load_cursor) );
@@ -1556,7 +1536,7 @@ void M_UnbindCommand (char *command)
 		if (!b[0])
 			continue;
 		if (!Q_strncmp (b, command, l) )
-			Key_SetBinding (j, "");
+			trap_Key_SetBinding (j, "");
 	}
 }
 
@@ -3010,7 +2990,6 @@ void M_GameOptions_Key (int key)
 #endif
 			trap_Cmd_ExecuteText (EXEC_APPEND, "listen 0\n");	// so host_netport will be re-examined
 			trap_Cmd_ExecuteText (EXEC_APPEND,  va ("maxplayers %u\n", maxplayers) );
-			SCR_BeginLoadingPlaque ();
 
 			if (hipnotic)
 				trap_Cmd_ExecuteText (EXEC_APPEND,  va ("map %s\n", hipnoticlevels[hipnoticepisodes[startepisode].firstLevel + startlevel].name) );
