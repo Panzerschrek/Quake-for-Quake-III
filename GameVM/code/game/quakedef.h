@@ -29,28 +29,6 @@ Foundation, Inc., 59 Temple Place - Suite 330, Boston, MA  02111-1307, USA.
 
 //define	PARANOID			// speed sapping error checking
 
-#ifdef NDEBUG
-#define Q_ASSERT(x)
-#else
-#define Q_ASSERT(x) if (!(x)) { G_Printf("Assertion failed: \""#x"\""); }
-#endif
-
-
-void	VID_LockBuffer (void);
-void	VID_UnlockBuffer (void);
-
-#define UNALIGNED_OK	0
-
-// !!! if this is changed, it must be changed in d_ifacea.h too !!!
-#define CACHE_SIZE	32		// used to align key data structures
-
-#define UNUSED(x)	(x = x)	// for pesky compiler / lint warnings
-
-#define	MINIMUM_MEMORY			0x550000
-#define	MINIMUM_MEMORY_LEVELPAK	(MINIMUM_MEMORY + 0x100000)
-
-#define MAX_NUM_ARGVS	50
-
 // up / down
 #define	PITCH	0
 
@@ -59,12 +37,6 @@ void	VID_UnlockBuffer (void);
 
 // fall over
 #define	ROLL	2
-
-// Minimal size of game window
-#define MIN_WIDTH		320
-#define MIN_HEIGHT		200
-
-#define	MAX_QPATH		64			// max length of a quake game pathname
 
 #define	ON_EPSILON		0.1			// point on plane side epsilon
 
@@ -76,8 +48,6 @@ void	VID_UnlockBuffer (void);
 //
 #define	MAX_EDICTS		600			// FIXME: ouch! ouch! ouch!
 #define	MAX_LIGHTSTYLES	64
-#define	MAX_MODELS		256			// these are sent over the net as bytes
-#define	MAX_SOUNDS		256			// so they cannot be blindly increased
 
 #define	SAVEGAME_COMMENT_LENGTH	39
 
@@ -154,78 +124,20 @@ void	VID_UnlockBuffer (void);
 #define	MAX_SCOREBOARD		16
 #define	MAX_SCOREBOARDNAME	32
 
-#define	SOUND_CHANNELS		8
-
-// This makes anyone on id's net privileged
-// Use for multiplayer testing only - VERY dangerous!!!
-// #define IDGODS
-
-typedef struct
-{
-	vec3_t	origin;
-	vec3_t	angles;
-	int		modelindex;
-	int		frame;
-	int		colormap;
-	int		skin;
-	int		effects;
-} entity_state_t;
-
 #include "protocol.h"
 #include "progs.h"
 #include "server.h"
 #include "world.h"
 
-//=============================================================================
-
-// the host system specifies the base of the directory tree, the
-// command line parms passed to the program, and the amount of memory
-// available for the program to use
-
-typedef struct
-{
-	char	*basedir;
-	char	*cachedir;		// for development over ISDN lines
-	int		argc;
-	char	**argv;
-	void	*membase;
-	int		memsize;
-} quakeparms_t;
-
 
 //=============================================================================
-
-
-
-extern qboolean noclip_anglehack;
 
 
 //
 // host
 //
-extern	quakeparms_t host_parms;
 
-extern	qboolean	host_initialized;		// true if into command execution
 extern	double		host_frametime;
-extern	byte		*host_basepal;
-extern	byte		*host_colormap;
-extern	int			host_framecount;	// incremented every frame, never reset
-extern	double		realtime;			// not bounded in any way, changed at
-										// start of every frame, never reset
-
-void Host_ClearMemory (void);
-void Host_ServerFrame (void);
-void Host_InitCommands (void);
-void Host_Init (quakeparms_t *parms);
-void Host_Shutdown(void);
-void Host_EndGame (char *message, ...);
-void Host_Frame (float time);
-void Host_Quit_f (void);
-void Host_ClientCommands (char *fmt, ...);
-void Host_ShutdownServer (qboolean crash);
-
-extern qboolean		msg_suppress_1;		// suppresses resolution and cache size console output
-										//  an fullscreen DIB focus gain/loss
 extern int			current_skill;		// skill level for currently loaded level (in case
 										//  the user changes the cvar while the level is
 										//  running, this reflects the level actually in use)
