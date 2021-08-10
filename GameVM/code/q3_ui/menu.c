@@ -29,9 +29,6 @@ glconfig_t m_glconfig;
 double		realtime, host_time; // PANZER TODO - remove its usage
 qboolean		standard_quake, rogue, hipnotic; // PANZER TODO - init this.
 
-int key_dest;
-typedef enum {key_game, key_console, key_message, key_menu} keydest_t;
-
 enum {m_none, m_main, m_singleplayer, m_load, m_save, m_multiplayer, m_setup, m_net, m_options, m_video, m_keys, m_help, m_quit, m_serialconfig, m_modemconfig, m_lanconfig, m_gameoptions, m_search, m_slist} m_state;
 
 qhandle_t conchars;
@@ -367,7 +364,20 @@ void M_DrawTextBox (int x, int y, int width, int lines)
 
 //=============================================================================
 
-int m_save_demonum;
+void M_GrabInput (void)
+{
+	trap_Key_SetCatcher( KEYCATCH_UI );
+}
+
+void M_UngrabInput (void)
+{
+	trap_Key_SetCatcher( trap_Key_GetCatcher() & ~KEYCATCH_UI );
+}
+
+qboolean M_InputGrabbed (void)
+{
+	return trap_Key_GetCatcher() & KEYCATCH_UI;
+}
 
 /*
 ================
@@ -378,25 +388,18 @@ void M_ToggleMenu_f (void)
 {
 	m_entersound = qtrue;
 
-	if (key_dest == key_menu)
+	if (M_InputGrabbed())
 	{
 		if (m_state != m_main)
 		{
 			M_Menu_Main_f ();
 			return;
 		}
-		key_dest = key_game;
+		M_UngrabInput();
 		m_state = m_none;
 		return;
 	}
-	if (key_dest == key_console)
-	{
-		Con_ToggleConsole_f ();
-	}
-	else
-	{
-		M_Menu_Main_f ();
-	}
+	M_Menu_Main_f ();
 }
 
 
@@ -409,13 +412,9 @@ int	m_main_cursor;
 
 void M_Menu_Main_f (void)
 {
-	if (key_dest != key_menu)
-	{
-	}
-	key_dest = key_menu;
 	m_state = m_main;
 	m_entersound = qtrue;
-	trap_Key_SetCatcher( KEYCATCH_UI );
+	M_GrabInput();
 }
 
 
@@ -440,9 +439,8 @@ void M_Main_Key (int key)
 	switch (key)
 	{
 	case K_ESCAPE:
-		key_dest = key_game;
 		m_state = m_none;
-		trap_Key_SetCatcher( trap_Key_GetCatcher() & ~KEYCATCH_UI );
+		M_UngrabInput();
 		break;
 
 	case K_DOWNARROW:
@@ -494,7 +492,7 @@ int	m_singleplayer_cursor;
 
 void M_Menu_SinglePlayer_f (void)
 {
-	key_dest = key_menu;
+	M_GrabInput();
 	m_state = m_singleplayer;
 	m_entersound = qtrue;
 }
@@ -546,7 +544,7 @@ void M_SinglePlayer_Key (int key)
 			if (sv.active)
 				if (!SCR_ModalMessage("Are you sure you want to\nstart a new game?\n"))
 					break;
-			key_dest = key_game;
+			M_UngrabInput();
 			if (sv.active)
 				trap_Cmd_ExecuteText (EXEC_APPEND, "disconnect\n");
 #endif
@@ -609,15 +607,16 @@ void M_ScanSaves (void)
 
 void M_Menu_Load_f (void)
 {
+	M_GrabInput();
 	m_entersound = qtrue;
 	m_state = m_load;
-	key_dest = key_menu;
 	M_ScanSaves ();
 }
 
 
 void M_Menu_Save_f (void)
 {
+	M_GrabInput();
 	// PANZER TODO - check for save possibility
 	/*
 	if (!sv.active)
@@ -629,7 +628,6 @@ void M_Menu_Save_f (void)
 	*/
 	m_entersound = qtrue;
 	m_state = m_save;
-	key_dest = key_menu;
 	M_ScanSaves ();
 }
 
@@ -679,7 +677,7 @@ void M_Load_Key (int k)
 		if (!loadable[load_cursor])
 			return;
 		m_state = m_none;
-		key_dest = key_game;
+		M_UngrabInput();
 
 	// Host_Loadgame_f can't bring up the loading plaque because too much
 	// stack space has been used, so do it now
@@ -718,7 +716,7 @@ void M_Save_Key (int k)
 
 	case K_ENTER:
 		m_state = m_none;
-		key_dest = key_game;
+		M_UngrabInput();
 		trap_Cmd_ExecuteText (EXEC_APPEND, va("save s%i\n", load_cursor));
 		return;
 
@@ -749,7 +747,7 @@ int	m_multiplayer_cursor;
 
 void M_Menu_MultiPlayer_f (void)
 {
-	key_dest = key_menu;
+	M_GrabInput();
 	m_state = m_multiplayer;
 	m_entersound = qtrue;
 }
@@ -837,7 +835,7 @@ int		setup_bottom;
 
 void M_Menu_Setup_f (void)
 {
-	key_dest = key_menu;
+	M_GrabInput();
 	m_state = m_setup;
 	m_entersound = qtrue;
 #if 0 // PANZER TODO - fix this
@@ -1034,7 +1032,7 @@ char *net_helpMessage [] =
 
 void M_Menu_Net_f (void)
 {
-	key_dest = key_menu;
+	M_GrabInput();
 	m_state = m_net;
 	m_entersound = qtrue;
 	m_net_items = 4;
@@ -1202,7 +1200,7 @@ int		options_cursor;
 
 void M_Menu_Options_f (void)
 {
-	key_dest = key_menu;
+	M_GrabInput();
 	m_state = m_options;
 	m_entersound = qtrue;
 
@@ -1494,7 +1492,7 @@ int		bind_grab;
 
 void M_Menu_Keys_f (void)
 {
-	key_dest = key_menu;
+	M_GrabInput();
 	m_state = m_keys;
 	m_entersound = qtrue;
 }
@@ -1661,7 +1659,7 @@ void M_Keys_Key (int k)
 
 void M_Menu_Video_f (void)
 {
-	key_dest = key_menu;
+	M_GrabInput();
 	m_state = m_video;
 	m_entersound = qtrue;
 }
@@ -1687,7 +1685,7 @@ int		help_page;
 
 void M_Menu_Help_f (void)
 {
-	key_dest = key_menu;
+	M_GrabInput();
 	m_state = m_help;
 	m_entersound = qtrue;
 	help_page = 0;
@@ -1783,10 +1781,10 @@ char *quitMessage [] =
 
 void M_Menu_Quit_f (void)
 {
+	M_GrabInput();
 	if (m_state == m_quit)
 		return;
-	wasInMenus = (key_dest == key_menu);
-	key_dest = key_menu;
+	wasInMenus = M_InputGrabbed();
 	m_quit_prevstate = m_state;
 	m_state = m_quit;
 	m_entersound = qtrue;
@@ -1808,14 +1806,13 @@ void M_Quit_Key (int key)
 		}
 		else
 		{
-			key_dest = key_game;
+			M_UngrabInput();
 			m_state = m_none;
 		}
 		break;
 
 	case 'Y':
 	case 'y':
-		key_dest = key_console;
 		trap_Cmd_ExecuteText( EXEC_APPEND, "quit\n" );
 		break;
 
@@ -1893,7 +1890,7 @@ void M_Menu_SerialConfig_f (void)
 	int		baudrate;
 	qboolean	useModem;
 
-	key_dest = key_menu;
+	M_GrabInput();
 	m_state = m_serialconfig;
 	m_entersound = qtrue;
 	if (JoiningGame && SerialConfig)
@@ -2116,7 +2113,7 @@ forward:
 
 		m_return_state = m_state;
 		m_return_onerror = qtrue;
-		key_dest = key_game;
+		M_UngrabInput();
 		m_state = m_none;
 
 		if (SerialConfig)
@@ -2176,7 +2173,7 @@ char	modemConfig_hangup [16];
 void M_Menu_ModemConfig_f (void)
 {
 #if 0 // PANZER TODO - fix this
-	key_dest = key_menu;
+	M_GrabInput();
 	m_state = m_modemconfig;
 	m_entersound = qtrue;
 	(*GetModemConfig) (0, &modemConfig_dialing, modemConfig_clear, modemConfig_init, modemConfig_hangup);
@@ -2353,7 +2350,7 @@ char	lanConfig_joinname[22];
 void M_Menu_LanConfig_f (void)
 {
 #if 0 // PANZER TODO - fix this
-	key_dest = key_menu;
+	M_GrabInput();
 	m_state = m_lanconfig;
 	m_entersound = qtrue;
 	if (lanConfig_cursor == -1)
@@ -2483,7 +2480,7 @@ void M_LanConfig_Key (int key)
 		{
 			m_return_state = m_state;
 			m_return_onerror = qtrue;
-			key_dest = key_game;
+			M_UngrabInput();
 			m_state = m_none;
 			trap_Cmd_ExecuteText (EXEC_APPEND, va ("connect \"%s\"\n", lanConfig_joinname) );
 			break;
@@ -2703,7 +2700,7 @@ double m_serverInfoMessageTime;
 void M_Menu_GameOptions_f (void)
 {
 #if 0 // PANZER TODO - fix this
-	key_dest = key_menu;
+	M_GrabInput();
 	m_state = m_gameoptions;
 	m_entersound = qtrue;
 	if (maxplayers == 0)
@@ -3021,7 +3018,7 @@ double		searchCompleteTime;
 void M_Menu_Search_f (void)
 {
 #if 0 // PANZER TODO - fix this
-	key_dest = key_menu;
+	M_GrabInput();
 	m_state = m_search;
 	m_entersound = qfalse;
 	slistSilent = qtrue;
@@ -3083,7 +3080,7 @@ qboolean slist_sorted;
 
 void M_Menu_ServerList_f (void)
 {
-	key_dest = key_menu;
+	M_GrabInput();
 	m_state = m_slist;
 	m_entersound = qtrue;
 	slist_cursor = 0;
@@ -3170,7 +3167,7 @@ void M_ServerList_Key (int k)
 		m_return_state = m_state;
 		m_return_onerror = qtrue;
 		slist_sorted = false;
-		key_dest = key_game;
+		M_UngrabInput();
 		m_state = m_none;
 		trap_Cmd_ExecuteText (EXEC_APPEND,  va ("connect \"%s\"\n", hostcache[slist_cursor].cname) );
 		break;
@@ -3189,8 +3186,7 @@ void M_Init (void)
 {
 	trap_GetGlconfig( &m_glconfig );
 
-	m_state = m_main;
-	key_dest = key_menu;
+	m_state = m_none;
 
 	conchars = trap_R_RegisterShaderNoMip("gfx_wad/CONCHARS");
 }
@@ -3198,7 +3194,7 @@ void M_Init (void)
 
 void M_Draw (void)
 {
-	if (m_state == m_none || key_dest != key_menu)
+	if (m_state == m_none)
 		return;
 
 	M_DetermineScale ();
@@ -3330,7 +3326,7 @@ void M_Keydown (int key)
 	{
 	case m_none:
 		m_state = m_main;
-		key_dest = key_menu;
+		M_GrabInput();
 		return;
 
 	case m_main:

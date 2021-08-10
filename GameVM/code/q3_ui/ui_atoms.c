@@ -128,9 +128,7 @@ qboolean UI_ConsoleCommand( int realTime ) {
 	char	*cmd;
 
 	cmd = UI_Argv( 0 );
-	if (!strcmp(cmd, "togglemenu"))
-		M_ToggleMenu_f();
-	else if (!strcmp(cmd, "menu_main"))
+	if (!strcmp(cmd, "menu_main"))
 		M_Menu_Main_f();
 	else if (!strcmp(cmd, "menu_singleplayer"))
 		M_Menu_SinglePlayer_f();
