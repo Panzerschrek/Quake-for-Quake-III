@@ -51,22 +51,27 @@ void QDECL Com_Printf( const char *msg, ... ) {
 
 
 qboolean UI_IsFullscreen( void ) {
-	return (trap_Key_GetCatcher() & KEYCATCH_UI) != 0;
+	return M_InputGrabbed() && !M_GetInGame();
 }
 
 void UI_SetActiveMenu( uiMenuCommand_t menu ) {
 	switch ( menu ) {
 	case UIMENU_NONE:
+		M_SetInGame(qtrue);
 		UI_ForceMenuOff();
 		return;
 	case UIMENU_MAIN:
+		M_SetInGame(qfalse);
 		M_Menu_Main_f();
 		return;
 	case UIMENU_NEED_CD:
+		M_SetInGame(qfalse);
 		return;
 	case UIMENU_BAD_CD_KEY:
+		M_SetInGame(qfalse);
 		return;
 	case UIMENU_INGAME:
+		M_SetInGame(qtrue);
 		//trap_Cvar_Set( "cl_paused", "1" ); // PANZER TODO - enable pause
 		M_Menu_Main_f();
 		trap_Key_SetCatcher( KEYCATCH_UI );

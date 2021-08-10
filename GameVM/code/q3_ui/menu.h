@@ -37,6 +37,9 @@ void M_Draw (void);
 void M_DrawBackground (void);
 void M_DrawLoadingScreen (void);
 void M_ToggleMenu_f (void);
+void M_SetInGame(qboolean ingame);
+qboolean M_GetInGame (void);
+qboolean M_InputGrabbed (void);
 
 // Menu utility funcs
 void M_Print (int cx, int cy, char *str);

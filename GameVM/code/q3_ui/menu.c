@@ -29,9 +29,12 @@ glconfig_t m_glconfig;
 double		realtime, host_time; // PANZER TODO - remove its usage
 qboolean		standard_quake, rogue, hipnotic; // PANZER TODO - init this.
 
+qboolean m_ingame;
+
 enum {m_none, m_main, m_singleplayer, m_load, m_save, m_multiplayer, m_setup, m_net, m_options, m_video, m_keys, m_help, m_quit, m_serialconfig, m_modemconfig, m_lanconfig, m_gameoptions, m_search, m_slist} m_state;
 
 qhandle_t conchars;
+qhandle_t fullscreen_blend;
 
 typedef struct
 {
@@ -102,7 +105,10 @@ qpic_t* Draw_CachePic(const char* name)
 
 void Draw_FadeScreen (void)
 {
-	// PANZER TODO
+	float color[4] = {0.0f, 0.0f, 0.0f, 0.6f};
+	trap_R_SetColor(color);
+	trap_R_DrawStretchPic(0.0f, 0.0f, m_glconfig.vidWidth, m_glconfig.vidHeight, 0.0f, 0.0f, 1.0f, 1.0f, fullscreen_blend);
+	trap_R_SetColor(NULL);
 }
 
 char *Key_KeynumToString (int keynum)
@@ -402,6 +408,15 @@ void M_ToggleMenu_f (void)
 	M_Menu_Main_f ();
 }
 
+void M_SetInGame(qboolean ingame)
+{
+	m_ingame = ingame;
+}
+
+qboolean M_GetInGame (void)
+{
+	return m_ingame;
+}
 
 //=============================================================================
 /* MAIN MENU */
@@ -3189,6 +3204,7 @@ void M_Init (void)
 	m_state = m_none;
 
 	conchars = trap_R_RegisterShaderNoMip("gfx_wad/CONCHARS");
+	fullscreen_blend = trap_R_RegisterShaderNoMip("textures/fullscreen_blend");
 }
 
 
@@ -3201,7 +3217,7 @@ void M_Draw (void)
 
 	if (!m_recursiveDraw)
 	{
-		if(qfalse) // PANZER TODO - drad fade screen in game only
+		if(m_ingame)
 			Draw_FadeScreen ();
 		else
 			M_DrawBackground();
