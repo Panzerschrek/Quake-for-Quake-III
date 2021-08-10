@@ -24,45 +24,12 @@ Foundation, Inc., 51 Franklin St, Fifth Floor, Boston, MA  02110-1301  USA
 #include "g_local.h"
 
 // spawn variables
+#define	MAX_SPAWN_VARS			64
+#define	MAX_SPAWN_VARS_CHARS	4096
 static int		numSpawnVars;
 static char		*spawnVars[MAX_SPAWN_VARS][2];	// key / value pairs
 static int		numSpawnVarChars;
 static char		spawnVarChars[MAX_SPAWN_VARS_CHARS];
-
-/*
-=============
-G_NewString
-
-Builds a copy of the string, translating \n to real linefeeds
-so message texts can be multi-line
-=============
-*/
-char *G_NewString( const char *string ) {
-	char	*newb, *new_p;
-	int		i,l;
-	
-	l = strlen(string) + 1;
-
-	newb = G_Alloc( l );
-
-	new_p = newb;
-
-	// turn \n into a real linefeed
-	for ( i=0 ; i< l ; i++ ) {
-		if (string[i] == '\\' && i < l-1) {
-			i++;
-			if (string[i] == 'n') {
-				*new_p++ = '\n';
-			} else {
-				*new_p++ = '\\';
-			}
-		} else {
-			*new_p++ = string[i];
-		}
-	}
-	
-	return newb;
-}
 
 /*
 ===================

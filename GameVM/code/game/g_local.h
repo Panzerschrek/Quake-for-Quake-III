@@ -38,8 +38,6 @@ typedef edict_t gentity_t;
 //
 // this structure is cleared as each map is entered
 //
-#define	MAX_SPAWN_VARS			64
-#define	MAX_SPAWN_VARS_CHARS	4096
 
 typedef struct {
 	int			time;					// in msec
@@ -52,15 +50,6 @@ typedef struct {
 //
 // spawn string returns a temporary reference, you must CopyString() if you want to keep it
 void		G_SpawnEntitiesFromString( void );
-char *G_NewString( const char *string );
-
-//
-// g_client.c
-//
-void SetClientViewAngle( gclient_t *client, vec3_t angle );
-void ClientRespawn(gclient_t *ent);
-void ClientSpawn( gclient_t *ent );
-void ClientEndFrame( gclient_t *client );
 
 //
 // g_svcmds.c
@@ -96,7 +85,6 @@ void ClientThink( int clientNum );
 //
 void *G_Alloc( int size );
 void G_InitMemory( void );
-void Svcmd_GameMem_f( void );
 
 //
 // g_utils.c
