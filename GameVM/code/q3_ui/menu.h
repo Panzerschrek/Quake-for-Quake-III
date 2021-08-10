@@ -39,6 +39,8 @@ void M_DrawLoadingScreen (void);
 void M_ToggleMenu_f (void);
 void M_SetInGame(qboolean ingame);
 qboolean M_GetInGame (void);
+void M_GrabInput (void);
+void M_UngrabInput (void);
 qboolean M_InputGrabbed (void);
 
 // Menu utility funcs

@@ -373,11 +373,14 @@ void M_DrawTextBox (int x, int y, int width, int lines)
 void M_GrabInput (void)
 {
 	trap_Key_SetCatcher( KEYCATCH_UI );
+	trap_Cvar_Set( "cl_paused", "1" );
 }
 
 void M_UngrabInput (void)
 {
 	trap_Key_SetCatcher( trap_Key_GetCatcher() & ~KEYCATCH_UI );
+	trap_Key_ClearStates();
+	trap_Cvar_Set( "cl_paused", "0" );
 }
 
 qboolean M_InputGrabbed (void)
