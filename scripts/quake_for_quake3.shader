@@ -22,9 +22,11 @@ textures/CLIP
 {
 	q3map_globaltexture
 	q3map_tessSize 96
-	surfaceparm noimpact
 	surfaceparm lava
+	surfaceparm noimpact
 	surfaceparm nolightmap
+	surfaceparm nonsolid
+	surfaceparm trans
 	cull disable
 	{
 		map "textures/*LAVA1.tga"
@@ -39,9 +41,11 @@ textures/CLIP
 {
 	q3map_globaltexture
 	q3map_tessSize 96
-	surfaceparm noimpact
 	surfaceparm lava
+	surfaceparm noimpact
 	surfaceparm nolightmap
+	surfaceparm nonsolid
+	surfaceparm trans
 	cull disable
 	{
 		map "textures/*LAVA2.tga"
@@ -57,8 +61,10 @@ textures/CLIP
 	q3map_globaltexture
 	q3map_tessSize 96
 	surfaceparm noimpact
-	surfaceparm slime
 	surfaceparm nolightmap
+	surfaceparm nonsolid
+	surfaceparm trans
+	surfaceparm slime
 	cull disable
 	{
 		map "textures/*SLIME0.tga"
@@ -74,8 +80,10 @@ textures/CLIP
 	q3map_globaltexture
 	q3map_tessSize 96
 	surfaceparm noimpact
-	surfaceparm slime
 	surfaceparm nolightmap
+	surfaceparm nonsolid
+	surfaceparm trans
+	surfaceparm slime
 	cull disable
 	{
 		map "textures/*SLIME1.tga"
@@ -91,8 +99,10 @@ textures/CLIP
 	q3map_globaltexture
 	q3map_tessSize 96
 	surfaceparm noimpact
-	surfaceparm slime
 	surfaceparm nolightmap
+	surfaceparm nonsolid
+	surfaceparm trans
+	surfaceparm slime
 	cull disable
 	{
 		map "textures/*SLIME2.tga"
@@ -108,8 +118,10 @@ textures/CLIP
 	q3map_globaltexture
 	q3map_tessSize 96
 	surfaceparm noimpact
-	surfaceparm water
 	surfaceparm nolightmap
+	surfaceparm nonsolid
+	surfaceparm trans
+	surfaceparm water
 	cull disable
 	{
 		map "textures/*WATER0.tga"
@@ -125,8 +137,10 @@ textures/CLIP
 	q3map_globaltexture
 	q3map_tessSize 96
 	surfaceparm noimpact
-	surfaceparm water
 	surfaceparm nolightmap
+	surfaceparm nonsolid
+	surfaceparm trans
+	surfaceparm water
 	cull disable
 	{
 		map "textures/*WATER1.tga"
@@ -142,11 +156,29 @@ textures/CLIP
 	q3map_globaltexture
 	q3map_tessSize 96
 	surfaceparm noimpact
+	surfaceparm nolightmap
+	surfaceparm nonsolid
+	surfaceparm trans
+	surfaceparm water
+	cull disable
+	{
+		map "textures/*WATER2.tga"
+		tcmod turb 0 0.125 0.0 0.125
+		blendFunc GL_ONE GL_ZERO
+		rgbGen identity
+	}
+}
+
+"textures/*TELEPORT"
+{
+	q3map_globaltexture
+	q3map_tessSize 96
+	surfaceparm noimpact
 	surfaceparm water
 	surfaceparm nolightmap
 	cull disable
 	{
-		map "textures/*WATER2.tga"
+		map "textures/*TELEPORT.tga"
 		tcmod turb 0 0.125 0.0 0.125
 		blendFunc GL_ONE GL_ZERO
 		rgbGen identity
