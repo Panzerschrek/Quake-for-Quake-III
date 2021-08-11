@@ -18,10 +18,21 @@ set(
 		${Q3_COMMON}/threads.c
 	)
 
-file(GLOB SOURCES_PAK ${Q3_SOURCES}/libs/pak/*.cpp)
-file(GLOB SOURCES_JPEG ${Q3_SOURCES}/libs/jpeg6/*.cpp)
-
 include_directories(${Q3_SOURCES}/common)
 include_directories(${Q3_SOURCES}/libs)
 
-add_executable(q3map ${SOURCES} ${SOURCES_COMMON} ${SOURCES_PAK} ${SOURCES_JPEG})
+if(WIN32)
+	file(GLOB SOURCES_PAK ${Q3_SOURCES}/libs/pak/*.cpp)
+	file(GLOB SOURCES_JPEG ${Q3_SOURCES}/libs/jpeg6/*.cpp)
+	set(SOURCES_PLATFORM ${SOURCES_PAK} ${SOURCES_JPEG})
+else()
+	add_definitions(-DCLK_TCK=1000)
+	add_definitions(-DATOM=int)
+	add_definitions(-Dboolean=int)
+	add_definitions(-Dstrlwr=Q_strlwr)
+	set(SOURCES_PLATFORM ${CMAKE_CURRENT_SOURCE_DIR}/stuff.c)
+
+	link_libraries(-lm)
+endif()
+
+add_executable(q3map ${SOURCES} ${SOURCES_COMMON} ${SOURCES_PLATFORM})
