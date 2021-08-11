@@ -8,14 +8,19 @@ static void G_SavegameComment (char *text)
 {
 	int		i;
 	char	kills[20];
+	char	*mapname;
 
 	for (i=0 ; i<SAVEGAME_COMMENT_LENGTH ; i++)
 		text[i] = ' ';
-	// PANZER TODO - fix this
-	//memcpy (text, cl.levelname, strlen(cl.levelname));
-	//sprintf (kills,"kills:%3i/%3i", cl.stats[STAT_MONSTERS], cl.stats[STAT_TOTALMONSTERS]);
+
+	// PANZER TODO - check for buffer overflow?
+	mapname = pr_strings + sv.edicts->v.message;
+	memcpy (text, mapname, strlen(mapname));
+
+	Com_sprintf (kills, sizeof(kills), "kills:%3i/%3i", (int)pr_global_struct->killed_monsters, (int)pr_global_struct->total_monsters);
 	memcpy (text+22, kills, strlen(kills));
-// convert space to _ to make stdio happy
+
+	// convert space to _ to make stdio happy
 	for (i=0 ; i<SAVEGAME_COMMENT_LENGTH ; i++)
 		if (text[i] == ' ')
 			text[i] = '_';
