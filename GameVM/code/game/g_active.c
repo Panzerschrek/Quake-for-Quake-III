@@ -34,7 +34,7 @@ If "g_synchronousClients 1" is set, this will be called exactly
 once for each server frame, which makes for smooth demo recording.
 ==============
 */
-void ClientThink_real( gclient_t *client ) {
+void ClientThink_real( client_t *client ) {
 	int			msec;
 	int			i;
 	usercmd_t	*ucmd;
@@ -108,7 +108,7 @@ A new command has arrived from the client
 ==================
 */
 void ClientThink( int clientNum ) {
-	gclient_t *client;
+	client_t *client;
 
 	client = svs.clients + clientNum;
 	trap_GetUsercmd( clientNum, &client->cmd );

@@ -30,8 +30,6 @@ Foundation, Inc., 51 Franklin St, Fifth Floor, Boston, MA  02110-1301  USA
 // the "gameversion" client command will print this plus compile date
 #define	GAMEVERSION	BASEGAME
 
-typedef client_t gclient_t;
-
 // Use slightly modified Quake "edict_t" as Quake III entity.
 typedef edict_t gentity_t;
 
@@ -61,7 +59,6 @@ qboolean	ConsoleCommand( void );
 // g_main.c
 //
 void QDECL G_LogPrintf( const char *fmt, ... ) __attribute__ ((format (printf, 1, 2)));
-void SendScoreboardMessageToAllClients( void );
 void QDECL G_Printf( const char *fmt, ... ) __attribute__ ((format (printf, 1, 2)));
 void QDECL G_DPrintf( const char *fmt, ... ) __attribute__ ((format (printf, 1, 2)));
 void QDECL G_Error( const char *fmt, ... ) __attribute__ ((noreturn, format (printf, 1, 2)));
@@ -94,8 +91,6 @@ edict_t* G_CreateEventEdict(vec3_t origin, int eventType);
 edict_t* G_CreateGlobalEventEdict(vec3_t origin, int eventType);
 
 extern	level_locals_t	level;
-
-#define	FOFS(x) ((size_t)&(((gentity_t *)0)->x))
 
 extern	vmCvar_t	g_maxclients;			// allow this many total, including spectators
 
