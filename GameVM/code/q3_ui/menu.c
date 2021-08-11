@@ -1104,13 +1104,6 @@ void M_Menu_Options_f (void)
 	M_GrabInput();
 	m_state = m_options;
 	m_entersound = qtrue;
-
-#ifdef _WIN32
-	if ((options_cursor == 13) && (modestate != MS_WINDOWED))
-	{
-		options_cursor = 0;
-	}
-#endif
 }
 
 
