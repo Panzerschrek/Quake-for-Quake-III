@@ -78,6 +78,14 @@ void ClientCommand( int clientNum );
 void ClientThink( int clientNum );
 
 //
+// g_filebuf.c
+//
+void G_FilebufReset (void);
+void G_FilebufWrite(const char *fmt, ... );
+byte* G_FilebufGetData (void);
+int G_FilebufGetSize (void);
+
+//
 // g_mem.c
 //
 void *G_Alloc( int size );

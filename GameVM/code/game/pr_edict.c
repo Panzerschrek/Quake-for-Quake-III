@@ -476,7 +476,6 @@ void ED_Print (edict_t *ed)
 	}
 }
 
-#if 0 // PANZER TODO - fix it
 /*
 =============
 ED_Write
@@ -484,7 +483,7 @@ ED_Write
 For savegames
 =============
 */
-void ED_Write (FILE *f, edict_t *ed)
+void ED_Write (edict_t *ed)
 {
 	ddef_t	*d;
 	int		*v;
@@ -492,11 +491,11 @@ void ED_Write (FILE *f, edict_t *ed)
 	char	*name;
 	int		type;
 
-	fprintf (f, "{\n");
+	G_FilebufWrite("{\n");
 
 	if (ed->free)
 	{
-		fprintf (f, "}\n");
+		G_FilebufWrite("}\n");
 		return;
 	}
 	
@@ -517,13 +516,12 @@ void ED_Write (FILE *f, edict_t *ed)
 		if (j == type_size[type])
 			continue;
 	
-		fprintf (f,"\"%s\" ",name);
-		fprintf (f,"\"%s\"\n", PR_UglyValueString(d->type, (eval_t *)v));		
+		G_FilebufWrite ("\"%s\" ",name);
+		G_FilebufWrite ("\"%s\"\n", PR_UglyValueString(d->type, (eval_t *)v));
 	}
 
-	fprintf (f, "}\n");
+	G_FilebufWrite("}\n");
 }
-#endif
 
 void ED_PrintNum (int ent)
 {
@@ -613,20 +611,19 @@ FIXME: need to tag constants, doesn't really work
 ==============================================================================
 */
 
-#if 0 // PANZER TODO - fix it
 /*
 =============
 ED_WriteGlobals
 =============
 */
-void ED_WriteGlobals (FILE *f)
+void ED_WriteGlobals (void)
 {
 	ddef_t		*def;
 	int			i;
 	char		*name;
 	int			type;
 
-	fprintf (f,"{\n");
+	G_FilebufWrite ("{\n");
 	for (i=0 ; i<progs->numglobaldefs ; i++)
 	{
 		def = &pr_globaldefs[i];
@@ -641,12 +638,11 @@ void ED_WriteGlobals (FILE *f)
 			continue;
 
 		name = pr_strings + def->s_name;		
-		fprintf (f,"\"%s\" ", name);
-		fprintf (f,"\"%s\"\n", PR_UglyValueString(type, (eval_t *)&pr_globals[def->ofs]));		
+		G_FilebufWrite ("\"%s\" ", name);
+		G_FilebufWrite ("\"%s\"\n", PR_UglyValueString(type, (eval_t *)&pr_globals[def->ofs]));
 	}
-	fprintf (f,"}\n");
+	G_FilebufWrite ("}\n");
 }
-#endif
 
 /*
 =============
