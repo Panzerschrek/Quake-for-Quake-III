@@ -92,6 +92,12 @@ void *G_Alloc( int size );
 void G_InitMemory( void );
 
 //
+// g_save_load.c
+//
+
+void G_SaveGame (const char* savename);
+
+//
 // g_utils.c
 //
 

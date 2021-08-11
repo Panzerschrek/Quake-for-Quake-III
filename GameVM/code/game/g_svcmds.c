@@ -33,8 +33,16 @@ ConsoleCommand
 */
 qboolean	ConsoleCommand( void ) {
 	char	cmd[MAX_TOKEN_CHARS];
+	char	arg1[MAX_TOKEN_CHARS];
 
 	trap_Argv( 0, cmd, sizeof( cmd ) );
+
+	if (!strcmp(cmd, "save"))
+	{
+		trap_Argv( 1, arg1, sizeof( arg1 ) );
+		G_SaveGame(arg1);
+		return qtrue;
+	}
 
 	return qfalse;
 }
