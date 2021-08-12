@@ -108,7 +108,8 @@ void G_LoadGame (const char* savename)
 	char	name[MAX_OSPATH];
 	char	mapname[MAX_QPATH];
 	float	time, tfloat;
-	char	str[32768], *start, *token;
+	char *start, *token;
+	static char	str[32768]; // Make static to avoid 32k locals limit in lcc+q3ams.
 	int		i, r;
 	edict_t	*ent;
 	int		entnum;
