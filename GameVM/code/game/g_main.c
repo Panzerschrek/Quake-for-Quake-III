@@ -344,10 +344,20 @@ void SV_SpawnServer()
 	else
 		pr_global_struct->deathmatch = deathmatch.value;
 
-	// PANZER TODO - set mapname
 
 	G_SpawnEntitiesFromString();
-	pr_global_struct->world = 0;
+
+	if (g_server_start_save_file.string[0] != 0)
+	{
+		trap_Cvar_Set("g_server_start_save_file", "");
+		G_Printf("Detected game loading request, save name: %s\n", g_server_start_save_file.string);
+
+		// Free spawned edicts to spawn them again during loading of saved game.
+		for (i = svs.maxclients  + 1; i < sv.num_edicts; ++i)
+			ED_Free(EDICT_NUM(i));
+
+		G_LoadGame(g_server_start_save_file.string);
+	}
 
 	sv.active = qtrue;
 

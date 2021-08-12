@@ -99,6 +99,7 @@ void G_InitMemory( void );
 //
 
 void G_SaveGame (const char* savename);
+void G_LoadGame (const char* savename);
 
 //
 // g_utils.c

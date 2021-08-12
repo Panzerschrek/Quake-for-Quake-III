@@ -177,7 +177,7 @@ void G_LoadGame (const char* savename)
 
 		if (entnum == -1)
 		{	// parse the global vars
-			ED_ParseGlobals (token);
+			ED_ParseGlobals (start);
 		}
 		else
 		{	// parse an edict
@@ -185,7 +185,7 @@ void G_LoadGame (const char* savename)
 			ent = EDICT_NUM(entnum);
 			memset (&ent->v, 0, progs->entityfields * 4);
 			ent->free = qfalse;
-			ED_ParseEdict (token, ent);
+			ED_ParseEdict (start, ent);
 
 		// link it into the bsp tree
 			if (!ent->free)
