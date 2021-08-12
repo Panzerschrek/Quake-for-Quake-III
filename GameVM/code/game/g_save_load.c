@@ -30,7 +30,6 @@ static void G_SavegameComment (char *text)
 void G_SaveGame (const char* savename)
 {
 	char	name[256];
-	fileHandle_t	f;
 	int		i;
 	char	comment[SAVEGAME_COMMENT_LENGTH+1];
 
@@ -61,13 +60,6 @@ void G_SaveGame (const char* savename)
 
 	Com_sprintf (name, sizeof(name), "%s.sav", savename);
 	G_Printf ("Saving game to %s...\n", name);
-	f = 0;
-	trap_FS_FOpenFile(name, &f, FS_WRITE);
-	if (!f)
-	{
-		G_Printf ("ERROR: couldn't open.\n");
-		return;
-	}
 
 	G_FilebufReset();
 
@@ -96,8 +88,7 @@ void G_SaveGame (const char* savename)
 		ED_Write (EDICT_NUM(i));
 	}
 
-	trap_FS_Write(G_FilebufGetData(), G_FilebufGetSize(), f);
-	trap_FS_FCloseFile(f);
+	G_FilebufSaveToFile(name);
 
 	G_Printf ("done.\n");
 }

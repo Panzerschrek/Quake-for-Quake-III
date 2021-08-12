@@ -31,16 +31,6 @@ void G_FilebufWrite(const char *fmt, ... )
 	filebuf_pos+= len;
 }
 
-byte* G_FilebufGetData (void)
-{
-	return filebuf;
-}
-
-int G_FilebufGetSize (void)
-{
-	return filebuf_pos;
-}
-
 void G_FilebufLoadFile (const char* file_path)
 {
 	fileHandle_t	f;
@@ -55,6 +45,19 @@ void G_FilebufLoadFile (const char* file_path)
 	trap_FS_Read(filebuf, sizeof(filebuf), f);
 	filebuf_pos = 0;
 
+	trap_FS_FCloseFile(f);
+}
+
+void G_FilebufSaveToFile (const char* file_path)
+{
+	fileHandle_t	f;
+
+	f = 0;
+	trap_FS_FOpenFile(file_path, &f, FS_WRITE);
+	if( f == 0 )
+		G_Error("Failed to open \"%s\"\n", file_path);
+
+	trap_FS_Write(filebuf, filebuf_pos, f);
 	trap_FS_FCloseFile(f);
 }
 

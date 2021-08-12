@@ -82,9 +82,8 @@ void ClientThink( int clientNum );
 //
 void G_FilebufReset (void);
 void G_FilebufWrite(const char *fmt, ... );
-byte* G_FilebufGetData (void);
-int G_FilebufGetSize (void);
 void G_FilebufLoadFile (const char* file_path);
+void G_FilebufSaveToFile (const char* file_path);
 const char* G_FilebufReadLine (void);
 char G_FilebufGetChar (void);
 
