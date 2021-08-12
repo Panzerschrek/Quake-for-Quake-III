@@ -63,6 +63,9 @@ vmCvar_t	cl_rollangle;
 
 vmCvar_t	g_registered;
 
+// Pass save file in teporary cvar.
+vmCvar_t g_server_start_save_file;
+
 static cvarTable_t		gameCvarTable[] = {
 	// noset vars
 	{ NULL, "gamename", GAMEVERSION , CVAR_SERVERINFO | CVAR_ROM, 0, qfalse  },
@@ -101,6 +104,8 @@ static cvarTable_t		gameCvarTable[] = {
 
 	// PANZER TODO - know exact version (trial/registered). Or maybe just say "funck you" to Bethesda and treat the game as registered only?
 	{ &g_registered, "registered", "1.0", CVAR_ARCHIVE, 0 },
+
+	{ &g_server_start_save_file, "g_server_start_save_file", "", CVAR_TEMP, 0 },
 };
 
 static int gameCvarTableSize = ARRAY_LEN( gameCvarTable );

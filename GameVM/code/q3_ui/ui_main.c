@@ -30,6 +30,8 @@ USER INTERFACE MAIN
 
 #include "ui_local.h"
 
+vmCvar_t g_server_start_save_file;
+
 /*
 ================
 vmMain
@@ -44,6 +46,7 @@ Q_EXPORT intptr_t vmMain( int command, int arg0, int arg1, int arg2, int arg3, i
 		return UI_API_VERSION;
 
 	case UI_INIT:
+		trap_Cvar_Register(&g_server_start_save_file, "g_server_start_save_file", "", CVAR_TEMP | CVAR_ROM);
 		M_Init();
 		return 0;
 
@@ -160,6 +163,30 @@ void UI_MouseEvent( int dx, int dy )
 {
 }
 
+// Add "load" comand into UI library because it is only game library loaded at game start.
+// We can't add this command into game/cgame library because these libraries are not loaded yer in main menu.
+
+static void M_LoadGame_f()
+{
+	char	savename[MAX_STRING_CHARS];
+	char	mapname[MAX_QPATH];
+	trap_Argv( 1, savename, sizeof( savename ) );
+
+	if (savename[0] == 0)
+	{
+		Com_Printf ("load <savename> : load a game\n");
+		return;
+	}
+
+	strcpy(g_server_start_save_file.string, savename);
+	trap_Cvar_Set("g_server_start_save_file", savename);
+
+	// PANZER TODO - parse save file header and extract map name.
+	strcpy(mapname, "e1m1");
+
+	trap_Cmd_ExecuteText (EXEC_APPEND, va ("map %s\n", mapname) );
+}
+
 /*
 =================
 UI_ConsoleCommand
@@ -192,6 +219,8 @@ qboolean UI_ConsoleCommand( int realTime ) {
 		M_Menu_Help_f();
 	else if (!strcmp(cmd, "menu_quit"))
 		M_Menu_Quit_f();
+	else if (!strcmp(cmd, "load"))
+		M_LoadGame_f();
 	else
 		return qfalse;
 
