@@ -101,3 +101,103 @@ void G_SaveGame (const char* savename)
 
 	G_Printf ("done.\n");
 }
+
+
+void G_LoadGame (const char* savename)
+{
+	char	name[MAX_OSPATH];
+	char	mapname[MAX_QPATH];
+	float	time, tfloat;
+	char	str[32768], *start, *token;
+	int		i, r;
+	edict_t	*ent;
+	int		entnum;
+	int		version;
+	float			spawn_parms[NUM_SPAWN_PARMS];
+
+	Com_sprintf (name, sizeof(name), "%s.sav", savename);
+
+	Com_Printf ("Loading game from %s...\n", name);
+	G_FilebufLoadFile(name);
+
+	version = atoi(G_FilebufReadLine());
+	if (version != SAVEGAME_VERSION)
+	{
+		Com_Printf ("Savegame is version %i, not %i\n", version, SAVEGAME_VERSION);
+		return;
+	}
+	strcpy(str, G_FilebufReadLine());
+	for (i=0 ; i<NUM_SPAWN_PARMS ; i++)
+		spawn_parms[i]= atof(G_FilebufReadLine());
+// this silliness is so we can load 1.06 save files, which have float skill values
+	tfloat = atof(G_FilebufReadLine());
+	current_skill = (int)(tfloat + 0.1);
+
+	skill.value = (float)current_skill;
+	trap_Cvar_Set ("skill", va("%f", skill.value));
+
+	strcpy(mapname, G_FilebufReadLine());
+	time = atof(G_FilebufReadLine());
+
+// load the light styles
+
+	for (i=0 ; i<MAX_LIGHTSTYLES ; i++)
+	{
+		strcpy(str, G_FilebufReadLine());
+		sv.lightstyles[i] = G_Alloc (strlen(str)+1);
+		strcpy (sv.lightstyles[i], str);
+	}
+
+// load the edicts out of the savegame file
+	entnum = -1;		// -1 is the globals
+	while (1)
+	{
+		for (i=0 ; i<sizeof(str)-1 ; i++)
+		{
+			r = G_FilebufGetChar ();
+			if (!r)
+				goto loop_end;
+			str[i] = r;
+			if (r == '}')
+			{
+				i++;
+				break;
+			}
+		}
+		if (i == sizeof(str)-1)
+			G_Error ("Loadgame buffer overflow");
+		str[i] = 0;
+		start = str;
+		token = COM_Parse(&start);
+		if (!token || !*token)
+			break;		// end of file
+		if (strcmp(token,"{"))
+			G_Error ("First token isn't a brace");
+
+		if (entnum == -1)
+		{	// parse the global vars
+			ED_ParseGlobals (token);
+		}
+		else
+		{	// parse an edict
+
+			ent = EDICT_NUM(entnum);
+			memset (&ent->v, 0, progs->entityfields * 4);
+			ent->free = qfalse;
+			ED_ParseEdict (token, ent);
+
+		// link it into the bsp tree
+			if (!ent->free)
+				SV_LinkEdict (ent, qfalse);
+		}
+
+		entnum++;
+	}
+	loop_end:
+
+	sv.num_edicts = entnum;
+	sv.time = time;
+
+	for (i=0 ; i<NUM_SPAWN_PARMS ; i++)
+		svs.clients->spawn_parms[i] = spawn_parms[i];
+}

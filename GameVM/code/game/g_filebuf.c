@@ -40,3 +40,46 @@ int G_FilebufGetSize (void)
 {
 	return filebuf_pos;
 }
+
+void G_FilebufLoadFile (const char* file_path)
+{
+	fileHandle_t	f;
+
+	f = 0;
+	trap_FS_FOpenFile(file_path, &f, FS_READ);
+	if( f == 0 )
+		G_Error("Failed to open \"%s\"\n", file_path);
+
+	// The engine does not provide a way to get file size. So, zero buffer to let reader detect end of file.
+	memset(filebuf, 0, sizeof(filebuf));
+	trap_FS_Read(filebuf, sizeof(filebuf), f);
+	filebuf_pos = 0;
+
+	trap_FS_FCloseFile(f);
+}
+
+const char* G_FilebufReadLine (void)
+{
+	char* res;
+	res = ((char*)filebuf) + filebuf_pos;
+	while(filebuf_pos < sizeof(filebuf) && filebuf[filebuf_pos] != '\n')
+		++filebuf_pos;
+
+	if(filebuf_pos < sizeof(filebuf))
+	{
+		filebuf[filebuf_pos] = 0;
+		++filebuf_pos;
+		return res;
+	}
+	return "";
+}
+
+char G_FilebufGetChar (void)
+{
+	char res;
+	if (filebuf_pos >= sizeof(filebuf))
+		return 0;
+	res = filebuf[filebuf_pos];
+	++filebuf_pos;
+	return res;
+}
