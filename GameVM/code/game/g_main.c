@@ -348,6 +348,17 @@ void SV_SpawnServer()
 
 	G_SpawnEntitiesFromString();
 
+
+	sv.active = qtrue;
+
+	// all setup is completed, any further precache statements are errors
+	sv.state = ss_active;
+
+	// run two frames to allow everything to settle
+	host_frametime = 0.1;
+	SV_Physics ();
+	SV_Physics ();
+
 	if (g_server_start_save_file.string[0] != 0)
 	{
 		trap_Cvar_Set("g_server_start_save_file", "");
@@ -363,15 +374,6 @@ void SV_SpawnServer()
 	else
 		sv.loadgame = qfalse;
 
-	sv.active = qtrue;
-
-	// all setup is completed, any further precache statements are errors
-	sv.state = ss_active;
-
-	// run two frames to allow everything to settle
-	host_frametime = 0.1;
-	SV_Physics ();
-	SV_Physics ();
 }
 
 /*
