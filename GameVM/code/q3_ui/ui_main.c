@@ -169,7 +169,12 @@ void UI_MouseEvent( int dx, int dy )
 static void M_LoadGame_f()
 {
 	char	savename[MAX_STRING_CHARS];
+	char	savepath[MAX_OSPATH];
 	char	mapname[MAX_QPATH];
+	char	save_file_buf[4096];
+	char	tmp_str[1024];
+	int		i, pos, n;
+	fileHandle_t f;
 	trap_Argv( 1, savename, sizeof( savename ) );
 
 	if (savename[0] == 0)
@@ -178,12 +183,33 @@ static void M_LoadGame_f()
 		return;
 	}
 
+	// Read header of save file to extract map name.
+	Com_sprintf(savepath, sizeof(savepath), "%s.sav", savename);
+	f = 0;
+	trap_FS_FOpenFile(savepath, &f, FS_READ);
+	if (!f)
+	{
+		Com_Printf("Can't load %s\n", savepath);
+		return;
+	}
+
+	trap_FS_Read(save_file_buf, sizeof(save_file_buf), f);
+	trap_FS_FCloseFile(f);
+
+	// Skip unneeded fields.
+	for(i = 0, pos= 0; i < 3 + 16; ++i)
+	{
+		sscanf(save_file_buf + pos, "%s\n%n", tmp_str, &n);
+		pos+= n;
+	}
+	// Read map name.
+	sscanf(save_file_buf + pos, "%s\n", mapname);
+
+	// Set temp cvar for game module with save name.
 	strcpy(g_server_start_save_file.string, savename);
 	trap_Cvar_Set("g_server_start_save_file", savename);
 
-	// PANZER TODO - parse save file header and extract map name.
-	strcpy(mapname, "e1m1");
-
+	// Run selected map.
 	trap_Cmd_ExecuteText (EXEC_APPEND, va ("map %s\n", mapname) );
 }
 

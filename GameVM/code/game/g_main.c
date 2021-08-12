@@ -289,6 +289,8 @@ void SV_SpawnServer()
 
 	memset (&sv, 0, sizeof(sv));
 
+	strcpy(sv.name, mapname);
+
 	// load progs to get entity field count
 	PR_LoadProgs ();
 
