@@ -344,7 +344,6 @@ void SV_SpawnServer()
 	else
 		pr_global_struct->deathmatch = deathmatch.value;
 
-
 	G_SpawnEntitiesFromString();
 
 	if (g_server_start_save_file.string[0] != 0)
@@ -357,7 +356,10 @@ void SV_SpawnServer()
 			ED_Free(EDICT_NUM(i));
 
 		G_LoadGame(g_server_start_save_file.string);
+		sv.loadgame = qtrue;
 	}
+	else
+		sv.loadgame = qfalse;
 
 	sv.active = qtrue;
 
