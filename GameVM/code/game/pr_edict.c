@@ -139,6 +139,7 @@ void ED_Free (edict_t *ed)
 	ed->v.modelindex = 0;
 	ed->s.modelindex = 0;
 	ed->s.loopSound = 0;
+	ed->s.event = 0;
 	
 	ed->freetime = sv.time;
 }

@@ -372,7 +372,6 @@ void SV_SpawnServer()
 	}
 	else
 		sv.loadgame = qfalse;
-
 }
 
 /*
