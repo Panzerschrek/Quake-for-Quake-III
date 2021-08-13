@@ -701,6 +701,9 @@ char *ED_NewString (char *string)
 	
 	l = strlen(string) + 1;
 
+	if (l == 1) // Return pr_strings (offset=0) for empty string. pr_stings[0]= 0
+		return pr_strings;
+
 	new = pr_next_dynamic_string;
 	pr_next_dynamic_string += l;
 	if (pr_next_dynamic_string - pr_dynamic_strings > PR_DYNAMIC_STRINGS_BUFF_SIZE)
