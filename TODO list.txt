@@ -1,8 +1,8 @@
 Server:
 * Fix dead bodies collision detection
-* Save/Load
 * Fix some shot buttons (like on e1m1)
 * Next level transition (with saved player stats)
+* Coop/deathmatch
 
 Client:
 * Fix deathmatch scoreborad drawing code
@@ -11,6 +11,8 @@ Client:
 * Addons (rogue/hipnotic) support in status bar
 * Rockets particle trails and lights
 * Sprite entities
+* Show correct level time after loading of saved game
+* Entities/player interpolation/extrapolation (smooth movement, rotation, animation)
 
 Menu UI:
 * Video settings
@@ -33,6 +35,4 @@ Data export:
 
 Maps:
 * Fix missing light* entities
-* Fix missing polygons
-* Fix crashes of q3map2 while calculating light for some maps
-* Fix missing q3map2-generated shaders
+* Fix leaks on some original maps
