@@ -51,7 +51,7 @@ void G_SaveGame (const char* savename)
 
 	for (i=0 ; i<svs.maxclients ; i++)
 	{
-		if (svs.clients[i].active && (svs.clients[i].edict->v.health <= 0) )
+		if (svs.clients[i].connected && (svs.clients[i].edict->v.health <= 0) )
 		{
 			G_Printf ("Can't savegame with a dead player\n");
 			return;

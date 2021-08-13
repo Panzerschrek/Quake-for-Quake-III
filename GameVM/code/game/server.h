@@ -76,11 +76,9 @@ typedef struct client_s
 	// ps MUST be the first element, because the server expects it
 	playerState_t	ps;				// communicated by server to clients
 
-	qboolean		active;				// false = client is free
-	qboolean		spawned;			// false = don't send datagrams
-	qboolean		dropasap;			// has been told to go to another level
+	qboolean		connected;			// false = client is free
+	qboolean		active;				// Fully loaded and can actually enjoy the game
 	qboolean		privileged;			// can execute any host command
-	qboolean		sendsignon;			// only valid before spawned
 
 	double			last_message;		// reliable messages must be sent
 										// periodically

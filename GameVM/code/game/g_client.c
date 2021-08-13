@@ -41,8 +41,8 @@ char *ClientConnect( int clientNum, qboolean firstTime, qboolean isBot ) {
 	client = svs.clients + clientNum;
 	memset(client, 0, sizeof(*client));
 	strcpy (client->name, "unconnected");
-	client->active = qtrue;
-	client->spawned = qfalse;
+	client->connected = qtrue;
+	client->active = qfalse;
 	client->edict = ent;
 	client->ps.clientNum = clientNum;
 
@@ -69,6 +69,8 @@ void ClientBegin( int clientNum ) {
 	sv_player = host_client->edict;
 
 	strcpy (host_client->name, "SomeClient");
+
+	G_Printf ("Client %d begin\n", clientNum);
 
 	// copy spawn parms out of the client_t
 
@@ -100,7 +102,6 @@ void ClientBegin( int clientNum ) {
 	}
 
 	host_client->active = qtrue;
-	host_client->spawned = qtrue;
 }
 
 void ClientDisconnect( int clientNum ) {

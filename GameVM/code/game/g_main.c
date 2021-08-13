@@ -498,6 +498,9 @@ void G_RunFrame( int levelTime ) {
 
 	host_frametime = ( levelTime - level.time ) / 1000.0;
 
+	if(sv.loadgame && ( levelTime < 5000 && !svs.clients[0].active ) )
+		return; // Wait of clients to be active.
+
 	// don't allow really long or short frames
 	if (host_frametime > 0.1)
 		host_frametime = 0.1;
@@ -545,7 +548,7 @@ void G_RunFrame( int levelTime ) {
 
 	for(i = 0; i < svs.maxclients; i++){
 		client = &svs.clients[i];
-		if(!client->active || client->edict == NULL) {
+		if(!client->connected || client->edict == NULL) {
 			continue;
 		}
 

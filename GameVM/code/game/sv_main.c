@@ -179,7 +179,7 @@ static void SV_ProcessIntermission(int intermissionType)
 	i = 0;
 	for( i = 0; i < svs.maxclients; ++ i )
 	{
-		if( !svs.clients[i].active )
+		if( !svs.clients[i].connected )
 			continue;
 
 		svs.clients[i].ps.pm_type = intermissionType;
@@ -419,7 +419,7 @@ void SV_ProcessMessages()
 
 	for(i = 0; i < svs.maxclients; ++i)
 	{
-		if( !svs.clients[i].active ){
+		if( !svs.clients[i].connected ){
 			continue;
 		}
 
