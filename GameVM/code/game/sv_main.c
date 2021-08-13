@@ -258,152 +258,148 @@ static void SV_ProcessBufferMessages(sizebuf_t* buf, int clientNum /* -1 for glo
 		}
 
 		// other commands
-			switch (cmd)
-			{
-			default:
-				G_Error ("SV_ProcessBufferMessages: Illegible server message %d\n", cmd);
-				break;
+		switch (cmd)
+		{
+		default:
+			G_Error ("SV_ProcessBufferMessages: Illegible server message %d\n", cmd);
+			break;
 
-			case svc_nop:
-	//			Con_Printf ("svc_nop\n");
-				break;
+		case svc_nop:
+//			Con_Printf ("svc_nop\n");
+			break;
 
-			case svc_time:
-				MSG_ReadFloat ();
-				break;
+		case svc_time:
+			MSG_ReadFloat ();
+			break;
 
-			case svc_clientdata:
-				MSG_ReadShort ();
-				break;
+		case svc_clientdata:
+			MSG_ReadShort ();
+			break;
 
-			case svc_version:
-				i = MSG_ReadLong ();
-				break;
+		case svc_version:
+			i = MSG_ReadLong ();
+			break;
 
-			case svc_disconnect:
-				break;
+		case svc_disconnect:
+			break;
 
-			case svc_print:
-				SV_SendPrint(clientNum, MSG_ReadString());
-				break;
+		case svc_print:
+			SV_SendPrint(clientNum, MSG_ReadString());
+			break;
 
-			case svc_centerprint:
-				SV_SendCenterPrint(clientNum, MSG_ReadString());
-				break;
+		case svc_centerprint:
+			SV_SendCenterPrint(clientNum, MSG_ReadString());
+			break;
 
-			case svc_stufftext:
-				SV_SendStuffText(clientNum, MSG_ReadString());
-				break;
+		case svc_stufftext:
+			SV_SendStuffText(clientNum, MSG_ReadString());
+			break;
 
-			case svc_damage:
-				// PANZER TODO - transmit damage.
-				MSG_ReadByte ();
-				MSG_ReadByte ();
-				MSG_ReadCoord ();
-				MSG_ReadCoord ();
-				MSG_ReadCoord ();
-				break;
+		case svc_damage:
+			// PANZER TODO - transmit damage.
+			MSG_ReadByte ();
+			MSG_ReadByte ();
+			MSG_ReadCoord ();
+			MSG_ReadCoord ();
+			MSG_ReadCoord ();
+			break;
 
-			case svc_serverinfo:
-				// Just ignore this - actual QuakeC does not send such message.
-				break;
+		case svc_serverinfo:
+			// Just ignore this - actual QuakeC does not send such message.
+			break;
 
-			case svc_setangle:
-				MSG_ReadAngle();
-				MSG_ReadAngle();
-				MSG_ReadAngle();
-				break;
+		case svc_setangle:
+			MSG_ReadAngle();
+			MSG_ReadAngle();
+			MSG_ReadAngle();
+			break;
 
-			case svc_setview:
-				MSG_ReadShort ();
-				break;
+		case svc_setview:
+			MSG_ReadShort ();
+			break;
 
-			case svc_lightstyle:
-				MSG_ReadByte ();
-				MSG_ReadString();
-				break;
+		case svc_lightstyle:
+			MSG_ReadByte ();
+			MSG_ReadString();
+			break;
 
-			case svc_sound:
-				// Just ignore this - actual QuakeC does not send such message.
-				break;
+		case svc_sound:
+			// Just ignore this - actual QuakeC does not send such message.
+			break;
 
-			case svc_stopsound:
-				MSG_ReadShort();
-				break;
+		case svc_stopsound:
+			MSG_ReadShort();
+			break;
 
-			case svc_updatename:
-				MSG_ReadByte ();
-				break;
+		case svc_updatename:
+			MSG_ReadByte ();
+			break;
 
-			case svc_updatefrags:
-				MSG_ReadByte ();
-				break;
+		case svc_updatefrags:
+			MSG_ReadByte ();
+			break;
 
-			case svc_updatecolors:
-				MSG_ReadByte ();
-				break;
+		case svc_updatecolors:
+			MSG_ReadByte ();
+			break;
 
-			case svc_particle:
-				// Just ignore this - actual QuakeC does not send such message.
-				break;
+		case svc_particle:
+			// Just ignore this - actual QuakeC does not send such message.
+			break;
 
-			case svc_spawnbaseline:
-				// Just ignore this - actual QuakeC does not send such message.
-				break;
-			case svc_spawnstatic:
-				// Just ignore this - actual QuakeC does not send such message.
-				break;
-			case svc_temp_entity:
-				SV_ProcessTEnt ();
-				break;
+		case svc_spawnbaseline:
+			// Just ignore this - actual QuakeC does not send such message.
+			break;
+		case svc_spawnstatic:
+			// Just ignore this - actual QuakeC does not send such message.
+			break;
+		case svc_temp_entity:
+			SV_ProcessTEnt ();
+			break;
 
-			case svc_setpause:
-				MSG_ReadByte ();
-				break;
+		case svc_setpause:
+			MSG_ReadByte ();
+			break;
 
-			case svc_signonnum:
-				MSG_ReadByte ();
-				break;
+		case svc_signonnum:
+			MSG_ReadByte ();
+			break;
 
-			case svc_killedmonster:
-				break;
+		case svc_killedmonster:
+			break;
 
-			case svc_foundsecret:
-				break;
+		case svc_foundsecret:
+			break;
 
-			case svc_updatestat:
-				MSG_ReadByte ();
-				break;
+		case svc_updatestat:
+			MSG_ReadByte ();
+			break;
 
-			case svc_spawnstaticsound:
-				// Just ignore this - actual QuakeC does not send such message.
-				break;
+		case svc_spawnstaticsound:
+			// Just ignore this - actual QuakeC does not send such message.
+			break;
 
-			case svc_cdtrack:
-				SV_ProcessCDTrack(clientNum);
-				break;
+		case svc_cdtrack:
+			SV_ProcessCDTrack(clientNum);
+			break;
 
-			case svc_intermission:
-				G_Printf("SERVER: intermission\n");
-				SV_ProcessIntermission(PM_INTERMISSION);
-				break;
+		case svc_intermission:
+			SV_ProcessIntermission(PM_INTERMISSION);
+			break;
 
-			case svc_finale:
-				G_Printf("SERVER: finale\n");
-				SV_ProcessIntermission(PM_INTERMISSION_FINALE);
-				SV_SendCenterPrint(clientNum, MSG_ReadString());
-				break;
+		case svc_finale:
+			SV_ProcessIntermission(PM_INTERMISSION_FINALE);
+			SV_SendCenterPrint(clientNum, MSG_ReadString());
+			break;
 
-			case svc_cutscene:
-				SV_ProcessIntermission(PM_INTERMISSION_CUTSCENE);
-				G_Printf("SERVER: cutscene\n");
-				SV_SendCenterPrint(clientNum, MSG_ReadString());
-				break;
+		case svc_cutscene:
+			SV_ProcessIntermission(PM_INTERMISSION_CUTSCENE);
+			SV_SendCenterPrint(clientNum, MSG_ReadString());
+			break;
 
-			case svc_sellscreen:
-				break;
-			}
-
+		case svc_sellscreen:
+			break;
+		}
 	}
 
 	buf->cursize = 0;
