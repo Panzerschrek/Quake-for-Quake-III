@@ -348,7 +348,6 @@ void SV_SpawnServer()
 
 	G_SpawnEntitiesFromString();
 
-
 	sv.active = qtrue;
 
 	// all setup is completed, any further precache statements are errors

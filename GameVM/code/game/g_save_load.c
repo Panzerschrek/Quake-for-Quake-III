@@ -176,6 +176,7 @@ void G_LoadGame (const char* savename)
 			ent = EDICT_NUM(entnum);
 			memset (&ent->v, 0, progs->entityfields * 4);
 			ent->free = qfalse;
+			ent->s.number = entnum;
 			ED_ParseEdict (start, ent);
 
 		// link it into the bsp tree
