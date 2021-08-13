@@ -870,7 +870,7 @@ Player character actions
 */
 void SV_Physics_Client (edict_t	*ent, int num)
 {
-	if ( ! svs.clients[num-1].active )
+	if ( ! svs.clients[num-1].connected )
 		return;		// unconnected slot
 
 //

@@ -80,6 +80,8 @@ void PR_Profile_f (void);
 
 edict_t *ED_Alloc (void);
 void ED_Free (edict_t *ed);
+void ED_Write (edict_t *ed);
+void ED_WriteGlobals (void);
 
 char	*ED_NewString (char *string);
 // returns a copy of the string allocated from the server's string heap

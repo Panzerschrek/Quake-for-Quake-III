@@ -30,6 +30,8 @@ USER INTERFACE MAIN
 
 #include "ui_local.h"
 
+vmCvar_t g_server_start_save_file;
+
 /*
 ================
 vmMain
@@ -44,6 +46,7 @@ Q_EXPORT intptr_t vmMain( int command, int arg0, int arg1, int arg2, int arg3, i
 		return UI_API_VERSION;
 
 	case UI_INIT:
+		trap_Cvar_Register(&g_server_start_save_file, "g_server_start_save_file", "", CVAR_TEMP | CVAR_ROM);
 		M_Init();
 		return 0;
 
@@ -160,6 +163,56 @@ void UI_MouseEvent( int dx, int dy )
 {
 }
 
+// Add "load" comand into UI library because it is only game library loaded at game start.
+// We can't add this command into game/cgame library because these libraries are not loaded yer in main menu.
+
+static void M_LoadGame_f()
+{
+	char	savename[MAX_STRING_CHARS];
+	char	savepath[MAX_OSPATH];
+	char	mapname[MAX_QPATH];
+	char	save_file_buf[4096];
+	char	tmp_str[1024];
+	int		i, pos, n;
+	fileHandle_t f;
+	trap_Argv( 1, savename, sizeof( savename ) );
+
+	if (savename[0] == 0)
+	{
+		Com_Printf ("load <savename> : load a game\n");
+		return;
+	}
+
+	// Read header of save file to extract map name.
+	Com_sprintf(savepath, sizeof(savepath), "%s.sav", savename);
+	f = 0;
+	trap_FS_FOpenFile(savepath, &f, FS_READ);
+	if (!f)
+	{
+		Com_Printf("Can't load %s\n", savepath);
+		return;
+	}
+
+	trap_FS_Read(save_file_buf, sizeof(save_file_buf), f);
+	trap_FS_FCloseFile(f);
+
+	// Skip unneeded fields.
+	for(i = 0, pos= 0; i < 3 + 16; ++i)
+	{
+		sscanf(save_file_buf + pos, "%s\n%n", tmp_str, &n);
+		pos+= n;
+	}
+	// Read map name.
+	sscanf(save_file_buf + pos, "%s\n", mapname);
+
+	// Set temp cvar for game module with save name.
+	strcpy(g_server_start_save_file.string, savename);
+	trap_Cvar_Set("g_server_start_save_file", savename);
+
+	// Run selected map.
+	trap_Cmd_ExecuteText (EXEC_APPEND, va ("map %s\n", mapname) );
+}
+
 /*
 =================
 UI_ConsoleCommand
@@ -192,6 +245,8 @@ qboolean UI_ConsoleCommand( int realTime ) {
 		M_Menu_Help_f();
 	else if (!strcmp(cmd, "menu_quit"))
 		M_Menu_Quit_f();
+	else if (!strcmp(cmd, "load"))
+		M_LoadGame_f();
 	else
 		return qfalse;
 

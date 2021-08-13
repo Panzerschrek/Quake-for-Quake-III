@@ -78,10 +78,27 @@ void ClientCommand( int clientNum );
 void ClientThink( int clientNum );
 
 //
+// g_filebuf.c
+//
+void G_FilebufReset (void);
+void G_FilebufWrite(const char *fmt, ... );
+void G_FilebufLoadFile (const char* file_path);
+void G_FilebufSaveToFile (const char* file_path);
+const char* G_FilebufReadLine (void);
+char G_FilebufGetChar (void);
+
+//
 // g_mem.c
 //
 void *G_Alloc( int size );
 void G_InitMemory( void );
+
+//
+// g_save_load.c
+//
+
+void G_SaveGame (const char* savename);
+void G_LoadGame (const char* savename);
 
 //
 // g_utils.c

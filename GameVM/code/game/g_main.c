@@ -63,6 +63,9 @@ vmCvar_t	cl_rollangle;
 
 vmCvar_t	g_registered;
 
+// Pass save file in teporary cvar.
+vmCvar_t g_server_start_save_file;
+
 static cvarTable_t		gameCvarTable[] = {
 	// noset vars
 	{ NULL, "gamename", GAMEVERSION , CVAR_SERVERINFO | CVAR_ROM, 0, qfalse  },
@@ -101,6 +104,8 @@ static cvarTable_t		gameCvarTable[] = {
 
 	// PANZER TODO - know exact version (trial/registered). Or maybe just say "funck you" to Bethesda and treat the game as registered only?
 	{ &g_registered, "registered", "1.0", CVAR_ARCHIVE, 0 },
+
+	{ &g_server_start_save_file, "g_server_start_save_file", "", CVAR_TEMP, 0 },
 };
 
 static int gameCvarTableSize = ARRAY_LEN( gameCvarTable );
@@ -284,6 +289,8 @@ void SV_SpawnServer()
 
 	memset (&sv, 0, sizeof(sv));
 
+	strcpy(sv.name, mapname);
+
 	// load progs to get entity field count
 	PR_LoadProgs ();
 
@@ -339,10 +346,7 @@ void SV_SpawnServer()
 	else
 		pr_global_struct->deathmatch = deathmatch.value;
 
-	// PANZER TODO - set mapname
-
 	G_SpawnEntitiesFromString();
-	pr_global_struct->world = 0;
 
 	sv.active = qtrue;
 
@@ -353,6 +357,21 @@ void SV_SpawnServer()
 	host_frametime = 0.1;
 	SV_Physics ();
 	SV_Physics ();
+
+	if (g_server_start_save_file.string[0] != 0)
+	{
+		trap_Cvar_Set("g_server_start_save_file", "");
+		G_Printf("Detected game loading request, save name: %s\n", g_server_start_save_file.string);
+
+		// Free spawned edicts to spawn them again during loading of saved game.
+		for (i = svs.maxclients  + 1; i < sv.num_edicts; ++i)
+			ED_Free(EDICT_NUM(i));
+
+		G_LoadGame(g_server_start_save_file.string);
+		sv.loadgame = qtrue;
+	}
+	else
+		sv.loadgame = qfalse;
 }
 
 /*
@@ -479,6 +498,9 @@ void G_RunFrame( int levelTime ) {
 
 	host_frametime = ( levelTime - level.time ) / 1000.0;
 
+	if(sv.loadgame && ( levelTime < 5000 && !svs.clients[0].active ) )
+		return; // Wait of clients to be active.
+
 	// don't allow really long or short frames
 	if (host_frametime > 0.1)
 		host_frametime = 0.1;
@@ -520,13 +542,13 @@ void G_RunFrame( int levelTime ) {
 
 		VectorCopy(edict->v.origin, edict->s.origin);
 		VectorCopy(edict->v.angles, edict->s.angles);
-		edict->s.modelindex= edict->v.model == 0 ? 0 : edict->v.modelindex;
+		edict->s.modelindex= strcmp(pr_strings + edict->v.model, "") ? edict->v.modelindex : 0; // Set empty index for empty model name.
 		edict->s.frame = edict->v.frame;
 	}
 
 	for(i = 0; i < svs.maxclients; i++){
 		client = &svs.clients[i];
-		if(!client->active || client->edict == NULL) {
+		if(!client->connected || client->edict == NULL) {
 			continue;
 		}
 

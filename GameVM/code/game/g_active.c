@@ -40,8 +40,8 @@ void ClientThink_real( client_t *client ) {
 	usercmd_t	*ucmd;
 	float		angle, angle_delta;
 
-	// don't think if the client is not yet connected (and thus not yet spawned in)
-	if (!client->active) {
+	// don't think if the client is not yet active (and thus not yet spawned in)
+	if (!client->connected) {
 		return;
 	}
 

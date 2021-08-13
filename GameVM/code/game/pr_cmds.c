@@ -1132,7 +1132,7 @@ void PF_lightstyle (void)
 		return;
 	
 	for (j=0, client = svs.clients ; j<svs.maxclients ; j++, client++)
-		if (client->active || client->spawned)
+		if (client->connected)
 		{
 			MSG_WriteChar (&client->message, svc_lightstyle);
 			MSG_WriteChar (&client->message,style);
