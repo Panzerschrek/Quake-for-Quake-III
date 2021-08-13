@@ -191,6 +191,7 @@ typedef struct
 	qhandle_t		inter;
 	qhandle_t		finale;
 	qhandle_t		conchars;
+	qhandle_t		pause;
 
 	qhandle_t		sb_nums[2][11];
 	qhandle_t		sb_colon, sb_slash;
@@ -357,6 +358,7 @@ void Sbar_ShowScores (void);
 void Sbar_DontShowScores (void);
 void Sbar_IntermissionOverlay (void);
 void Sbar_FinaleOverlay (void);
+void Sbar_Pause (void);
 void DrawCrosshair (void);
 void DrawCenterPrint (void);
 

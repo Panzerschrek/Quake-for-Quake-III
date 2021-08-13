@@ -426,6 +426,13 @@ void CG_DrawActiveFrame( int serverTime, stereoFrame_t stereoView, qboolean demo
 		Sbar_Draw();
 		DrawCrosshair();
 		DrawCenterPrint();
+
+		{
+			char buff[16];
+			trap_Cvar_VariableStringBuffer("cl_paused", buff, sizeof(buff));
+			if (atof(buff) != 0.0f)
+				Sbar_Pause();
+		}
 	}
 	else if( cg.snap.ps.pm_type == PM_INTERMISSION )
 		Sbar_IntermissionOverlay();

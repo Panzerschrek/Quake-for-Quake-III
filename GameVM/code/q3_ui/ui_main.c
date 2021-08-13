@@ -213,6 +213,20 @@ static void M_LoadGame_f()
 	trap_Cmd_ExecuteText (EXEC_APPEND, va ("map %s\n", mapname) );
 }
 
+void M_Pause_f (void)
+{
+	qboolean	paused;
+
+	paused = UI_CvarGetNum("cl_paused") != 0.0f;
+	if (paused)
+	{
+		if(!M_InputGrabbed())
+			trap_Cvar_Set( "cl_paused", "0" );
+	}
+	else
+		trap_Cvar_Set( "cl_paused", "1" );
+}
+
 /*
 =================
 UI_ConsoleCommand
@@ -247,6 +261,8 @@ qboolean UI_ConsoleCommand( int realTime ) {
 		M_Menu_Quit_f();
 	else if (!strcmp(cmd, "load"))
 		M_LoadGame_f();
+	else if (!strcmp(cmd, "pause"))
+		M_Pause_f();
 	else
 		return qfalse;
 

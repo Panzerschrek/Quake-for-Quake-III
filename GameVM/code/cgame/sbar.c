@@ -92,6 +92,7 @@ void Sbar_Init (void)
 	sbar.inter = trap_R_RegisterShaderNoMip("gfx/inter.tga");
 	sbar.finale = trap_R_RegisterShaderNoMip("gfx/finale.tga");
 	sbar.conchars = Draw_PicFromWad("conchars");
+	sbar.pause = trap_R_RegisterShaderNoMip("gfx/pause.tga");
 
 	for (i=0 ; i<10 ; i++)
 	{
@@ -1448,4 +1449,19 @@ void Sbar_FinaleOverlay (void)
 	const int width = 288;
 	const int height = 24;
 	trap_R_DrawStretchPic ( (cg.refdef.width - sb_scale * width)/2, sb_scale * 16, width * sb_scale, height * sb_scale, 0.0f, 0.0f, 1.0f, 1.0f, sbar.finale);
+}
+
+void Sbar_Pause (void)
+{
+	const int width = 128;
+	const int height = 24;
+	trap_R_DrawStretchPic (
+		(cg.refdef.width - sb_scale * width)/2,
+		(cg.refdef.height - sb_scale * height)/2,
+		width * sb_scale,
+		height * sb_scale,
+		0.0f,
+		0.0f,
+		1.0f,
+		1.0f, sbar.pause);
 }
