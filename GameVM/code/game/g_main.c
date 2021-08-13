@@ -540,7 +540,7 @@ void G_RunFrame( int levelTime ) {
 
 		VectorCopy(edict->v.origin, edict->s.origin);
 		VectorCopy(edict->v.angles, edict->s.angles);
-		edict->s.modelindex= edict->v.model == 0 ? 0 : edict->v.modelindex;
+		edict->s.modelindex= strcmp(pr_strings + edict->v.model, "") ? edict->v.modelindex : 0; // Set empty index for empty model name.
 		edict->s.frame = edict->v.frame;
 	}
 
