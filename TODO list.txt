@@ -6,13 +6,10 @@ Server:
 
 Client:
 * Fix deathmatch scoreborad drawing code
-* Client-side animation for static entities
-* Rotation animation for items (weapons, powerups)
 * Addons (rogue/hipnotic) support in status bar
-* Rockets particle trails and lights
 * Sprite entities
 * Show correct level time after loading of saved game
-* Entities/player interpolation/extrapolation (smooth movement, rotation, animation)
+* Entities/player interpolation/extrapolation (smooth movement, rotation, animation, rocket trails based on actual trajectory)
 
 Menu UI:
 * Video settings
@@ -31,6 +28,7 @@ Data export:
 * BSP items models (health boxes, ammo boxes)
 * Properly export textures with fullbright pixels
 * Properly export models textures with fullbright pixels
+* Properly export frames of flame models (should export more than 1-2 frames)
 * Replace '*' in texture names (in maps, wad) with something else, because '*' is not a valid symbol for file names. Also Quake-utilities recognize '/*' as comment start.
 
 Maps:
