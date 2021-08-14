@@ -90,6 +90,78 @@ void SV_StartSound (edict_t *entity, int channel, char *sample, int volume,
 	event_edict->s.torsoAnim = attenuation;
 }
 
+/*
+================
+SV_SaveSpawnparms
+
+Grabs the current state of each client for saving across the
+transition to another level
+================
+*/
+void SV_SaveSpawnparms (void)
+{
+	int		i, j;
+	char	params_var[1024];
+
+	svs.serverflags = pr_global_struct->serverflags;
+
+	for (i=0, host_client = svs.clients ; i<svs.maxclients ; i++, host_client++)
+	{
+		trap_Cvar_Set(va("session%d", i), ""); // Reset possible old sessions.
+
+		if (!host_client->active)
+			continue;
+
+	// call the progs to get default spawn parms for the new client
+		pr_global_struct->self = EDICT_TO_PROG(host_client->edict);
+		PR_ExecuteProgram (pr_global_struct->SetChangeParms);
+		for (j=0 ; j<NUM_SPAWN_PARMS ; j++)
+			host_client->spawn_parms[j] = (&pr_global_struct->parm1)[j];
+
+		Com_sprintf(
+			params_var, sizeof(params_var),
+			"%f %f %f %f %f %f %f %f %f %f %f %f %f %f %f %f",
+			host_client->spawn_parms[ 0], host_client->spawn_parms[ 1], host_client->spawn_parms[ 2], host_client->spawn_parms[ 3],
+			host_client->spawn_parms[ 4], host_client->spawn_parms[ 5], host_client->spawn_parms[ 6], host_client->spawn_parms[ 7],
+			host_client->spawn_parms[ 8], host_client->spawn_parms[ 9], host_client->spawn_parms[10], host_client->spawn_parms[11],
+			host_client->spawn_parms[12], host_client->spawn_parms[13], host_client->spawn_parms[14], host_client->spawn_parms[15] );
+
+		trap_Cvar_Set(va("session%d", i), params_var);
+	}
+}
+
+void SV_LoadClientSpawnParms (int clientNum)
+{
+	char	var_name[64];
+	char	params_var[1024];
+	int		i;
+
+	// PANZER TODO - prevent readiong of old session data.
+	Com_sprintf(var_name, sizeof(var_name), "session%d", clientNum);
+
+	trap_Cvar_VariableStringBuffer(var_name, params_var, sizeof(params_var));
+
+	host_client = svs.clients + clientNum;
+
+	trap_Cvar_Set(var_name, "");
+
+	// Load spawn params from session info. In case if spawn params parsing failed - set default params.
+	i = sscanf(
+		params_var,
+		"%f %f %f %f %f %f %f %f %f %f %f %f %f %f %f %f",
+		&host_client->spawn_parms[ 0], &host_client->spawn_parms[ 1], &host_client->spawn_parms[ 2], &host_client->spawn_parms[ 3],
+		&host_client->spawn_parms[ 4], &host_client->spawn_parms[ 5], &host_client->spawn_parms[ 6], &host_client->spawn_parms[ 7],
+		&host_client->spawn_parms[ 8], &host_client->spawn_parms[ 9], &host_client->spawn_parms[10], &host_client->spawn_parms[11],
+		&host_client->spawn_parms[12], &host_client->spawn_parms[13], &host_client->spawn_parms[14], &host_client->spawn_parms[15]  );
+
+	if( i != 16 )
+	{
+		PR_ExecuteProgram (pr_global_struct->SetNewParms);
+		for (i=0 ; i<NUM_SPAWN_PARMS ; i++)
+			host_client->spawn_parms[i] = (&pr_global_struct->parm1)[i];
+	}
+}
+
 
 /*
 ================

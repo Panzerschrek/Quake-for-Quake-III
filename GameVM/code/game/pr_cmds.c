@@ -1491,6 +1491,8 @@ void PF_changelevel (void)
 	
 	s = G_STRING(OFS_PARM0);
 
+	SV_SaveSpawnparms();
+
 	Com_sprintf(command, sizeof(command), "map %s\n", s);
 	trap_SendConsoleCommand( EXEC_APPEND, command );
 }

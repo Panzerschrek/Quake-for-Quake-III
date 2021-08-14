@@ -68,16 +68,11 @@ void ClientBegin( int clientNum ) {
 	host_client = svs.clients + clientNum;
 	sv_player = host_client->edict;
 
-	strcpy (host_client->name, "SomeClient");
+	strcpy (host_client->name, "SomeClient"); // PANZER TODO - set this.
 
 	G_Printf ("Client %d begin\n", clientNum);
 
-	// copy spawn parms out of the client_t
-
-	if(sv.loadgame)
-	{
-	}
-	else
+	if(!sv.loadgame)
 	{
 		// set up the edict
 		memset (&sv_player->v, 0, progs->entityfields * 4);
@@ -85,12 +80,12 @@ void ClientBegin( int clientNum ) {
 		sv_player->v.team = (host_client->colors & 15) + 1;
 		sv_player->v.netname = ED_NewString (host_client->name) - pr_strings;
 
-		// copy spawn parms out of the client_t
+		// Load spawn params (from session or from default values)
+		SV_LoadClientSpawnParms(clientNum);
 
-		// call the progs to get default spawn parms for the new client
-		PR_ExecuteProgram (pr_global_struct->SetNewParms);
-		for (i=0 ; i<NUM_SPAWN_PARMS ; i++)
-			host_client->spawn_parms[i] = (&pr_global_struct->parm1)[i];
+		// copy spawn parms out of the client_t
+		for (i=0 ; i< NUM_SPAWN_PARMS ; i++)
+			(&pr_global_struct->parm1)[i] = host_client->spawn_parms[i];
 
 		// call the spawn function
 
@@ -100,6 +95,8 @@ void ClientBegin( int clientNum ) {
 
 		PR_ExecuteProgram (pr_global_struct->PutClientInServer);
 	}
+
+	// Do not need to do anything here in case of game loading because player is already spawned in such case.
 
 	host_client->active = qtrue;
 }
