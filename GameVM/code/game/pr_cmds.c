@@ -544,13 +544,16 @@ void PF_ambientsound (void)
 		soundSourceEdict->v.maxs[i]= soundSourceEdict->r.maxs[i]= +64;
 	}
 
+	// TODO - fix this. "edict->s" fields are not saved properly in saved game.
+
 	soundSourceEdict->s.loopSound = qtrue; // use this field as ambient sound entity indicator.
 
 	// Reuse some fileds for event params.
 	soundSourceEdict->s.weapon = soundnum;
 	soundSourceEdict->s.legsAnim = vol * 255;
 	soundSourceEdict->s.torsoAnim = attenuation;
-	soundSourceEdict->r.svFlags = SVF_BROADCAST; // Prevent dropping of this event.
+	soundSourceEdict->r.contents= 0;
+	soundSourceEdict->r.ownerNum = ENTITYNUM_NONE;
 
 	trap_LinkEntity(soundSourceEdict);
 }

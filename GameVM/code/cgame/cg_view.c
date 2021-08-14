@@ -209,6 +209,9 @@ void CG_AddEntities()
 	for ( num = 0 ; num < cg.snap.numEntities ; num++ ) {
 		in_ent_state = &cg.snap.entities[num];
 
+		if( in_ent_state->loopSound )
+			CG_SetAmbientSound( in_ent_state );
+
 		if( in_ent_state->modelindex == 0 )
 			continue;
 
@@ -236,9 +239,6 @@ void CG_AddEntities()
 		}
 
 		trap_R_AddRefEntityToScene(&out_ent);
-
-		if( in_ent_state->loopSound )
-			CG_SetAmbientSound( in_ent_state );
 	}
 }
 void CG_AndAddTEnts (void)
