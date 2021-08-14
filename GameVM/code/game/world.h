@@ -43,6 +43,8 @@ void SV_LinkEdict (edict_t *ent, qboolean touch_triggers);
 // sets ent->v.absmin and ent->v.absmax
 // if touchtriggers, calls prog functions for the intersected triggers
 
+void SV_UpdateEdictCollsionType (edict_t* e);
+
 int SV_PointContents (vec3_t p);
 
 edict_t	*SV_TestEntityPosition (edict_t *ent);

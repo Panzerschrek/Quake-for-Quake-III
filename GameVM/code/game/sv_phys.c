@@ -1160,6 +1160,8 @@ void SV_Physics (void)
 			SV_LinkEdict (ent, qtrue);	// force retouch even for stationary
 		}
 
+		SV_UpdateEdictCollsionType(ent);
+
 		if (i > 0 && i <= svs.maxclients)
 			SV_Physics_Client (ent, i);
 		else if (ent->v.movetype == MOVETYPE_PUSH)

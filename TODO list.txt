@@ -1,5 +1,4 @@
 Server:
-* Fix dead bodies collision detection
 * Fix some shot buttons (like on e1m1)
 * Next level transition (with saved player stats)
 * Coop/deathmatch

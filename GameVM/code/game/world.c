@@ -100,25 +100,6 @@ void SV_LinkEdict (edict_t *ent, qboolean touch_triggers)
 	VectorCopy(ent->v.maxs, ent->r.maxs);
 	VectorCopy(ent->v.origin, ent->r.currentOrigin);
 
-	switch((int)ent->v.solid)
-	{
-	case SOLID_NOT:
-		ent->r.contents= CONTENTS_CORPSE;
-		break;
-	case SOLID_TRIGGER:
-		ent->r.contents= CONTENTS_TRIGGER;
-		break;
-	case SOLID_BBOX:
-	case SOLID_SLIDEBOX:
-		ent->r.contents= CONTENTS_BODY;
-		break;
-	case SOLID_BSP:
-		ent->r.contents= CONTENTS_SOLID;
-		break;
-	default:
-		ent->r.contents= 0;
-	// TODO - support other cases.
-	}
 //
 // to make items easier to pick up and allow them to be grabbed off
 // of shelves, the abs sizes are expanded
@@ -138,11 +119,36 @@ void SV_LinkEdict (edict_t *ent, qboolean touch_triggers)
 
 	ent->r.ownerNum = ent->v.owner != 0 ? ent->v.owner : ENTITYNUM_NONE;
 
+	SV_UpdateEdictCollsionType(ent);
+
 	trap_LinkEntity(ent);
 
 // if touch_triggers, touch all entities at this node and decend for more
 	if (touch_triggers)
 		SV_TouchLinks ( ent );
+}
+
+void SV_UpdateEdictCollsionType (edict_t* e)
+{
+	switch((int)e->v.solid)
+	{
+	case SOLID_NOT:
+		e->r.contents= CONTENTS_CORPSE;
+		break;
+	case SOLID_TRIGGER:
+		e->r.contents= CONTENTS_TRIGGER;
+		break;
+	case SOLID_BBOX:
+	case SOLID_SLIDEBOX:
+		e->r.contents= CONTENTS_BODY;
+		break;
+	case SOLID_BSP:
+		e->r.contents= CONTENTS_SOLID;
+		break;
+	default:
+		e->r.contents= 0;
+	// TODO - support other cases.
+	}
 }
 
 /*
