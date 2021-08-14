@@ -347,8 +347,8 @@ static void CG_RegisterResources( void ) {
 	cgs.bolt3 = trap_R_RegisterModel("progs/bolt3.md3");
 	cgs.beam = trap_R_RegisterModel("progs/beam.md3");
 
-	cgs.particle = trap_R_RegisterShader("textures/particle");
-	cgs.fullscreen_blend = trap_R_RegisterShaderNoMip("textures/fullscreen_blend");
+	cgs.particle = trap_R_RegisterShader("quake_for_quake3_gfx/particle");
+	cgs.fullscreen_blend = trap_R_RegisterShaderNoMip("quake_for_quake3_gfx/fullscreen_blend");
 
 	{
 		const char* musicIndexStr = CG_ConfigString(CS_MUSIC);

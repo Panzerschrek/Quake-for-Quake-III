@@ -2572,7 +2572,7 @@ void M_Init (void)
 	m_state = m_none;
 
 	conchars = trap_R_RegisterShaderNoMip("gfx_wad/CONCHARS");
-	fullscreen_blend = trap_R_RegisterShaderNoMip("textures/fullscreen_blend");
+	fullscreen_blend = trap_R_RegisterShaderNoMip("quake_for_quake3_gfx/fullscreen_blend");
 }
 
 

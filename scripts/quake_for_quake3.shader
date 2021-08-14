@@ -1,12 +1,3 @@
-textures/particle
-{
-	{
-		map textures/particle.tga
-		rgbgen vertex
-		blendFunc GL_SRC_ALPHA GL_ONE_MINUS_SRC_ALPHA
-	}
-}
-
 textures/CLIP
 {
 	qer_trans 0.40
