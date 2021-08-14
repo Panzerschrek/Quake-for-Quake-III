@@ -42,6 +42,7 @@ void CG_ProcessSnapshots( void ) {
 		n = cg.snap.entities[i].number;
 		cent = &cg_entities[n];
 
+		VectorCopy(cent->origin, cent->oldorigin);
 		VectorCopy(entState->origin, cent->origin);
 		VectorCopy(entState->angles, cent->angles);
 		cent->frame = entState->frame;

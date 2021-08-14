@@ -26,6 +26,7 @@ void CG_UpdateEntities (void)
 	entityState_t*	entState;
 	centity_t*	ent;
 	float bobjrotate;
+	dlight_t*	dl;
 
 	bobjrotate = AngleNormalize360(cg.time / 10.0);
 
@@ -37,6 +38,11 @@ void CG_UpdateEntities (void)
 
 		ent = &cg_entities[entState->number];
 
+		// DOTO - fix this. This is an ugly hack. We should somehow reset old origin if entity was deallocated.
+		// Also we should imerpoalate origin (somehow) to get smoother rocket trails.
+		if(ent->oldorigin[0] == 0.0f && ent->oldorigin[1] == 0.0f && ent->oldorigin[2] == 0.0f)
+			continue;
+
 		if ( entState->solid == SOLID_BMODEL )
 		{
 		}
@@ -45,6 +51,30 @@ void CG_UpdateEntities (void)
 			flags = cgs.gameModelsFlags[entState->modelindex];
 			if (flags & EF_ROTATE)
 				ent->angles[YAW] = bobjrotate;
+
+			//if (flags & EF_BRIGHTFIELD)
+			//	R_EntityParticles(entState);
+
+			if (flags & EF_GIB)
+				R_RocketTrail (ent->oldorigin, ent->origin, 2);
+			else if (flags & EF_ZOMGIB)
+				R_RocketTrail (ent->oldorigin, ent->origin, 4);
+			else if (flags & EF_TRACER)
+				R_RocketTrail (ent->oldorigin, ent->origin, 3);
+			else if (flags & EF_TRACER2)
+				R_RocketTrail (ent->oldorigin, ent->origin, 5);
+			else if (flags & EF_ROCKET)
+			{
+				R_RocketTrail (ent->oldorigin, ent->origin, 0);
+				dl = CL_AllocDlight (i);
+				VectorCopy (ent->origin, dl->origin);
+				dl->radius = 200;
+				dl->die = cg.time + 10;
+			}
+			else if (flags & EF_GRENADE)
+				R_RocketTrail (ent->oldorigin, ent->origin, 1);
+			else if (flags & EF_TRACER3)
+				R_RocketTrail (ent->oldorigin, ent->origin, 6);
 		}
 	}
 }
