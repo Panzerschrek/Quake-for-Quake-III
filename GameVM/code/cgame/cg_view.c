@@ -395,6 +395,7 @@ void CG_DrawActiveFrame( int serverTime, stereoFrame_t stereoView, qboolean demo
 	cg.viewentity = cg.snap.ps.clientNum + 1;
 
 	CL_DecayLights();
+	CG_UpdateEntities();
 
 	CG_AddEntities();
 	CG_AndAddTEnts();
