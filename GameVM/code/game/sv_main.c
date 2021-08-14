@@ -103,7 +103,8 @@ void SV_SaveSpawnparms (void)
 	int		i, j;
 	char	params_var[1024];
 
-	svs.serverflags = pr_global_struct->serverflags;
+	// Save server flags for cross-level information (sigils).
+	trap_Cvar_Set("serverflags", va("%f", pr_global_struct->serverflags));
 
 	for (i=0, host_client = svs.clients ; i<svs.maxclients ; i++, host_client++)
 	{

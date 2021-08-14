@@ -346,6 +346,14 @@ void SV_SpawnServer()
 	else
 		pr_global_struct->deathmatch = deathmatch.value;
 
+	// serverflags are for cross level information (sigils)
+	{
+		char flags[64];
+		trap_Cvar_VariableStringBuffer("serverflags", flags, sizeof(flags));
+		pr_global_struct->serverflags = atof(flags);
+		trap_Cvar_Set("serverflags", "0");
+	}
+
 	G_SpawnEntitiesFromString();
 
 	sv.active = qtrue;
