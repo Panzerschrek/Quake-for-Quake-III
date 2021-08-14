@@ -107,6 +107,13 @@ void CG_UpdateEntities (void)
 				R_RocketTrail (ent->oldorigin, ent->origin, 1);
 			else if (flags & EF_TRACER3)
 				R_RocketTrail (ent->oldorigin, ent->origin, 6);
+
+
+			if( entState->frame == 65535 ) // Client-side animation
+			{
+				// Assume 10 frames/s monotonic animation.
+				ent->frame = cg.time / 100 % cgs.gameModelsNumFrames[entState->modelindex];
+			}
 		}
 	}
 }

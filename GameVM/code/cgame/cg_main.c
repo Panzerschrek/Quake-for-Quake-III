@@ -295,6 +295,7 @@ static void CG_RegisterResources( void ) {
 		}
 
 		cgs.gameModelsFlags[i]= 0;
+		cgs.gameModelsNumFrames[i] = 1;
 
 		// Fix model names - replace "mdl" extension with "md3" - native Quake3 model format.
 		n= strlen(modelName);
@@ -307,8 +308,8 @@ static void CG_RegisterResources( void ) {
 			modelName[n-1]= '3';
 			modelName[n-4] = '.';
 
-			// Read md3 header to extract models flags.
-			// Models flags are needed for client side animation/effects.
+			// Read md3 header to extract models flags and frame numbers.
+			// These values are needed for client side animation/effects.
 			f = 0;
 			trap_FS_FOpenFile(modelName, &f, FS_READ);
 			if( f != 0 )
@@ -317,6 +318,7 @@ static void CG_RegisterResources( void ) {
 				memset(&header, 0, sizeof(header));
 				trap_FS_Read(&header, sizeof(header), f);
 				cgs.gameModelsFlags[i]= header.flags;
+				cgs.gameModelsNumFrames[i]= header.num_frames;
 				trap_FS_FCloseFile(f);
 			}
 		}
