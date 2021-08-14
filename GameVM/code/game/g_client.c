@@ -25,6 +25,24 @@ Foundation, Inc., 51 Franklin St, Fifth Floor, Boston, MA  02110-1301  USA
 // g_client.c -- client functions that don't happen every frame
 
 void ClientUserinfoChanged( int clientNum ) {
+	char			userInfo[1024];
+	char			*name;
+	client_t		*client;
+
+	trap_GetUserinfo(clientNum, userInfo, sizeof(userInfo));
+	name = Info_ValueForKey(userInfo, "name");
+	if (name == NULL)
+		name = "NULL";
+
+	client = svs.clients + clientNum;
+
+	if(Q_strncmp(name, client->name, sizeof(client->name)))
+	{
+		if(client->name[0] != 0)
+			G_Printf ("%s renamed to %s\n", client->name, name);
+		strncpy(client->name, name, sizeof(client->name));
+		client->edict->v.netname = ED_NewString (client->name) - pr_strings;
+	}
 }
 
 char *ClientConnect( int clientNum, qboolean firstTime, qboolean isBot ) {
@@ -50,6 +68,8 @@ char *ClientConnect( int clientNum, qboolean firstTime, qboolean isBot ) {
 	client->message.maxsize = sizeof(client->msgbuf);
 	client->message.allowoverflow = qfalse; // PANZER TODO - allow owerflow?
 
+	ClientUserinfoChanged(clientNum);
+
 	return NULL;
 }
 
@@ -67,8 +87,6 @@ void ClientBegin( int clientNum ) {
 
 	host_client = svs.clients + clientNum;
 	sv_player = host_client->edict;
-
-	strcpy (host_client->name, "SomeClient"); // PANZER TODO - set this.
 
 	G_Printf ("Client %d begin\n", clientNum);
 
