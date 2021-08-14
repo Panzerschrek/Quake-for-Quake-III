@@ -141,6 +141,7 @@ typedef struct {
 
 	// Separate models.
 	qhandle_t		gameModels[MAX_MODELS];
+	int				gameModelsFlags[MAX_MODELS];
 
 	// Client entities models
 	qhandle_t		bolt;
