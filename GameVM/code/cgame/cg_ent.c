@@ -22,7 +22,7 @@ void CG_SetAmbientSound( entityState_t *ent )
 
 void CG_UpdateEntities (void)
 {
-	int i, flags;
+	int i, flags, effects, num;
 	entityState_t*	entState;
 	centity_t*	ent;
 	float bobjrotate;
@@ -36,6 +36,7 @@ void CG_UpdateEntities (void)
 		if(entState->modelindex == 0)
 			continue;
 
+		num = entState->number;
 		ent = &cg_entities[entState->number];
 
 		// DOTO - fix this. This is an ugly hack. We should somehow reset old origin if entity was deallocated.
@@ -49,11 +50,42 @@ void CG_UpdateEntities (void)
 		else
 		{
 			flags = cgs.gameModelsFlags[entState->modelindex];
+			effects = entState->eFlags;
+
 			if (flags & EF_ROTATE)
 				ent->angles[YAW] = bobjrotate;
 
-			//if (flags & EF_BRIGHTFIELD)
-			//	R_EntityParticles(entState);
+			//if (effects & EF_BRIGHTFIELD)
+			//	R_EntityParticles (ent);
+			if (effects & EF_MUZZLEFLASH)
+			{
+				vec3_t		fv, rv, uv;
+
+				dl = CL_AllocDlight (num);
+				VectorCopy (ent->origin,  dl->origin);
+				dl->origin[2] += 16;
+				AngleVectors (ent->angles, fv, rv, uv);
+
+				VectorMA (dl->origin, 18, fv, dl->origin);
+				dl->radius = 200 + (rand()&31);
+				dl->minlight = 32;
+				dl->die = cg.time + 100;
+			}
+			if (effects & EF_BRIGHTLIGHT)
+			{
+				dl = CL_AllocDlight (num);
+				VectorCopy (ent->origin,  dl->origin);
+				dl->origin[2] += 16;
+				dl->radius = 400 + (rand()&31);
+				dl->die = cg.time + 10;
+			}
+			if (effects & EF_DIMLIGHT)
+			{
+				dl = CL_AllocDlight (num);
+				VectorCopy (ent->origin,  dl->origin);
+				dl->radius = 200 + (rand()&31);
+				dl->die = cg.time + 10;
+			}
 
 			if (flags & EF_GIB)
 				R_RocketTrail (ent->oldorigin, ent->origin, 2);
@@ -66,7 +98,7 @@ void CG_UpdateEntities (void)
 			else if (flags & EF_ROCKET)
 			{
 				R_RocketTrail (ent->oldorigin, ent->origin, 0);
-				dl = CL_AllocDlight (i);
+				dl = CL_AllocDlight (num);
 				VectorCopy (ent->origin, dl->origin);
 				dl->radius = 200;
 				dl->die = cg.time + 10;

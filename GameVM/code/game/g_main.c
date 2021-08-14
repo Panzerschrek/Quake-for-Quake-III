@@ -490,7 +490,7 @@ Advances the non-player objects in the world
 ================
 */
 void G_RunFrame( int levelTime ) {
-	int			i, j;
+	int			i, j, effects;
 	edict_t		*edict;
 	edict_t		*other;
 	edict_t		*event;
@@ -544,6 +544,11 @@ void G_RunFrame( int levelTime ) {
 		VectorCopy(edict->v.angles, edict->s.angles);
 		edict->s.modelindex= strcmp(pr_strings + edict->v.model, "") ? edict->v.modelindex : 0; // Set empty index for empty model name.
 		edict->s.frame = edict->v.frame;
+
+		effects = edict->v.effects;
+		if( edict->s.event == 0 )
+			edict->s.eFlags = effects; // Use "eFlags" for effects
+		edict->v.effects = effects & ~EF_MUZZLEFLASH; // We must always clear muzzleflash.
 	}
 
 	for(i = 0; i < svs.maxclients; i++){
