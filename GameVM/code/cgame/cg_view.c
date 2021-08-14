@@ -199,20 +199,23 @@ static int CorrectUnwderwaterView(void) {
 void CG_AddEntities()
 {
 	int				num;
-	entityState_t*	in_ent;
+	entityState_t*	in_ent_state;
+	centity_t*		in_ent;
 	refEntity_t		out_ent;
 	vec3_t			anglesCorrected;
 
 	// Directly take entities from snapshot and add them to scene.
 
 	for ( num = 0 ; num < cg.snap.numEntities ; num++ ) {
-		in_ent = &cg.snap.entities[num];
+		in_ent_state = &cg.snap.entities[num];
 
-		if( in_ent->modelindex == 0 )
+		if( in_ent_state->modelindex == 0 )
 			continue;
 
-		if( in_ent->number == cg.viewentity )
+		if( in_ent_state->number == cg.viewentity )
 			continue; // Do not draw player itself.
+
+		in_ent = &cg_entities[in_ent_state->number];
 
 		memset (&out_ent, 0, sizeof(out_ent));
 		VectorCopy( in_ent->origin, out_ent.origin);
@@ -224,18 +227,18 @@ void CG_AddEntities()
 		anglesCorrected[ROLL]= AngleNormalize360(in_ent->angles[ROLL]);
 		AnglesToAxis( anglesCorrected, out_ent.axis );
 
-		if ( in_ent->solid == SOLID_BMODEL )
-			out_ent.hModel = cgs.inlineDrawModel[in_ent->modelindex];
+		if ( in_ent_state->solid == SOLID_BMODEL )
+			out_ent.hModel = cgs.inlineDrawModel[in_ent_state->modelindex];
 		else
 		{
-			out_ent.hModel= cgs.gameModels[in_ent->modelindex];
+			out_ent.hModel= cgs.gameModels[in_ent_state->modelindex];
 			out_ent.frame = out_ent.oldframe = in_ent->frame;
 		}
 
 		trap_R_AddRefEntityToScene(&out_ent);
 
-		if( in_ent->loopSound )
-			CG_SetAmbientSound( in_ent );
+		if( in_ent_state->loopSound )
+			CG_SetAmbientSound( in_ent_state );
 	}
 }
 void CG_AndAddTEnts (void)

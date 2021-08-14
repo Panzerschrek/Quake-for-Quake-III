@@ -29,6 +29,9 @@ Foundation, Inc., 51 Franklin St, Fifth Floor, Boston, MA  02110-1301  USA
 typedef struct
 {
 	int prev_unique_event_id;
+	vec3_t origin;
+	vec3_t angles;
+	int	frame;
 } centity_t;
 
 
@@ -303,12 +306,17 @@ void CG_DrawPolyBlend(void);
 dlight_t *CL_AllocDlight (int key);
 void CL_DecayLights (void);
 
+//
+// cg_ent.c
+//
+
+void CG_SetAmbientSound( entityState_t *ent );
+void CG_UpdateEntities (void);
 
 //
 // cg_event.c
 //
 
-void CG_SetAmbientSound( entityState_t *ent );
 void CG_CheckEvents( entityState_t *ent );
 
 

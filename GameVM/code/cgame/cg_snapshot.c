@@ -42,14 +42,18 @@ void CG_ProcessSnapshots( void ) {
 		n = cg.snap.entities[i].number;
 		cent = &cg_entities[n];
 
+		VectorCopy(entState->origin, cent->origin);
+		VectorCopy(entState->angles, cent->angles);
+		cent->frame = entState->frame;
+
 		if ( entState->solid == SOLID_BMODEL )
 		{
 			vec3_t origin;
-			VectorAdd(entState->origin, cgs.inlineModelMidpoints[ entState->modelindex ], origin);
+			VectorAdd(cent->origin, cgs.inlineModelMidpoints[ entState->modelindex ], origin);
 			trap_S_UpdateEntityPosition(n, origin);
 		}
 		else
-			trap_S_UpdateEntityPosition(n, entState->origin);
+			trap_S_UpdateEntityPosition(n, cent->origin);
 
 		event_unique_id = entState->constantLight;
 		if( entState->event != 0 && cent->prev_unique_event_id != event_unique_id )
