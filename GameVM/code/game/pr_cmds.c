@@ -1441,8 +1441,8 @@ void PF_makestatic (void)
 
 	ent = G_EDICT(OFS_PARM0);
 
-	// PANZER - just leave this entity as is.
-	// TODO - set flag for client-side animation?
+	// Set maximum possible frame for static entities to indicate client-side animation.
+	ent->v.frame = 65535;
 }
 
 //=============================================================================

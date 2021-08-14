@@ -29,6 +29,10 @@ Foundation, Inc., 51 Franklin St, Fifth Floor, Boston, MA  02110-1301  USA
 typedef struct
 {
 	int prev_unique_event_id;
+	vec3_t oldorigin;
+	vec3_t origin;
+	vec3_t angles;
+	int	frame;
 } centity_t;
 
 
@@ -118,6 +122,11 @@ typedef struct {
 	vec3_t		refdefViewAngles;		// will be converted to refdef.viewaxis
 } cg_t;
 
+typedef struct {
+	qhandle_t handle;
+	int flags;
+	int numFrames;
+} gameModel_t;
 
 // The client game static (cgs) structure hold everything
 // loaded or calculated from the gamestate.  It will NOT
@@ -140,7 +149,7 @@ typedef struct {
 	vec3_t			inlineModelMidpoints[MAX_MODELS];
 
 	// Separate models.
-	qhandle_t		gameModels[MAX_MODELS];
+	gameModel_t		gameModels[MAX_MODELS];
 
 	// Client entities models
 	qhandle_t		bolt;
@@ -302,12 +311,17 @@ void CG_DrawPolyBlend(void);
 dlight_t *CL_AllocDlight (int key);
 void CL_DecayLights (void);
 
+//
+// cg_ent.c
+//
+
+void CG_SetAmbientSound( entityState_t *ent );
+void CG_UpdateEntities (void);
 
 //
 // cg_event.c
 //
 
-void CG_SetAmbientSound( entityState_t *ent );
 void CG_CheckEvents( entityState_t *ent );
 
 
@@ -346,6 +360,7 @@ void R_ParticleExplosion2 (vec3_t org, int colorStart, int colorLength);
 void R_RunParticleEffect (vec3_t org, vec3_t dir, int color, int count);
 void R_LavaSplash (vec3_t org);
 void R_TeleportSplash (vec3_t org);
+void R_RocketTrail (vec3_t start, vec3_t end, int type);
 void R_DrawParticles();
 
 //

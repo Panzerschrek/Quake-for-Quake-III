@@ -2681,6 +2681,7 @@ void M_DrawLoadingScreen (void)
 {
 	qpic_t	*pic;
 
+	M_DetermineScale();
 	M_DrawBackground();
 
 	pic = Draw_CachePic ("gfx/loading.lmp");

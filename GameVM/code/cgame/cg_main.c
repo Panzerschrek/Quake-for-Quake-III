@@ -23,6 +23,27 @@ Foundation, Inc., 51 Franklin St, Fifth Floor, Boston, MA  02110-1301  USA
 // cg_main.c -- initialization and primary entry point for cgame
 #include "cg_local.h"
 
+// Copied from "qwalk" code.
+typedef struct md3_header_s
+{
+	char ident[4]; /* "IDP3" */
+	int version; /* 15 */
+
+	char name[64];
+
+	int flags; /* unused by quake3, darkplaces uses it for quake-style modelflags (rocket trails, etc.) */
+
+	int num_frames;
+	int num_tags;
+	int num_meshes;
+	int num_skins; /* apparently unused */
+
+/* lump offsets are relative to start of header (start of file) */
+	int lump_frameinfo;
+	int lump_tags;
+	int lump_meshes;
+	int lump_end;
+} md3_header_t;
 
 void CG_Init( int serverMessageNum, int serverCommandSequence, int clientNum );
 void CG_Shutdown( void );
@@ -265,12 +286,18 @@ static void CG_RegisterResources( void ) {
 	// register all the server specified models
 	for (i=1 ; i<MAX_MODELS ; i++) {
 		char	modelName[MAX_OSPATH];
-		int n;
+		int		n;
+		fileHandle_t f;
+		gameModel_t*	outModel;
 
 		strcpy(modelName, CG_ConfigString( CS_MODELS+i ));
 		if ( !modelName[0] ) {
 			break;
 		}
+
+		outModel = &cgs.gameModels[i];
+		outModel->flags= 0;
+		outModel->numFrames = 1;
 
 		// Fix model names - replace "mdl" extension with "md3" - native Quake3 model format.
 		n= strlen(modelName);
@@ -281,10 +308,24 @@ static void CG_RegisterResources( void ) {
 			modelName[n-3]= 'm';
 			modelName[n-2]= 'd';
 			modelName[n-1]= '3';
-			modelName[n-4] = 0;
+			modelName[n-4] = '.';
+
+			// Read md3 header to extract models flags and frame numbers.
+			// These values are needed for client side animation/effects.
+			f = 0;
+			trap_FS_FOpenFile(modelName, &f, FS_READ);
+			if( f != 0 )
+			{
+				md3_header_t header;
+				memset(&header, 0, sizeof(header));
+				trap_FS_Read(&header, sizeof(header), f);
+				outModel->flags= header.flags;
+				outModel->numFrames= header.num_frames;
+				trap_FS_FCloseFile(f);
+			}
 		}
 
-		cgs.gameModels[i] = trap_R_RegisterModel( modelName );
+		outModel->handle = trap_R_RegisterModel( modelName );
 	}
 
 	// register all the server specified sounds
