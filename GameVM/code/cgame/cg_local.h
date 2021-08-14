@@ -122,6 +122,11 @@ typedef struct {
 	vec3_t		refdefViewAngles;		// will be converted to refdef.viewaxis
 } cg_t;
 
+typedef struct {
+	qhandle_t handle;
+	int flags;
+	int numFrames;
+} gameModel_t;
 
 // The client game static (cgs) structure hold everything
 // loaded or calculated from the gamestate.  It will NOT
@@ -144,9 +149,7 @@ typedef struct {
 	vec3_t			inlineModelMidpoints[MAX_MODELS];
 
 	// Separate models.
-	qhandle_t		gameModels[MAX_MODELS];
-	int				gameModelsFlags[MAX_MODELS];
-	int				gameModelsNumFrames[MAX_MODELS];
+	gameModel_t		gameModels[MAX_MODELS];
 
 	// Client entities models
 	qhandle_t		bolt;

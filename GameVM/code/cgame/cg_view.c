@@ -231,7 +231,7 @@ void CG_AddEntities()
 			out_ent.hModel = cgs.inlineDrawModel[in_ent_state->modelindex];
 		else
 		{
-			out_ent.hModel= cgs.gameModels[in_ent_state->modelindex];
+			out_ent.hModel= cgs.gameModels[in_ent_state->modelindex].handle;
 			out_ent.frame = out_ent.oldframe = in_ent->frame;
 		}
 
@@ -362,7 +362,7 @@ void CG_AddViewWeapon( playerState_t *ps ) {
 	hand.oldorigin[2] += ps->viewheight;
 	AnglesToAxis( ps->viewangles, hand.axis );
 
-	hand.hModel = cgs.gameModels[ps->weapon];
+	hand.hModel = cgs.gameModels[ps->weapon].handle;
 	hand.frame= hand.oldframe= ps->weaponstate; // Use "weaponstate" for weapon frame.
 	hand.renderfx = RF_DEPTHHACK | RF_FIRST_PERSON | RF_MINLIGHT;
 

@@ -286,16 +286,18 @@ static void CG_RegisterResources( void ) {
 	// register all the server specified models
 	for (i=1 ; i<MAX_MODELS ; i++) {
 		char	modelName[MAX_OSPATH];
-		int n;
+		int		n;
 		fileHandle_t f;
+		gameModel_t*	outModel;
 
 		strcpy(modelName, CG_ConfigString( CS_MODELS+i ));
 		if ( !modelName[0] ) {
 			break;
 		}
 
-		cgs.gameModelsFlags[i]= 0;
-		cgs.gameModelsNumFrames[i] = 1;
+		outModel = &cgs.gameModels[i];
+		outModel->flags= 0;
+		outModel->numFrames = 1;
 
 		// Fix model names - replace "mdl" extension with "md3" - native Quake3 model format.
 		n= strlen(modelName);
@@ -317,13 +319,13 @@ static void CG_RegisterResources( void ) {
 				md3_header_t header;
 				memset(&header, 0, sizeof(header));
 				trap_FS_Read(&header, sizeof(header), f);
-				cgs.gameModelsFlags[i]= header.flags;
-				cgs.gameModelsNumFrames[i]= header.num_frames;
+				outModel->flags= header.flags;
+				outModel->numFrames= header.num_frames;
 				trap_FS_FCloseFile(f);
 			}
 		}
 
-		cgs.gameModels[i] = trap_R_RegisterModel( modelName );
+		outModel->handle = trap_R_RegisterModel( modelName );
 	}
 
 	// register all the server specified sounds

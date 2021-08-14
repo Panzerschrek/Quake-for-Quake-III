@@ -45,75 +45,75 @@ void CG_UpdateEntities (void)
 			continue;
 
 		if ( entState->solid == SOLID_BMODEL )
+			continue;
+
+
+		flags = cgs.gameModels[entState->modelindex].flags;
+		effects = entState->eFlags;
+
+		if (flags & EF_ROTATE)
+			ent->angles[YAW] = bobjrotate;
+
+		// PANZER TODO - fix this.
+		//if (effects & EF_BRIGHTFIELD)
+		//	R_EntityParticles (ent);
+
+		if (effects & EF_MUZZLEFLASH)
 		{
+			vec3_t		fv, rv, uv;
+
+			dl = CL_AllocDlight (num);
+			VectorCopy (ent->origin,  dl->origin);
+			dl->origin[2] += 16;
+			AngleVectors (ent->angles, fv, rv, uv);
+
+			VectorMA (dl->origin, 18, fv, dl->origin);
+			dl->radius = 200 + (rand()&31);
+			dl->minlight = 32;
+			dl->die = cg.time + 100;
 		}
-		else
+		if (effects & EF_BRIGHTLIGHT)
 		{
-			flags = cgs.gameModelsFlags[entState->modelindex];
-			effects = entState->eFlags;
+			dl = CL_AllocDlight (num);
+			VectorCopy (ent->origin,  dl->origin);
+			dl->origin[2] += 16;
+			dl->radius = 400 + (rand()&31);
+			dl->die = cg.time + 10;
+		}
+		if (effects & EF_DIMLIGHT)
+		{
+			dl = CL_AllocDlight (num);
+			VectorCopy (ent->origin,  dl->origin);
+			dl->radius = 200 + (rand()&31);
+			dl->die = cg.time + 10;
+		}
 
-			if (flags & EF_ROTATE)
-				ent->angles[YAW] = bobjrotate;
-
-			//if (effects & EF_BRIGHTFIELD)
-			//	R_EntityParticles (ent);
-			if (effects & EF_MUZZLEFLASH)
-			{
-				vec3_t		fv, rv, uv;
-
-				dl = CL_AllocDlight (num);
-				VectorCopy (ent->origin,  dl->origin);
-				dl->origin[2] += 16;
-				AngleVectors (ent->angles, fv, rv, uv);
-
-				VectorMA (dl->origin, 18, fv, dl->origin);
-				dl->radius = 200 + (rand()&31);
-				dl->minlight = 32;
-				dl->die = cg.time + 100;
-			}
-			if (effects & EF_BRIGHTLIGHT)
-			{
-				dl = CL_AllocDlight (num);
-				VectorCopy (ent->origin,  dl->origin);
-				dl->origin[2] += 16;
-				dl->radius = 400 + (rand()&31);
-				dl->die = cg.time + 10;
-			}
-			if (effects & EF_DIMLIGHT)
-			{
-				dl = CL_AllocDlight (num);
-				VectorCopy (ent->origin,  dl->origin);
-				dl->radius = 200 + (rand()&31);
-				dl->die = cg.time + 10;
-			}
-
-			if (flags & EF_GIB)
-				R_RocketTrail (ent->oldorigin, ent->origin, 2);
-			else if (flags & EF_ZOMGIB)
-				R_RocketTrail (ent->oldorigin, ent->origin, 4);
-			else if (flags & EF_TRACER)
-				R_RocketTrail (ent->oldorigin, ent->origin, 3);
-			else if (flags & EF_TRACER2)
-				R_RocketTrail (ent->oldorigin, ent->origin, 5);
-			else if (flags & EF_ROCKET)
-			{
-				R_RocketTrail (ent->oldorigin, ent->origin, 0);
-				dl = CL_AllocDlight (num);
-				VectorCopy (ent->origin, dl->origin);
-				dl->radius = 200;
-				dl->die = cg.time + 10;
-			}
-			else if (flags & EF_GRENADE)
-				R_RocketTrail (ent->oldorigin, ent->origin, 1);
-			else if (flags & EF_TRACER3)
-				R_RocketTrail (ent->oldorigin, ent->origin, 6);
+		if (flags & EF_GIB)
+			R_RocketTrail (ent->oldorigin, ent->origin, 2);
+		else if (flags & EF_ZOMGIB)
+			R_RocketTrail (ent->oldorigin, ent->origin, 4);
+		else if (flags & EF_TRACER)
+			R_RocketTrail (ent->oldorigin, ent->origin, 3);
+		else if (flags & EF_TRACER2)
+			R_RocketTrail (ent->oldorigin, ent->origin, 5);
+		else if (flags & EF_ROCKET)
+		{
+			R_RocketTrail (ent->oldorigin, ent->origin, 0);
+			dl = CL_AllocDlight (num);
+			VectorCopy (ent->origin, dl->origin);
+			dl->radius = 200;
+			dl->die = cg.time + 10;
+		}
+		else if (flags & EF_GRENADE)
+			R_RocketTrail (ent->oldorigin, ent->origin, 1);
+		else if (flags & EF_TRACER3)
+			R_RocketTrail (ent->oldorigin, ent->origin, 6);
 
 
-			if( entState->frame == 65535 ) // Client-side animation
-			{
-				// Assume 10 frames/s monotonic animation.
-				ent->frame = cg.time / 100 % cgs.gameModelsNumFrames[entState->modelindex];
-			}
+		if( entState->frame == 65535 ) // Client-side animation
+		{
+			// Assume 10 frames/s monotonic animation.
+			ent->frame = cg.time / 100 % cgs.gameModels[entState->modelindex].numFrames;
 		}
 	}
 }
