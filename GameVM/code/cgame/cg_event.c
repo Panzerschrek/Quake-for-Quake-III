@@ -29,7 +29,7 @@ static void CG_StartSoundEvent( entityState_t *ent )
 	switch(attenuation)
 	{
 	case 0:
-		trap_S_StartLocalSound(entityNum, channel);
+		trap_S_StartLocalSound(cgs.gameSounds[soundNum], channel);
 		break;
 	case 1:
 	case 2:
