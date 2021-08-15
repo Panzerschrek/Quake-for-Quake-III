@@ -50,8 +50,6 @@ char *ClientConnect( int clientNum, qboolean firstTime, qboolean isBot ) {
 	client_t		*client;
 	int				edictnum;
 
-	G_Printf ("Client %d connected\n", clientNum);
-
 	edictnum = clientNum+1;
 
 	ent = EDICT_NUM(edictnum);
@@ -87,8 +85,6 @@ void ClientBegin( int clientNum ) {
 
 	host_client = svs.clients + clientNum;
 	sv_player = host_client->edict;
-
-	G_Printf ("Client %d begin\n", clientNum);
 
 	if(!sv.loadgame)
 	{
