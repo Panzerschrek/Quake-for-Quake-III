@@ -41,6 +41,8 @@ void CG_ParseServerinfo( void ) {
 	info = CG_ConfigString( CS_SERVERINFO );
 	mapname = Info_ValueForKey( info, "mapname" );
 	Com_sprintf( cgs.mapname, sizeof( cgs.mapname ), "maps/%s.bsp", mapname );
+
+	strncpy(cg.levelname, CG_ConfigString(CS_MESSAGE), sizeof(cg.levelname) );
 }
 
 
