@@ -5,6 +5,7 @@ Client:
 * Fix deathmatch scoreborad drawing code
 * Addons (rogue/hipnotic) support in status bar
 * Sprite entities
+* Draw pressed buttons (with frame=1) with alternative textures.
 * Entities/player interpolation/extrapolation (smooth movement, rotation, animation, rocket trails based on actual trajectory)
 
 Menu UI:
@@ -13,10 +14,11 @@ Menu UI:
 * Modal dialog while starting new game if already in game
 * Multiplayer menu improvements
 * Active game detection fixes
+* Improved authors menu
 
 Shaders:
 * Special shader for textures with fullbright pixels
-* Sky shaders
+* Shaders for animated textures (buttons and various decorations)
 * Shaders for in-game UI elements (avoid ugly interpolation and power of 2 textures conversion)
 
 Data export:
@@ -28,5 +30,4 @@ Data export:
 * Replace '*' in texture names (in maps, wad) with something else, because '*' is not a valid symbol for file names. Also Quake-utilities recognize '/*' as comment start.
 
 Maps:
-* Fix missing light* entities
 * Fix leaks on some original maps
