@@ -236,6 +236,20 @@ void M_PrintWhite (int cx, int cy, char *str)
 	}
 }
 
+void M_PrintAbsolute (int cx, int cy, const char *str)
+{
+	while (*str)
+	{
+		Draw_CharacterScaled(
+			cx,
+			cy,
+			1,
+			*str);
+		str++;
+		cx += 8;
+	}
+}
+
 void M_DrawTransPic (int x, int y, qpic_t *pic)
 {
 	trap_R_DrawStretchPic (
@@ -2578,6 +2592,9 @@ void M_Init (void)
 
 void M_Draw (void)
 {
+	// PANZER TODO - do not forget to update this version.
+	static const char version_string[]= "Quake for Quake-III v 0.5 (" __DATE__ ")";
+
 	if (m_state == m_none)
 		return;
 
@@ -2589,6 +2606,8 @@ void M_Draw (void)
 			Draw_FadeScreen ();
 		else
 			M_DrawBackground();
+
+		M_PrintAbsolute(m_glconfig.vidWidth - 8 * (sizeof(version_string) - 1) - 2, m_glconfig.vidHeight - 8 - 2, version_string);
 	}
 	else
 	{
