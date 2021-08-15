@@ -14,6 +14,7 @@ textures/CLIP
 	q3map_globaltexture
 	q3map_tessSize 96
 	surfaceparm lava
+	surfaceparm nodlight
 	surfaceparm noimpact
 	surfaceparm nolightmap
 	surfaceparm nonsolid
@@ -33,6 +34,7 @@ textures/CLIP
 	q3map_globaltexture
 	q3map_tessSize 96
 	surfaceparm lava
+	surfaceparm nodlight
 	surfaceparm noimpact
 	surfaceparm nolightmap
 	surfaceparm nonsolid
@@ -164,9 +166,10 @@ textures/CLIP
 {
 	q3map_globaltexture
 	q3map_tessSize 96
+	surfaceparm nodlight
 	surfaceparm noimpact
-	surfaceparm water
 	surfaceparm nolightmap
+	surfaceparm water
 	cull disable
 	{
 		map "textures/*TELEPORT.tga"
