@@ -174,6 +174,7 @@ static void M_LoadGame_f()
 	char	save_file_buf[4096];
 	char	tmp_str[1024];
 	int		i, pos, n;
+	float	skill;
 	fileHandle_t f;
 	trap_Argv( 1, savename, sizeof( savename ) );
 
@@ -197,11 +198,19 @@ static void M_LoadGame_f()
 	trap_FS_FCloseFile(f);
 
 	// Skip unneeded fields.
-	for(i = 0, pos= 0; i < 3 + 16; ++i)
+	for(i = 0, pos= 0; i < 2 + 16; ++i)
 	{
 		sscanf(save_file_buf + pos, "%s\n%n", tmp_str, &n);
 		pos+= n;
 	}
+
+	// Read and save skill value. We should do this always because it is important to have same skill during map start and during later saved game loading.
+	// Entities, models, sounds order depends of list of entities because entities may be discarded based on skill.
+	sscanf(save_file_buf + pos, "%s\n%n", tmp_str, &n);
+	pos+= n;
+	skill = atof(tmp_str);
+	trap_Cvar_Set ("skill", va("%i", (int)skill));
+
 	// Read map name.
 	sscanf(save_file_buf + pos, "%s\n", mapname);
 

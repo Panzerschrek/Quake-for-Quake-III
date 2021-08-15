@@ -1,5 +1,4 @@
 Server:
-* Fix some shot buttons (like on e1m1)
 * Coop/deathmatch
 
 Client:
