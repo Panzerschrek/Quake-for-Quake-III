@@ -101,6 +101,10 @@ static void CG_ServerCommand( void ) {
 	else if ( !strcmp( cmd, "cdtrack" ) ) {
 		CG_StartMusic(atoi(CG_Argv(1)), atoi(CG_Argv(2)));
 	}
+	else if ( !strcmp( cmd, "cs" ) ) {
+		// Config string modified.
+		// This message is generated ny engine itself.
+	}
 	else
 		CG_Printf( "Unknown client game command: %s\n", cmd );
 }
