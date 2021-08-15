@@ -6,7 +6,6 @@ Client:
 * Fix deathmatch scoreborad drawing code
 * Addons (rogue/hipnotic) support in status bar
 * Sprite entities
-* Show correct level time after loading of saved game
 * Entities/player interpolation/extrapolation (smooth movement, rotation, animation, rocket trails based on actual trajectory)
 
 Menu UI:

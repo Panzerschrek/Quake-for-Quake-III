@@ -488,15 +488,15 @@ void Sbar_SoloScoreboard (void)
 	int		minutes, seconds, tens, units;
 	int		l;
 
-	Com_sprintf (str, sizeof(str), "Monsters:%3i /%3i", cg.snap.ps.stats[Q3_STAT_MONSTERS], cg.snap.ps.stats[Q3_STAT_TOTAL_MONSTERS]);
+	Com_sprintf (str, sizeof(str), "Monsters:%3i /%3i", cg.snap.ps.stats[STAT_MONSTERS], cg.snap.ps.stats[STAT_TOTALMONSTERS]);
 	Sbar_DrawString (8, 4, str);
 
-	Com_sprintf (str, sizeof(str), "Secrets :%3i /%3i", cg.snap.ps.stats[Q3_STAT_SECRETS], cg.snap.ps.stats[Q3_STAT_TOTAL_SECRETS]);
+	Com_sprintf (str, sizeof(str), "Secrets :%3i /%3i", cg.snap.ps.stats[STAT_SECRETS], cg.snap.ps.stats[STAT_TOTALSECRETS]);
 	Sbar_DrawString (8, 12, str);
 
 // time
-	minutes = cg.time / 1000 / 60;
-	seconds = cg.time / 1000 - 60*minutes;
+	minutes = cg.snap.ps.stats[STAT_TIME] / 60;
+	seconds = cg.snap.ps.stats[STAT_TIME] - 60*minutes;
 	tens = seconds / 10;
 	units = seconds - 10*tens;
 	Com_sprintf (str, sizeof(str), "Time :%3i:%i%i", minutes, tens, units);
@@ -703,7 +703,7 @@ void Sbar_DrawInventory (void)
 // ammo counts
 	for (i=0 ; i<4 ; i++)
 	{
-		Com_sprintf (num, sizeof(num), "%3i",cg.snap.ps.stats[Q3_STAT_SHELLS+i] );
+		Com_sprintf (num, sizeof(num), "%3i",cg.snap.ps.stats[STAT_SHELLS+i] );
 		if (num[0] != ' ')
 			Sbar_DrawCharacter ( (6*i+1)*8 - 2, -24, 18 + num[0] - '0');
 		if (num[1] != ' ')
@@ -1051,8 +1051,8 @@ void Sbar_Draw (void)
 		{
 			if (rogue)
 			{
-				Sbar_DrawNum (24, 0, cg.snap.ps.stats[Q3_STAT_ARMOR], 3,
-								cg.snap.ps.stats[Q3_STAT_ARMOR] <= 25);
+				Sbar_DrawNum (24, 0, cg.snap.ps.stats[STAT_ARMOR], 3,
+								cg.snap.ps.stats[STAT_ARMOR] <= 25);
 				if (GetItems() & RIT_ARMOR3)
 					Sbar_DrawPicStretched (0, 0, armor_width, armor_height, sbar.sb_armor[2]);
 				else if (GetItems() & RIT_ARMOR2)
@@ -1062,8 +1062,8 @@ void Sbar_Draw (void)
 			}
 			else
 			{
-				Sbar_DrawNum (24, 0, cg.snap.ps.stats[Q3_STAT_ARMOR], 3
-				, cg.snap.ps.stats[Q3_STAT_ARMOR] <= 25);
+				Sbar_DrawNum (24, 0, cg.snap.ps.stats[STAT_ARMOR], 3
+				, cg.snap.ps.stats[STAT_ARMOR] <= 25);
 				if (GetItems() & IT_ARMOR3)
 					Sbar_DrawPicStretched (0, 0, armor_width, armor_height, sbar.sb_armor[2]);
 				else if (GetItems() & IT_ARMOR2)
@@ -1110,8 +1110,8 @@ void Sbar_Draw (void)
 				Sbar_DrawPicStretched (224, 0, ammo_width, ammo_height, sbar.sb_ammo[3]);
 		}
 
-		Sbar_DrawNum (248, 0, cg.snap.ps.stats[Q3_STAT_CURRENT_AMMO], 3,
-					  cg.snap.ps.stats[Q3_STAT_CURRENT_AMMO] <= 10);
+		Sbar_DrawNum (248, 0, cg.snap.ps.stats[STAT_CURRENT_AMMO], 3,
+					  cg.snap.ps.stats[STAT_CURRENT_AMMO] <= 10);
 	}
 
 	if (cg.refdef.width > SBAR_WIDTH) {
@@ -1355,13 +1355,13 @@ void Sbar_IntermissionOverlay (void)
 	trap_R_DrawStretchPic (x_ofs + 246 * sb_scale,64 * sb_scale, num_width * sb_scale, num_height * sb_scale, 0.0f, 0.0f, 1.0f, 1.0f, sbar.sb_nums[0][num/10]);
 	trap_R_DrawStretchPic (x_ofs + 266 * sb_scale,64 * sb_scale, num_width * sb_scale, num_height * sb_scale, 0.0f, 0.0f, 1.0f, 1.0f, sbar.sb_nums[0][num%10]);
 
-	Sbar_IntermissionNumber (x_ofs + 160 * sb_scale, 104 * sb_scale, cg.snap.ps.stats[Q3_STAT_SECRETS], 3, 0);
+	Sbar_IntermissionNumber (x_ofs + 160 * sb_scale, 104 * sb_scale, cg.snap.ps.stats[STAT_SECRETS], 3, 0);
 	trap_R_DrawStretchPic (x_ofs + 232 * sb_scale, 104 * sb_scale, slash_width * sb_scale, slash_height * sb_scale, 0.0f, 0.0f, 1.0f, 1.0f, sbar.sb_slash);
-	Sbar_IntermissionNumber (x_ofs + 240 * sb_scale, 104 * sb_scale, cg.snap.ps.stats[Q3_STAT_TOTAL_SECRETS], 3, 0);
+	Sbar_IntermissionNumber (x_ofs + 240 * sb_scale, 104 * sb_scale, cg.snap.ps.stats[STAT_TOTALSECRETS], 3, 0);
 
-	Sbar_IntermissionNumber (x_ofs + 160 * sb_scale, 144 * sb_scale, cg.snap.ps.stats[Q3_STAT_MONSTERS], 3, 0);
+	Sbar_IntermissionNumber (x_ofs + 160 * sb_scale, 144 * sb_scale, cg.snap.ps.stats[STAT_MONSTERS], 3, 0);
 	trap_R_DrawStretchPic (x_ofs + 232 * sb_scale, 144 * sb_scale, slash_width * sb_scale, slash_height * sb_scale, 0.0f, 0.0f, 1.0f, 1.0f, sbar.sb_slash);
-	Sbar_IntermissionNumber (x_ofs + 240 * sb_scale, 144 * sb_scale, cg.snap.ps.stats[Q3_STAT_TOTAL_MONSTERS], 3, 0);
+	Sbar_IntermissionNumber (x_ofs + 240 * sb_scale, 144 * sb_scale, cg.snap.ps.stats[STAT_TOTALMONSTERS], 3, 0);
 }
 
 void DrawCrosshair (void)
