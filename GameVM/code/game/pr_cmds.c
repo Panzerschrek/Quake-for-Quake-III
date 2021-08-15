@@ -248,6 +248,14 @@ void PF_setmodel (void)
 
 	e->v.model = m - pr_strings;
 
+	/*
+	Original Quake code sets "BBOX" collision for some entites, like triggers and than resets "modelindex" and "model" to disable drawing of such entities.
+	It works fine in original code.
+	But Quake-III code always uses brush model collision for entities with brush model flag. So, because of that we should memorize "s.modelindex" and never change it.
+	It is not so good to store some meaningfull information in "entity->s" struct because this struct is not saved in saves.
+	But generally it is not a problem because "entity->s" fields are initialized during initial level loading before loading of entites state from savefile.
+	*/
+
 	if(m[0] == '*')
 	{
 		trap_SetBrushModel(e, m);
@@ -260,7 +268,7 @@ void PF_setmodel (void)
 	{
 		if (!*check)
 			PR_RunError ("no precache: %s\n", m);
-		e->v.modelindex = i;
+		e->v.modelindex = e->s.modelindex = i;
 	}
 }
 

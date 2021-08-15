@@ -198,7 +198,7 @@ static int CorrectUnwderwaterView(void) {
 
 void CG_AddEntities()
 {
-	int				num;
+	int				num, modelindex;
 	entityState_t*	in_ent_state;
 	centity_t*		in_ent;
 	refEntity_t		out_ent;
@@ -208,11 +208,12 @@ void CG_AddEntities()
 
 	for ( num = 0 ; num < cg.snap.numEntities ; num++ ) {
 		in_ent_state = &cg.snap.entities[num];
+		modelindex= CG_GetModelIndex(in_ent_state);
 
 		if( in_ent_state->loopSound )
 			CG_SetAmbientSound( in_ent_state );
 
-		if( in_ent_state->modelindex == 0 )
+		if( modelindex == 0 )
 			continue;
 
 		if( in_ent_state->number == cg.viewentity )
@@ -231,10 +232,10 @@ void CG_AddEntities()
 		AnglesToAxis( anglesCorrected, out_ent.axis );
 
 		if ( in_ent_state->solid == SOLID_BMODEL )
-			out_ent.hModel = cgs.inlineDrawModel[in_ent_state->modelindex];
+			out_ent.hModel = cgs.inlineDrawModel[modelindex];
 		else
 		{
-			out_ent.hModel= cgs.gameModels[in_ent_state->modelindex].handle;
+			out_ent.hModel= cgs.gameModels[modelindex].handle;
 			out_ent.frame = out_ent.oldframe = in_ent->frame;
 		}
 

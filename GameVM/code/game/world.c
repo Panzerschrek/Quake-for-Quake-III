@@ -118,16 +118,16 @@ void SV_UpdateEdictCollsionType (edict_t* e)
 	case SOLID_TRIGGER:
 		e->r.contents= CONTENTS_TRIGGER;
 		break;
-	case SOLID_BBOX:
 	case SOLID_SLIDEBOX:
 		e->r.contents= CONTENTS_BODY;
 		break;
 	case SOLID_BSP:
+	case SOLID_BBOX:
 		e->r.contents= CONTENTS_SOLID;
 		break;
 	default:
 		e->r.contents= 0;
-	// TODO - support other cases.
+		break;
 	}
 }
 

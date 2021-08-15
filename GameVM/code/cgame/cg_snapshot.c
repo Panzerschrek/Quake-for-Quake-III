@@ -50,7 +50,7 @@ void CG_ProcessSnapshots( void ) {
 		if ( entState->solid == SOLID_BMODEL )
 		{
 			vec3_t origin;
-			VectorAdd(cent->origin, cgs.inlineModelMidpoints[ entState->modelindex ], origin);
+			VectorAdd(cent->origin, cgs.inlineModelMidpoints[ CG_GetModelIndex(entState) ], origin);
 			trap_S_UpdateEntityPosition(n, origin);
 		}
 		else

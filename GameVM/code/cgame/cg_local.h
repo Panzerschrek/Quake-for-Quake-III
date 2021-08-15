@@ -317,6 +317,7 @@ void CL_DecayLights (void);
 
 void CG_SetAmbientSound( entityState_t *ent );
 void CG_UpdateEntities (void);
+int CG_GetModelIndex( entityState_t *ent );
 
 //
 // cg_event.c

@@ -22,7 +22,7 @@ void CG_SetAmbientSound( entityState_t *ent )
 
 void CG_UpdateEntities (void)
 {
-	int i, flags, effects, num;
+	int i, flags, effects, num, modelindex;
 	entityState_t*	entState;
 	centity_t*	ent;
 	float bobjrotate;
@@ -33,7 +33,8 @@ void CG_UpdateEntities (void)
 	for( i = 0; i < cg.snap.numEntities; ++i )
 	{
 		entState = &cg.snap.entities[i];
-		if(entState->modelindex == 0)
+		modelindex = CG_GetModelIndex(entState);
+		if(modelindex == 0)
 			continue;
 
 		num = entState->number;
@@ -48,7 +49,7 @@ void CG_UpdateEntities (void)
 			continue;
 
 
-		flags = cgs.gameModels[entState->modelindex].flags;
+		flags = cgs.gameModels[modelindex].flags;
 		effects = entState->eFlags;
 
 		if (flags & EF_ROTATE)
@@ -113,7 +114,12 @@ void CG_UpdateEntities (void)
 		if( entState->frame == 65535 ) // Client-side animation
 		{
 			// Assume 10 frames/s monotonic animation.
-			ent->frame = cg.time / 100 % cgs.gameModels[entState->modelindex].numFrames;
+			ent->frame = cg.time / 100 % cgs.gameModels[modelindex].numFrames;
 		}
 	}
+}
+
+int CG_GetModelIndex( entityState_t *ent )
+{
+	return ent->otherEntityNum; // Use not "modelindex", but different field for transmission of model index to client.
 }
