@@ -1,4 +1,6 @@
 Server:
+* map restart
+* Fix bug with player acceleration by its own grenades/nails.
 * Coop/deathmatch
 
 Client:
@@ -31,3 +33,5 @@ Data export:
 
 Maps:
 * Fix leaks on some original maps
+* Fix missing textures (mostly water)
+* Fix invalid skies
