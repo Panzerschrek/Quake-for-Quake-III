@@ -392,6 +392,8 @@ void CG_DrawActiveFrame( int serverTime, stereoFrame_t stereoView, qboolean demo
 
 	// set up cg.snap and possibly cg.nextSnap
 	CG_ProcessSnapshots();
+	if(cg.last_snap_num == 0)
+		return; // Did not recieve any snapshot yet.
 
 	cg.viewentity = cg.snap.ps.clientNum + 1;
 

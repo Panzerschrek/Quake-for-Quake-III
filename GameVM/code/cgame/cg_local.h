@@ -26,6 +26,16 @@ Foundation, Inc., 51 Franklin St, Fifth Floor, Boston, MA  02110-1301  USA
 #include "../game/quakedef.h"
 #include "cg_public.h"
 
+// Effects
+#define	EF_ROCKET	1			// leave a trail
+#define	EF_GRENADE	2			// leave a trail
+#define	EF_GIB		4			// leave a trail
+#define	EF_ROTATE	8			// rotate (bonus items)
+#define	EF_TRACER	16			// green split trail
+#define	EF_ZOMGIB	32			// small blood trail
+#define	EF_TRACER2	64			// orange split trail + rotate
+#define	EF_TRACER3	128			// purple trail
+
 typedef struct
 {
 	int prev_unique_event_id;
@@ -94,6 +104,7 @@ typedef struct {
 	qboolean	loading;			// don't defer players at initial startup
 	qboolean	intermissionStarted;	// don't play voice rewards, because game will end shortly
 
+	int			last_snap_num;
 	snapshot_t	snap;				// cg.snap->serverTime <= cg.time
 
 	int			frametime;		// cg.time - cg.oldTime
