@@ -1,5 +1,4 @@
 Server:
-* Fix bug with player acceleration by its own grenades/nails.
 * Coop/deathmatch
 
 Client:

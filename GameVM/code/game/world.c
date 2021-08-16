@@ -97,7 +97,7 @@ void SV_LinkEdict (edict_t *ent, qboolean touch_triggers)
 		ent->r.maxs[1] += 15;
 	}
 
-	ent->r.ownerNum = ent->v.owner != 0 ? ent->v.owner : ENTITYNUM_NONE;
+	ent->r.ownerNum = ent->v.owner != 0 ? NUM_FOR_EDICT(PROG_TO_EDICT(ent->v.owner)) : ENTITYNUM_NONE;
 
 	SV_UpdateEdictSValues(ent);
 
@@ -199,8 +199,9 @@ trace_t SV_Move (vec3_t start, vec3_t mins, vec3_t maxs, vec3_t end, int type, e
 
 	if(passedict == NULL)
 		passEdictNum= ENTITYNUM_NONE;
-	if(passedict->v.owner != 0)
+	else if(passedict->v.owner != 0)
 	{
+		// Fix passedict because of strange behaviour of QuakeIII owners processing.
 		passEdictNum= NUM_FOR_EDICT(PROG_TO_EDICT(passedict->v.owner));
 		passedict->r.ownerNum = passEdictNum;
 	}
@@ -211,6 +212,9 @@ trace_t SV_Move (vec3_t start, vec3_t mins, vec3_t maxs, vec3_t end, int type, e
 	}
 
 	trap_Trace(&trace, start, mins, maxs, end, passEdictNum, contentmask);
+
+	// Rever passedict changes.
+	passedict->r.ownerNum = passedict->v.owner != 0 ? NUM_FOR_EDICT(PROG_TO_EDICT(passedict->v.owner)) : ENTITYNUM_NONE;
 
 	if(trace.entityNum == ENTITYNUM_WORLD)
 		trace.entityNum = 0;
