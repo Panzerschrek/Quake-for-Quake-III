@@ -119,7 +119,7 @@ typedef struct {
 
 	cshift_t	cshifts[NUM_CSHIFTS];	// color shifts for damage, powerups and content types
 
-	int weaponSelect;
+	int			weaponSelect; // normally 0, set to non-zero if wants to switch weapon.
 
 	scoreboard_t scores[32]; // for max clients.
 
