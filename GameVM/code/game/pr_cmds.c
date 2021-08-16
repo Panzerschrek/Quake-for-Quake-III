@@ -791,7 +791,7 @@ void PF_localcmd (void)
 	char	*str;
 	
 	str = G_STRING(OFS_PARM0);	
-	trap_Print (str);
+	trap_SendConsoleCommand( EXEC_APPEND, str );
 }
 
 /*

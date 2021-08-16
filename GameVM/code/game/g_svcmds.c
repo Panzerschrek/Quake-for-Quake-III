@@ -34,6 +34,7 @@ ConsoleCommand
 qboolean	ConsoleCommand( void ) {
 	char	cmd[MAX_TOKEN_CHARS];
 	char	arg1[MAX_TOKEN_CHARS];
+	char	mapname[MAX_OSPATH];
 
 	trap_Argv( 0, cmd, sizeof( cmd ) );
 
@@ -41,6 +42,16 @@ qboolean	ConsoleCommand( void ) {
 	{
 		trap_Argv( 1, arg1, sizeof( arg1 ) );
 		G_SaveGame(arg1);
+		return qtrue;
+	}
+	else if(!strcmp(cmd, "restart"))
+	{
+		if(!svs.changelevel_issued) {
+			svs.changelevel_issued = qtrue;
+			trap_Cvar_VariableStringBuffer("mapname", mapname, sizeof(mapname));
+			trap_SendConsoleCommand( EXEC_APPEND, va( "map %s\n", mapname ) );
+		}
+
 		return qtrue;
 	}
 
