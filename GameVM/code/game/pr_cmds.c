@@ -508,6 +508,7 @@ PF_ambientsound
 
 =================
 */
+static string_t ambient_sound_class_name_pr_str = 0;
 void PF_ambientsound (void)
 {
 	char		**check;
@@ -544,16 +545,16 @@ void PF_ambientsound (void)
 		soundSourceEdict->v.maxs[i]= soundSourceEdict->r.maxs[i]= +64;
 	}
 
-	// TODO - fix this. "edict->s" fields are not saved properly in saved game.
+	// Use special class name for generated ambient sound entity.
+	// Save all ambient sound fields in "edict->v" struct to preserve it during save/load.
 
-	soundSourceEdict->s.loopSound = qtrue; // use this field as ambient sound entity indicator.
+	if(ambient_sound_class_name_pr_str == 0)
+		ambient_sound_class_name_pr_str = ED_NewString("qfq3_ambient_sound") - pr_strings;
 
-	// Reuse some fileds for event params.
-	soundSourceEdict->s.weapon = soundnum;
-	soundSourceEdict->s.legsAnim = vol * 255;
-	soundSourceEdict->s.torsoAnim = attenuation;
-	soundSourceEdict->r.contents= 0;
-	soundSourceEdict->r.ownerNum = ENTITYNUM_NONE;
+	soundSourceEdict->v.classname = ambient_sound_class_name_pr_str;
+	soundSourceEdict->v.weapon = soundnum;
+	soundSourceEdict->v.sounds = vol * 255;
+	soundSourceEdict->v.items = attenuation;
 
 	trap_LinkEntity(soundSourceEdict);
 }

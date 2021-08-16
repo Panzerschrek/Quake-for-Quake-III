@@ -557,6 +557,17 @@ void G_RunFrame( int levelTime ) {
 			edict->s.eFlags = effects; // Use "eFlags" for effects
 		edict->v.effects = effects & ~EF_MUZZLEFLASH; // We must always clear muzzleflash.
 
+		// Process generated ambient sound entity specially. Take fields from "v" struct and put them into "s" struct.
+		if( !strcmp( pr_strings + edict->v.classname, "qfq3_ambient_sound" ) )
+		{
+			edict->s.loopSound = qtrue;
+			edict->s.weapon = edict->v.weapon;
+			edict->s.legsAnim = edict->v.sounds;
+			edict->s.torsoAnim = edict->v.items;
+		}
+		else
+			edict->s.loopSound = qfalse;
+
 		// Set velocity (for rocket trails animation).
 		VectorCopy(edict->v.velocity, edict->s.pos.trDelta);
 	}
