@@ -459,6 +459,7 @@ void R_RocketTrail (vec3_t start, vec3_t end, int type)
 		dec = 1;
 		type -= 128;
 	}
+	VectorScale(vec, dec, vec);
 
 	while (len > 0)
 	{
@@ -539,7 +540,6 @@ void R_RocketTrail (vec3_t start, vec3_t end, int type)
 					p->org[j] = start[j] + ((rand()&15)-8);
 				break;
 		}
-		
 
 		VectorAdd (start, vec, start);
 	}
