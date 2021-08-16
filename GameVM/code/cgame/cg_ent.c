@@ -23,7 +23,7 @@ void CG_UpdateEntities (void)
 	for( i = 0; i < cg.snap.numEntities; ++i )
 	{
 		entState = &cg.snap.entities[i];
-		modelindex = CG_GetModelIndex(entState);
+		modelindex = entState->modelindex;
 		if(modelindex == 0)
 			continue;
 
@@ -42,9 +42,4 @@ void CG_UpdateEntities (void)
 			ent->frame = cg.time / 100 % cgs.gameModels[modelindex].numFrames;
 		}
 	}
-}
-
-int CG_GetModelIndex( entityState_t *ent )
-{
-	return ent->otherEntityNum; // Use not "modelindex", but different field for transmission of model index to client.
 }

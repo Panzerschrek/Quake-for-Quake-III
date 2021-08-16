@@ -43,7 +43,10 @@ void SV_LinkEdict (edict_t *ent, qboolean touch_triggers);
 // sets ent->v.absmin and ent->v.absmax
 // if touchtriggers, calls prog functions for the intersected triggers
 
-void SV_UpdateEdictCollsionType (edict_t* e);
+void SV_UpdateEdictSValues (edict_t* e);
+// Call this before running game physics and before sending client updates
+// because "edict.s" structure used is both by engine clooision detection code and by client.
+
 
 int SV_PointContents (vec3_t p);
 

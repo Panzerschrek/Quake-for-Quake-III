@@ -550,12 +550,7 @@ void G_RunFrame( int levelTime ) {
 			continue;
 		}
 
-		VectorCopy(edict->v.origin, edict->s.origin);
-		VectorCopy(edict->v.angles, edict->s.angles);
-		// We can't change edict->s.modelindex here because it used by engine tracing subsystem.
-		// So, set different field instead to transmit it to client.
-		edict->s.otherEntityNum = strcmp(pr_strings + edict->v.model, "") ? edict->v.modelindex : 0; // Set empty index for empty model name.
-		edict->s.frame = edict->v.frame;
+		SV_UpdateEdictSValues(edict);
 
 		effects = edict->v.effects;
 		if( edict->s.event == 0 )

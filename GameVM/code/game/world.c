@@ -99,7 +99,7 @@ void SV_LinkEdict (edict_t *ent, qboolean touch_triggers)
 
 	ent->r.ownerNum = ent->v.owner != 0 ? ent->v.owner : ENTITYNUM_NONE;
 
-	SV_UpdateEdictCollsionType(ent);
+	SV_UpdateEdictSValues(ent);
 
 	trap_LinkEntity(ent);
 
@@ -108,7 +108,7 @@ void SV_LinkEdict (edict_t *ent, qboolean touch_triggers)
 		SV_TouchLinks ( ent );
 }
 
-void SV_UpdateEdictCollsionType (edict_t* e)
+void SV_UpdateEdictSValues (edict_t* e)
 {
 	switch((int)e->v.solid)
 	{
@@ -129,6 +129,14 @@ void SV_UpdateEdictCollsionType (edict_t* e)
 		e->r.contents= 0;
 		break;
 	}
+
+	VectorCopy(e->v.origin, e->s.origin);
+	VectorCopy(e->v.angles, e->s.angles);
+	e->s.frame = e->v.frame;
+
+	e->s.modelindex = strcmp(pr_strings + e->v.model, "") ? e->v.modelindex : 0; // Set empty index for empty model name.
+	if(e->s.modelindex == 0)
+		e->r.bmodel = qfalse; // Reset brush model flag, use bbox for collisions.
 }
 
 /*

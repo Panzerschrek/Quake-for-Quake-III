@@ -26,7 +26,7 @@ Foundation, Inc., 51 Franklin St, Fifth Floor, Boston, MA  02110-1301  USA
 #include "cg_local.h"
 
 static void CG_UpdateEntitiesEffects( int updateTimeDelta ) {
-	int i, flags, effects, num, modelindex;
+	int i, flags, effects, num;
 	float	updateTimeDeltaS;
 	entityState_t*	entState;
 	centity_t*	ent;
@@ -38,8 +38,7 @@ static void CG_UpdateEntitiesEffects( int updateTimeDelta ) {
 	for( i = 0; i < cg.snap.numEntities; ++i )
 	{
 		entState = &cg.snap.entities[i];
-		modelindex = CG_GetModelIndex(entState);
-		if(modelindex == 0)
+		if(entState->modelindex == 0)
 			continue;
 
 		num = entState->number;
@@ -48,7 +47,7 @@ static void CG_UpdateEntitiesEffects( int updateTimeDelta ) {
 		if ( entState->solid == SOLID_BMODEL )
 			continue;
 
-		flags = cgs.gameModels[modelindex].flags;
+		flags = cgs.gameModels[entState->modelindex].flags;
 		effects = entState->eFlags;
 
 		// Assume linear moving. For frequences > 10hz gravity-related speed change is insignificant.
@@ -143,7 +142,7 @@ void CG_ProcessSnapshots( void ) {
 		if ( entState->solid == SOLID_BMODEL )
 		{
 			vec3_t origin;
-			VectorAdd(cent->origin, cgs.inlineModelMidpoints[ CG_GetModelIndex(entState) ], origin);
+			VectorAdd(cent->origin, cgs.inlineModelMidpoints[entState->modelindex], origin);
 			trap_S_UpdateEntityPosition(n, origin);
 		}
 		else
