@@ -561,6 +561,9 @@ void G_RunFrame( int levelTime ) {
 		if( edict->s.event == 0 )
 			edict->s.eFlags = effects; // Use "eFlags" for effects
 		edict->v.effects = effects & ~EF_MUZZLEFLASH; // We must always clear muzzleflash.
+
+		// Set velocity (for rocket trails animation).
+		VectorCopy(edict->v.velocity, edict->s.pos.trDelta);
 	}
 
 	for(i = 0; i < svs.maxclients; i++){

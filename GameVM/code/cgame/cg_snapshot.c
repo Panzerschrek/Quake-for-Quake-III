@@ -25,14 +25,15 @@ Foundation, Inc., 51 Franklin St, Fifth Floor, Boston, MA  02110-1301  USA
 
 #include "cg_local.h"
 
-static void CG_UpdateEntitiesEffects( void ) {
+static void CG_UpdateEntitiesEffects( int updateTimeDelta ) {
 	int i, flags, effects, num, modelindex;
+	float	updateTimeDeltaS;
 	entityState_t*	entState;
 	centity_t*	ent;
-	float bobjrotate;
+	vec3_t		oldorigin, move_delta;
 	dlight_t*	dl;
 
-	bobjrotate = AngleNormalize360(cg.time / 10.0);
+	updateTimeDeltaS = updateTimeDelta / 1000.0f;
 
 	for( i = 0; i < cg.snap.numEntities; ++i )
 	{
@@ -44,16 +45,15 @@ static void CG_UpdateEntitiesEffects( void ) {
 		num = entState->number;
 		ent = &cg_entities[entState->number];
 
-		// DOTO - fix this. This is an ugly hack. We should somehow reset old origin if entity was deallocated.
-		// Also we should imerpoalate origin (somehow) to get smoother rocket trails.
-		if(ent->oldorigin[0] == 0.0f && ent->oldorigin[1] == 0.0f && ent->oldorigin[2] == 0.0f)
-			continue;
-
 		if ( entState->solid == SOLID_BMODEL )
 			continue;
 
 		flags = cgs.gameModels[modelindex].flags;
 		effects = entState->eFlags;
+
+		// Assume linear moving. For frequences > 10hz gravity-related speed change is insignificant.
+		VectorScale( entState->pos.trDelta, updateTimeDeltaS, move_delta );
+		VectorSubtract( ent->origin, move_delta, oldorigin );
 
 		// PANZER TODO - fix this.
 		//if (effects & EF_BRIGHTFIELD)
@@ -90,32 +90,33 @@ static void CG_UpdateEntitiesEffects( void ) {
 		}
 
 		if (flags & EF_GIB)
-			R_RocketTrail (ent->oldorigin, ent->origin, 2);
+			R_RocketTrail (oldorigin, ent->origin, 2);
 		else if (flags & EF_ZOMGIB)
-			R_RocketTrail (ent->oldorigin, ent->origin, 4);
+			R_RocketTrail (oldorigin, ent->origin, 4);
 		else if (flags & EF_TRACER)
-			R_RocketTrail (ent->oldorigin, ent->origin, 3);
+			R_RocketTrail (oldorigin, ent->origin, 3);
 		else if (flags & EF_TRACER2)
-			R_RocketTrail (ent->oldorigin, ent->origin, 5);
+			R_RocketTrail (oldorigin, ent->origin, 5);
 		else if (flags & EF_ROCKET)
 		{
-			R_RocketTrail (ent->oldorigin, ent->origin, 0);
+			R_RocketTrail (oldorigin, ent->origin, 0);
 			dl = CL_AllocDlight (num);
 			VectorCopy (ent->origin, dl->origin);
 			dl->radius = 200;
 			dl->die = cg.time + 10;
 		}
 		else if (flags & EF_GRENADE)
-			R_RocketTrail (ent->oldorigin, ent->origin, 1);
+			R_RocketTrail (oldorigin, ent->origin, 1);
 		else if (flags & EF_TRACER3)
-			R_RocketTrail (ent->oldorigin, ent->origin, 6);
+			R_RocketTrail (oldorigin, ent->origin, 6);
 	}
 }
 
 void CG_ProcessSnapshots( void ) {
 	int				i, j, n, event_unique_id;
-	int snapshotTime;
-	int items;
+	int				snapshotTime;
+	int				prevServerTime;
+	int				items;
 	entityState_t* entState;
 	centity_t*	cent;
 
@@ -123,6 +124,7 @@ void CG_ProcessSnapshots( void ) {
 	if(n == cg.last_snap_num)
 		return;
 
+	prevServerTime = cg.snap.serverTime;
 	trap_GetSnapshot( n, &cg.snap );
 	cg.last_snap_num = n;
 
@@ -134,7 +136,6 @@ void CG_ProcessSnapshots( void ) {
 		n = cg.snap.entities[i].number;
 		cent = &cg_entities[n];
 
-		VectorCopy(cent->origin, cent->oldorigin);
 		VectorCopy(entState->origin, cent->origin);
 		VectorCopy(entState->angles, cent->angles);
 		cent->frame = entState->frame;
@@ -166,6 +167,6 @@ void CG_ProcessSnapshots( void ) {
 	}
 
 	// Update local entities only after reciewing new snapshot.
-	CG_UpdateEntitiesEffects();
+	CG_UpdateEntitiesEffects( cg.snap.serverTime - prevServerTime );
 }
 
