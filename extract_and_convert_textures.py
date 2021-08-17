@@ -175,18 +175,24 @@ def generate_shader_file(tga_textures_dir, out_shader_file):
 				else:
 					shader_descr = shader_generic_turb_template.replace("%(shader_name)", file_name_without_extension).replace("%(file_name)", file_name)
 			elif file_name.startswith("+"):
+				# animated texture
 
-				# animated base texture
+				if file_name[1] >= '0' and file_name[1] <= '9':
+					frame_base_symbols = "0123456789"
+				else:
+					frame_base_symbols = "ABCDEFGHIJ"
+
 				frames_list = []
 				fulbright_frames_list = []
 				for i in range(10):
-					frame_file_name = "+" + str(i) + file_name[2:]
+					frame_file_name = "+" + frame_base_symbols[i] + file_name[2:]
 					if os.path.exists(os.path.join(tga_textures_dir, frame_file_name)):
 						frames_list.append(frame_file_name)
 					fullbright_frame_file_name = "+" + str(i) + file_name_without_extension[2:] + "_fb.tga"
 					if os.path.exists(os.path.join(tga_textures_dir, fullbright_frame_file_name)):
 						fulbright_frames_list.append(fullbright_frame_file_name)
 
+				# TODO - replace missing fullbright frames with black image
 				if len(frames_list) > 1:
 					if len(fulbright_frames_list) == len(frames_list):
 						# Generate animation with both regular and fullbright frames
