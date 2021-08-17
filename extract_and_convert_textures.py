@@ -7,10 +7,65 @@ import sys
 g_wad_extractor_executable= "WadExtractor"
 g_q1_pic_to_tga_executable= "Q1PicToTga"
 
+
+shader_base_template = """
+"textures/%(shader_name)"
+{
+	{
+		map $lightmap
+		rgbGen identity
+	}
+	{
+		map "textures/%(file_name)"
+		blendFunc GL_DST_COLOR GL_ZERO
+		rgbGen identity
+	}
+}
+"""
+
+shader_with_fullbrights_template = """
+"textures/%(shader_name)"
+{
+	{
+		map $lightmap
+		rgbGen identity
+	}
+	{
+		map "textures/%(file_name)"
+		blendFunc GL_DST_COLOR GL_ZERO
+		rgbGen identity
+	}
+	{
+		map "textures/%(fullbrights_file_name)"
+		blendFunc GL_ONE GL_ONE
+		rgbGen identity
+	}
+}"""
+
+def generate_shader_file(tga_textures_dir, out_shader_file):
+
+	with open(out_shader_file, mode = "w") as f:
+		for file_name in os.listdir(tga_textures_dir):
+
+			file_name_without_extension = file_name.replace(".tga", "")
+			fullbrights_file_name = file_name_without_extension + "_fb.tga"
+
+			if file_name.endswith("_fb.tga") :
+				continue # ignore fullbright textures
+			elif os.path.exists(os.path.join(tga_textures_dir, fullbrights_file_name)):
+				shader_descr = shader_with_fullbrights_template.replace("%(shader_name)", file_name_without_extension).replace("%(file_name)", file_name).replace("%(fullbrights_file_name)", fullbrights_file_name)
+			else:
+				continue # Ignore regular textures without special effects and fullbrights
+			#	shader_descr = shader_base_template.replace("%(shader_name)", file_name_without_extension).replace("%(file_name)", file_name)
+
+			f.write(shader_descr + "\n")
+
+
 def main():
 	parser= argparse.ArgumentParser(description= 'Converter script.')
 	parser.add_argument("--input-file", help= "input WAD file with Quake textures", type=str)
 	parser.add_argument("--output-dir", help= "output directory", type=str)
+	parser.add_argument("--output-shader-file", help= "output shader file", type=str)
 
 	args= parser.parse_args()
 
@@ -29,6 +84,7 @@ def main():
 
 	# Convert picture files into TGA (ignore palette file)
 	palette_file_name = os.path.join(output_dir_intermediate, "PALETTE")
+	#palette_file_name = "gfx/palette.lmp"
 	for file_name in os.listdir(output_dir_intermediate):
 		if file_name == "PALETTE":
 			continue
@@ -36,6 +92,8 @@ def main():
 		file_path_in = os.path.join(output_dir_intermediate, file_name)
 		file_path_base_out= os.path.join(output_dir, file_name)
 		subprocess.call([g_q1_pic_to_tga_executable, "-i", file_path_in, "-o", file_path_base_out, "-p", palette_file_name])
+
+	generate_shader_file(output_dir, args.output_shader_file)
 
 	return 0
 
