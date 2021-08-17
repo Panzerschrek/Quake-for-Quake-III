@@ -104,6 +104,32 @@ shader_lava_template = """
 }
 """
 
+shader_lava_fullbright_template = """
+"textures/%(shader_name)"
+{
+	q3map_globaltexture
+	q3map_tessSize 96
+	surfaceparm nodlight
+	surfaceparm noimpact
+	surfaceparm nolightmap
+	surfaceparm nonsolid
+	surfaceparm trans
+	surfaceparm lava
+	cull disable
+	{
+		map "textures/%(file_name)"
+		tcmod turb 0 0.125 0.0 0.125
+		blendFunc GL_ONE GL_ZERO
+		rgbGen identity
+	}
+	{
+		map "textures/%(fullbrights_file_name)"
+		tcmod turb 0 0.125 0.0 0.125
+		blendFunc GL_ONE GL_ONE
+		rgbGen identity
+	}
+}
+"""
 shader_generic_turb_template = """
 "textures/%(shader_name)"
 {
@@ -176,7 +202,10 @@ def generate_shader_file(tga_textures_dir, out_shader_file):
 				elif file_name.find("SLIME") != -1:
 					shader = shader_slime_template.replace("%(shader_name)", file_name_without_extension).replace("%(file_name)", file_name)
 				elif file_name.find("LAVA") != -1:
-					shader = shader_lava_template.replace("%(shader_name)", file_name_without_extension).replace("%(file_name)", file_name)
+					if os.path.exists(os.path.join(tga_textures_dir, fullbrights_file_name)):
+						shader = shader_lava_fullbright_template.replace("%(shader_name)", file_name_without_extension).replace("%(file_name)", file_name).replace("%(fullbrights_file_name)", fullbrights_file_name)
+					else:
+						shader = shader_lava_template.replace("%(shader_name)", file_name_without_extension).replace("%(file_name)", file_name)
 				else:
 					shader = shader_generic_turb_template.replace("%(shader_name)", file_name_without_extension).replace("%(file_name)", file_name)
 			elif file_name.startswith("+"):
