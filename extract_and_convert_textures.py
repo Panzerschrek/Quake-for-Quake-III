@@ -34,8 +34,8 @@ def main():
 			continue
 
 		file_path_in = os.path.join(output_dir_intermediate, file_name)
-		file_path_out= os.path.join(output_dir, file_name + ".tga")
-		subprocess.call([g_q1_pic_to_tga_executable, "-i", file_path_in, "-o", file_path_out, "-p", palette_file_name])
+		file_path_base_out= os.path.join(output_dir, file_name)
+		subprocess.call([g_q1_pic_to_tga_executable, "-i", file_path_in, "-o", file_path_base_out, "-p", palette_file_name])
 
 	return 0
 

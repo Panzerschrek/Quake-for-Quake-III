@@ -17,7 +17,7 @@ void ReadFile(FILE& f, const uint64_t offset, const uint64_t size, void* const o
 int main(const int argc, const char* const argv[])
 {
 	std::string in_file_name;
-	std::string out_file_name;
+	std::string out_file_name_base;
 	std::string palette_file_name;
 	for(int i= 1; i < argc; ++i)
 	{
@@ -36,10 +36,10 @@ int main(const int argc, const char* const argv[])
 			++i;
 			if(i >= argc)
 			{
-				std::cerr << "Expected ouptut file after -o." << std::endl;
+				std::cerr << "Expected ouptut file name base after -o." << std::endl;
 				return -1;
 			}
-			out_file_name= argv[i];
+			out_file_name_base= argv[i];
 		}
 		else if(std::strcmp(argv[i], "-p") == 0)
 		{
@@ -63,7 +63,7 @@ int main(const int argc, const char* const argv[])
 		std::cerr << "No input file provided." << std::endl;
 		return -1;
 	}
-	if(out_file_name.empty())
+	if(out_file_name_base.empty())
 	{
 		std::cerr << "No output file provided." << std::endl;
 		return -1;
@@ -124,4 +124,35 @@ int main(const int argc, const char* const argv[])
 	}
 
 	// Save result TGA.
-	WriteTGA(out_file_name.c_str(), tmp_tex_data.data(), int(miptex->width), int(miptex->height));}
+	WriteTGA((out_file_name_base + ".tga").c_str(), tmp_tex_data.data(), int(miptex->width), int(miptex->height));
+
+	// Extract fullbright pixels.
+	unsigned int num_fullbright_pixels= 0;
+	for(unsigned int y= 0; y < miptex->height; ++y)
+	for(unsigned int x= 0; x < miptex->width ; ++x)
+	{
+		const unsigned int dst= x + y * miptex->width;
+		const unsigned int src= x + (miptex->height - 1 - y) * miptex->width;
+		const byte color_index= src_tex_data[src];
+		if (color_index < 256 - 16 * 2)
+		{
+			tmp_tex_data[ dst * 4     ]= 0;
+			tmp_tex_data[ dst * 4 + 1 ]= 0;
+			tmp_tex_data[ dst * 4 + 2 ]= 0;
+		}
+		else
+		{
+			++num_fullbright_pixels;
+			tmp_tex_data[ dst * 4     ]= palette[ color_index * 3    ];
+			tmp_tex_data[ dst * 4 + 1 ]= palette[ color_index * 3 + 1 ];
+			tmp_tex_data[ dst * 4 + 2 ]= palette[ color_index * 3 + 2 ];
+		}
+		tmp_tex_data[ dst * 4 + 3 ]= 255;
+	}
+
+	if (num_fullbright_pixels > 0)
+	{
+		// Save result TGA of fullbright image.
+		WriteTGA((out_file_name_base + "_fb.tga").c_str(), tmp_tex_data.data(), int(miptex->width), int(miptex->height));
+	}
+}
