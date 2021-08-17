@@ -126,7 +126,7 @@ int main(const int argc, const char* const argv[])
 	// Save result TGA.
 	WriteTGA((out_file_name_base + ".tga").c_str(), tmp_tex_data.data(), int(miptex->width), int(miptex->height));
 
-	// Extract fullbright pixels.
+	// Extract fullbright pixels. use alpha = 0 for regular pixels, alpha = 1 for fullbright pixels.
 	unsigned int num_fullbright_pixels= 0;
 	for(unsigned int y= 0; y < miptex->height; ++y)
 	for(unsigned int x= 0; x < miptex->width ; ++x)
@@ -139,6 +139,7 @@ int main(const int argc, const char* const argv[])
 			tmp_tex_data[ dst * 4     ]= 0;
 			tmp_tex_data[ dst * 4 + 1 ]= 0;
 			tmp_tex_data[ dst * 4 + 2 ]= 0;
+			tmp_tex_data[ dst * 4 + 3 ]= 0;
 		}
 		else
 		{
@@ -146,8 +147,8 @@ int main(const int argc, const char* const argv[])
 			tmp_tex_data[ dst * 4     ]= palette[ color_index * 3    ];
 			tmp_tex_data[ dst * 4 + 1 ]= palette[ color_index * 3 + 1 ];
 			tmp_tex_data[ dst * 4 + 2 ]= palette[ color_index * 3 + 2 ];
+			tmp_tex_data[ dst * 4 + 3 ]= 255;
 		}
-		tmp_tex_data[ dst * 4 + 3 ]= 255;
 	}
 
 	if (num_fullbright_pixels > 0)

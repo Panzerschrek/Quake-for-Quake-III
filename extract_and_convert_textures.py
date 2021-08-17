@@ -37,7 +37,7 @@ shader_with_fullbrights_template = """
 	}
 	{
 		map "textures/%(fullbrights_file_name)"
-		blendFunc GL_ONE GL_ONE
+		blendFunc GL_SRC_ALPHA GL_ONE_MINUS_SRC_ALPHA
 		rgbGen identity
 	}
 }"""
@@ -147,7 +147,7 @@ shader_animated_fullbright_template = """
 	}
 	{
 		animMap 2 %(fullbright_files_list)
-		blendFunc GL_ONE GL_ONE
+		blendFunc GL_SRC_ALPHA GL_ONE_MINUS_SRC_ALPHA
 		rgbGen identity
 	}
 }
