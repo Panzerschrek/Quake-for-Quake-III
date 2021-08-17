@@ -37,7 +37,7 @@ shader_with_fullbrights_template = """
 	}
 	{
 		map "textures/%(fullbrights_file_name)"
-		blendFunc GL_SRC_ALPHA GL_ONE_MINUS_SRC_ALPHA
+		blendFunc GL_ONE GL_ONE
 		rgbGen identity
 	}
 }"""
@@ -147,7 +147,7 @@ shader_animated_fullbright_template = """
 	}
 	{
 		animMap 2 %(fullbright_files_list)
-		blendFunc GL_SRC_ALPHA GL_ONE_MINUS_SRC_ALPHA
+		blendFunc GL_ONE GL_ONE
 		rgbGen identity
 	}
 }
@@ -184,17 +184,21 @@ def generate_shader_file(tga_textures_dir, out_shader_file):
 
 				frames_list = []
 				fulbright_frames_list = []
+				have_any_fullbright_frame = False
 				for i in range(10):
 					frame_file_name = "+" + frame_base_symbols[i] + file_name[2:]
+
 					if os.path.exists(os.path.join(tga_textures_dir, frame_file_name)):
 						frames_list.append(frame_file_name)
-					fullbright_frame_file_name = "+" + str(i) + file_name_without_extension[2:] + "_fb.tga"
-					if os.path.exists(os.path.join(tga_textures_dir, fullbright_frame_file_name)):
-						fulbright_frames_list.append(fullbright_frame_file_name)
+						fullbright_frame_file_name = "+" + str(i) + file_name_without_extension[2:] + "_fb.tga"
+						if os.path.exists(os.path.join(tga_textures_dir, fullbright_frame_file_name)):
+							fulbright_frames_list.append(fullbright_frame_file_name)
+							have_any_fullbright_frame = True
+						else:
+							fulbright_frames_list.append("blackimage.tha") # This frame have no fullbright image, so, replace it with dummy black image.
 
-				# TODO - replace missing fullbright frames with black image
 				if len(frames_list) > 1:
-					if len(fulbright_frames_list) == len(frames_list):
+					if have_any_fullbright_frame:
 						# Generate animation with both regular and fullbright frames
 						files_list = []
 						for frame in frames_list:

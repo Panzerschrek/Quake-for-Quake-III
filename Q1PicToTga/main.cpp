@@ -109,24 +109,11 @@ int main(const int argc, const char* const argv[])
 	std::vector<byte> tmp_tex_data;
 	tmp_tex_data.resize(miptex->width * miptex->height * 4);
 
+	const byte c_first_fullbright_color = 256 - 16 * 2;
+
 	const byte* const src_tex_data= reinterpret_cast<const byte*>(miptex) + miptex->offsets[0];
 	// Flip image to convert to OpenGL coordinate system (used in Q3).
-	for(unsigned int y= 0; y < miptex->height; ++y)
-	for(unsigned int x= 0; x < miptex->width ; ++x)
-	{
-		const unsigned int dst= x + y * miptex->width;
-		const unsigned int src= x + (miptex->height - 1 - y) * miptex->width;
-		const byte color_index= src_tex_data[src];
-		tmp_tex_data[ dst * 4     ]= palette[ color_index * 3    ];
-		tmp_tex_data[ dst * 4 + 1 ]= palette[ color_index * 3 + 1 ];
-		tmp_tex_data[ dst * 4 + 2 ]= palette[ color_index * 3 + 2 ];
-		tmp_tex_data[ dst * 4 + 3 ]= 255;
-	}
-
-	// Save result TGA.
-	WriteTGA((out_file_name_base + ".tga").c_str(), tmp_tex_data.data(), int(miptex->width), int(miptex->height));
-
-	// Extract fullbright pixels. use alpha = 0 for regular pixels, alpha = 1 for fullbright pixels.
+	// Make non-fullbright pixels black.
 	unsigned int num_fullbright_pixels= 0;
 	for(unsigned int y= 0; y < miptex->height; ++y)
 	for(unsigned int x= 0; x < miptex->width ; ++x)
@@ -134,7 +121,36 @@ int main(const int argc, const char* const argv[])
 		const unsigned int dst= x + y * miptex->width;
 		const unsigned int src= x + (miptex->height - 1 - y) * miptex->width;
 		const byte color_index= src_tex_data[src];
-		if (color_index < 256 - 16 * 2)
+		if (color_index < c_first_fullbright_color)
+		{
+			tmp_tex_data[ dst * 4     ]= palette[ color_index * 3    ];
+			tmp_tex_data[ dst * 4 + 1 ]= palette[ color_index * 3 + 1 ];
+			tmp_tex_data[ dst * 4 + 2 ]= palette[ color_index * 3 + 2 ];
+		}
+		else
+		{
+			++num_fullbright_pixels;
+			tmp_tex_data[ dst * 4     ]= 0;
+			tmp_tex_data[ dst * 4 + 1 ]= 0;
+			tmp_tex_data[ dst * 4 + 2 ]= 0;
+		}
+		tmp_tex_data[ dst * 4 + 3 ]= 255;
+	}
+
+	// Save result TGA.
+	WriteTGA((out_file_name_base + ".tga").c_str(), tmp_tex_data.data(), int(miptex->width), int(miptex->height));
+
+	if (num_fullbright_pixels == 0)
+		return 0;
+
+	// Extract fullbright pixels. use alpha = 0 for regular pixels, alpha = 1 for fullbright pixels.
+	for(unsigned int y= 0; y < miptex->height; ++y)
+	for(unsigned int x= 0; x < miptex->width ; ++x)
+	{
+		const unsigned int dst= x + y * miptex->width;
+		const unsigned int src= x + (miptex->height - 1 - y) * miptex->width;
+		const byte color_index= src_tex_data[src];
+		if (color_index < c_first_fullbright_color)
 		{
 			tmp_tex_data[ dst * 4     ]= 0;
 			tmp_tex_data[ dst * 4 + 1 ]= 0;
@@ -143,7 +159,6 @@ int main(const int argc, const char* const argv[])
 		}
 		else
 		{
-			++num_fullbright_pixels;
 			tmp_tex_data[ dst * 4     ]= palette[ color_index * 3    ];
 			tmp_tex_data[ dst * 4 + 1 ]= palette[ color_index * 3 + 1 ];
 			tmp_tex_data[ dst * 4 + 2 ]= palette[ color_index * 3 + 2 ];
@@ -151,9 +166,6 @@ int main(const int argc, const char* const argv[])
 		}
 	}
 
-	if (num_fullbright_pixels > 0)
-	{
-		// Save result TGA of fullbright image.
-		WriteTGA((out_file_name_base + "_fb.tga").c_str(), tmp_tex_data.data(), int(miptex->width), int(miptex->height));
-	}
+	// Save result TGA of fullbright image.
+	WriteTGA((out_file_name_base + "_fb.tga").c_str(), tmp_tex_data.data(), int(miptex->width), int(miptex->height));
 }
