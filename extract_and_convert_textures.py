@@ -61,6 +61,63 @@ shader_water_template = """
 	}
 }"""
 
+shader_slime_template = """
+"textures/%(shader_name)"
+{
+	q3map_globaltexture
+	q3map_tessSize 96
+	surfaceparm noimpact
+	surfaceparm nolightmap
+	surfaceparm nonsolid
+	surfaceparm trans
+	surfaceparm slime
+	cull disable
+	{
+		map "textures/%(file_name)"
+		tcmod turb 0 0.125 0.0 0.125
+		blendFunc GL_ONE GL_ZERO
+		rgbGen identity
+	}
+}"""
+
+shader_lava_template = """
+"textures/%(shader_name)"
+{
+	q3map_globaltexture
+	q3map_tessSize 96
+	surfaceparm nodlight
+	surfaceparm noimpact
+	surfaceparm nolightmap
+	surfaceparm nonsolid
+	surfaceparm trans
+	surfaceparm lava
+	cull disable
+	{
+		map "textures/%(file_name)"
+		tcmod turb 0 0.125 0.0 0.125
+		blendFunc GL_ONE GL_ZERO
+		rgbGen identity
+	}
+}"""
+
+shader_generic_turb_template = """
+"textures/%(shader_name)"
+{
+	q3map_globaltexture
+	q3map_tessSize 96
+	surfaceparm noimpact
+	surfaceparm nolightmap
+	surfaceparm nonsolid
+	surfaceparm trans
+	cull disable
+	{
+		map "textures/%(file_name)"
+		tcmod turb 0 0.125 0.0 0.125
+		blendFunc GL_ONE GL_ZERO
+		rgbGen identity
+	}
+}"""
+
 def generate_shader_file(tga_textures_dir, out_shader_file):
 
 	with open(out_shader_file, mode = "w") as f:
@@ -71,8 +128,15 @@ def generate_shader_file(tga_textures_dir, out_shader_file):
 
 			if file_name.endswith("_fb.tga") :
 				continue # ignore fullbright textures
-			elif file_name.startswith("*") and file_name.find("WATER") != -1:
-				shader_descr = shader_water_template.replace("%(shader_name)", file_name_without_extension).replace("%(file_name)", file_name)
+			elif file_name.startswith("*"):
+				if file_name.find("WATER") != -1:
+					shader_descr = shader_water_template.replace("%(shader_name)", file_name_without_extension).replace("%(file_name)", file_name)
+				elif file_name.find("SLIME") != -1:
+					shader_descr = shader_slime_template.replace("%(shader_name)", file_name_without_extension).replace("%(file_name)", file_name)
+				elif file_name.find("LAVA") != -1:
+					shader_descr = shader_lava_template.replace("%(shader_name)", file_name_without_extension).replace("%(file_name)", file_name)
+				else:
+					shader_descr = shader_generic_turb_template.replace("%(shader_name)", file_name_without_extension).replace("%(file_name)", file_name)
 			elif os.path.exists(os.path.join(tga_textures_dir, fullbrights_file_name)):
 				shader_descr = shader_with_fullbrights_template.replace("%(shader_name)", file_name_without_extension).replace("%(file_name)", file_name).replace("%(fullbrights_file_name)", fullbrights_file_name)
 			else:
