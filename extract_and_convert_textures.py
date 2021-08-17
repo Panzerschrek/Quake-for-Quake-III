@@ -137,6 +137,8 @@ def generate_shader_file(tga_textures_dir, out_shader_file):
 					shader_descr = shader_lava_template.replace("%(shader_name)", file_name_without_extension).replace("%(file_name)", file_name)
 				else:
 					shader_descr = shader_generic_turb_template.replace("%(shader_name)", file_name_without_extension).replace("%(file_name)", file_name)
+			elif file_name.startswith("SKY"): # ignore skies for now
+				continue
 			elif os.path.exists(os.path.join(tga_textures_dir, fullbrights_file_name)):
 				shader_descr = shader_with_fullbrights_template.replace("%(shader_name)", file_name_without_extension).replace("%(file_name)", file_name).replace("%(fullbrights_file_name)", fullbrights_file_name)
 			else:
