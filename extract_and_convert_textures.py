@@ -212,10 +212,11 @@ def generate_shader_file(tga_textures_dir, out_shader_file):
 					f.write(shader_descr + "\n")
 					continue
 
-			# Not a sky, turb or animation - try to create shader wit honly fullbright component
-			if os.path.exists(os.path.join(tga_textures_dir, fullbrights_file_name)):
+			# Not a sky, turb or animation - try to create shader with only fullbright component.
+			if shader_descr == "" and os.path.exists(os.path.join(tga_textures_dir, fullbrights_file_name)):
 				shader_descr = shader_with_fullbrights_template.replace("%(shader_name)", file_name_without_extension).replace("%(file_name)", file_name).replace("%(fullbrights_file_name)", fullbrights_file_name)
 
+			# Do not create shader for regular textures without turb, animation, fullbright pixels.
 			if shader_descr != "":
 				f.write(shader_descr + "\n")
 
