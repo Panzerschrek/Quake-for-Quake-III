@@ -118,6 +118,40 @@ shader_generic_turb_template = """
 	}
 }"""
 
+shader_animated_template = """
+"textures/%(shader_name)"
+{
+	{
+		map $lightmap
+		rgbGen identity
+	}
+	{
+		animMap 2 %(files_list)
+		blendFunc GL_DST_COLOR GL_ZERO
+		rgbGen identity
+	}
+}
+"""
+
+shader_animated_fullbright_template = """
+"textures/%(shader_name)"
+{
+	{
+		map $lightmap
+		rgbGen identity
+	}
+	{
+		animMap 2 %(files_list)
+		blendFunc GL_DST_COLOR GL_ZERO
+		rgbGen identity
+	}
+	{
+		animMap 2 %(fullbright_files_list)
+		blendFunc GL_ONE GL_ONE
+		rgbGen identity
+	}
+}
+"""
 def generate_shader_file(tga_textures_dir, out_shader_file):
 
 	with open(out_shader_file, mode = "w") as f:
@@ -126,8 +160,11 @@ def generate_shader_file(tga_textures_dir, out_shader_file):
 			file_name_without_extension = file_name.replace(".tga", "")
 			fullbrights_file_name = file_name_without_extension + "_fb.tga"
 
-			if file_name.endswith("_fb.tga") :
+			shader_descr = ""
+			if file_name.endswith("_fb.tga"):
 				continue # ignore fullbright textures
+			elif file_name.startswith("SKY"): # ignore skies for now
+				continue
 			elif file_name.startswith("*"):
 				if file_name.find("WATER") != -1:
 					shader_descr = shader_water_template.replace("%(shader_name)", file_name_without_extension).replace("%(file_name)", file_name)
@@ -137,15 +174,44 @@ def generate_shader_file(tga_textures_dir, out_shader_file):
 					shader_descr = shader_lava_template.replace("%(shader_name)", file_name_without_extension).replace("%(file_name)", file_name)
 				else:
 					shader_descr = shader_generic_turb_template.replace("%(shader_name)", file_name_without_extension).replace("%(file_name)", file_name)
-			elif file_name.startswith("SKY"): # ignore skies for now
-				continue
-			elif os.path.exists(os.path.join(tga_textures_dir, fullbrights_file_name)):
-				shader_descr = shader_with_fullbrights_template.replace("%(shader_name)", file_name_without_extension).replace("%(file_name)", file_name).replace("%(fullbrights_file_name)", fullbrights_file_name)
-			else:
-				continue # Ignore regular textures without special effects and fullbrights
-			#	shader_descr = shader_base_template.replace("%(shader_name)", file_name_without_extension).replace("%(file_name)", file_name)
+			elif file_name.startswith("+"):
 
-			f.write(shader_descr + "\n")
+				# animated base texture
+				frames_list = []
+				fulbright_frames_list = []
+				for i in range(10):
+					frame_file_name = "+" + str(i) + file_name[2:]
+					if os.path.exists(os.path.join(tga_textures_dir, frame_file_name)):
+						frames_list.append(frame_file_name)
+					fullbright_frame_file_name = "+" + str(i) + file_name_without_extension[2:] + "_fb.tga"
+					if os.path.exists(os.path.join(tga_textures_dir, fullbright_frame_file_name)):
+						fulbright_frames_list.append(fullbright_frame_file_name)
+
+				if len(frames_list) > 1:
+					if len(fulbright_frames_list) == len(frames_list):
+						# Generate animation with both regular and fullbright frames
+						files_list = []
+						for frame in frames_list:
+							files_list.append("\"textures/" + frame + "\"")
+						fullbright_files_list = []
+						for frame in fulbright_frames_list:
+							fullbright_files_list.append("\"textures/" + frame + "\"")
+						shader_descr = shader_animated_fullbright_template.replace("%(shader_name)", file_name_without_extension).replace("%(files_list)", " ".join(files_list)).replace("%(fullbright_files_list)", " ".join(fullbright_files_list))
+					else:
+						# Generate regular animation
+						files_list = []
+						for frame in frames_list:
+							files_list.append("\"textures/" + frame + "\"")
+						shader_descr = shader_animated_template.replace("%(shader_name)", file_name_without_extension).replace("%(files_list)", " ".join(files_list))
+					f.write(shader_descr + "\n")
+					continue
+
+			# Not a sky, turb or animation - try to create shader wit honly fullbright component
+			if os.path.exists(os.path.join(tga_textures_dir, fullbrights_file_name)):
+				shader_descr = shader_with_fullbrights_template.replace("%(shader_name)", file_name_without_extension).replace("%(file_name)", file_name).replace("%(fullbrights_file_name)", fullbrights_file_name)
+
+			if shader_descr != "":
+				f.write(shader_descr + "\n")
 
 
 def main():
