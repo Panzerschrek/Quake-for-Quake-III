@@ -229,7 +229,7 @@ def generate_shader_file(tga_textures_dir, out_shader_file):
 							fulbright_frames_list.append(fullbright_frame_file_name)
 							have_any_fullbright_frame = True
 						else:
-							fulbright_frames_list.append("blackimage.tha") # This frame have no fullbright image, so, replace it with dummy black image.
+							fulbright_frames_list.append("blackimage.tga") # This frame have no fullbright image, so, replace it with dummy black image.
 
 				if len(frames_list) > 1:
 					if have_any_fullbright_frame:
