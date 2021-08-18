@@ -141,41 +141,6 @@ shader_generic_turb_template = """
 }
 """
 
-shader_animated_template = """
-"textures/%(shader_name)"
-{
-	{
-		map $lightmap
-		rgbGen identity
-	}
-	{
-		animMap 2 %(files_list)
-		blendFunc GL_DST_COLOR GL_ZERO
-		rgbGen identity
-	}
-}
-"""
-
-shader_animated_fullbright_template = """
-"textures/%(shader_name)"
-{
-	{
-		map $lightmap
-		rgbGen identity
-	}
-	{
-		animMap 2 %(files_list)
-		blendFunc GL_DST_COLOR GL_ZERO
-		rgbGen identity
-	}
-	{
-		animMap 2 %(fullbright_files_list)
-		blendFunc GL_ONE GL_ONE
-		rgbGen identity
-	}
-}
-"""
-
 shader_for_models_with_fullbrights_template = """
 "textures/%(shader_name)"
 {
@@ -219,42 +184,108 @@ def generate_shader_file(tga_textures_dir, out_shader_file):
 			elif file_name.startswith("+"):
 				# animated texture
 
-				if file_name[1] >= '0' and file_name[1] <= '9':
-					frame_base_symbols = "0123456789"
-				else:
-					frame_base_symbols = "ABCDEFGHIJ"
+				seq_symbols = "0123456789"
+				alt_seq_symbols = "ABCDEFGHIJ"
 
 				frames_list = []
 				fulbright_frames_list = []
 				have_any_fullbright_frame = False
+				alternative_frames_list = []
+				alternative_fulbright_frames_list = []
+				have_any_alternative_fullbright_frame = False
 				for i in range(10):
-					frame_file_name = "+" + frame_base_symbols[i] + file_name[2:]
+					frame_file_name = "+" + seq_symbols[i] + file_name[2:]
 
 					if os.path.exists(os.path.join(tga_textures_dir, frame_file_name)):
 						frames_list.append(frame_file_name)
-						fullbright_frame_file_name = "+" + str(i) + file_name_without_extension[2:] + "_fb.tga"
+						fullbright_frame_file_name = "+" + seq_symbols[i] + file_name_without_extension[2:] + "_fb.tga"
 						if os.path.exists(os.path.join(tga_textures_dir, fullbright_frame_file_name)):
 							fulbright_frames_list.append(fullbright_frame_file_name)
 							have_any_fullbright_frame = True
 						else:
 							fulbright_frames_list.append("blackimage.tga") # This frame have no fullbright image, so, replace it with dummy black image.
 
-				if len(frames_list) > 1:
-					if have_any_fullbright_frame:
-						# Generate animation with both regular and fullbright frames
-						files_list = []
-						for frame in frames_list:
-							files_list.append("\"textures/" + frame + "\"")
-						fullbright_files_list = []
-						for frame in fulbright_frames_list:
-							fullbright_files_list.append("\"textures/" + frame + "\"")
-						shader = shader_animated_fullbright_template.replace("%(shader_name)", file_name_without_extension).replace("%(files_list)", " ".join(files_list)).replace("%(fullbright_files_list)", " ".join(fullbright_files_list))
+					alternative_frame_file_name = "+" + alt_seq_symbols[i] + file_name[2:]
+
+					if os.path.exists(os.path.join(tga_textures_dir, alternative_frame_file_name)):
+						alternative_frames_list.append(alternative_frame_file_name)
+						fullbright_alternative_frame_file_name = "+" + alt_seq_symbols[i] + file_name_without_extension[2:] + "_fb.tga"
+						if os.path.exists(os.path.join(tga_textures_dir, fullbright_alternative_frame_file_name)):
+							alternative_fulbright_frames_list.append(fullbright_alternative_frame_file_name)
+							have_any_alternative_fullbright_frame = True
+						else:
+							alternative_fulbright_frames_list.append("blackimage.tga") # This frame have no fullbright image, so, replace it with dummy black image.
+
+				shader = "\n\"textures/" + file_name_without_extension + "\"\n"
+				shader += "{\n"
+
+				if len(alternative_frames_list) > 0:
+					# Use entity color to swith between regular and alternative textures.
+
+					# Regular frames
+					if len(frames_list) == 1:
+						shader += "\t{\n\t\tmap \"textures/" + frames_list[0] + "\""
 					else:
-						# Generate regular animation
-						files_list = []
+						shader += "\t{\n\t\tanimMap 2"
 						for frame in frames_list:
-							files_list.append("\"textures/" + frame + "\"")
-						shader = shader_animated_template.replace("%(shader_name)", file_name_without_extension).replace("%(files_list)", " ".join(files_list))
+							shader+= " \"textures/" + frame + "\""
+					shader += "\n\t\trgbgen entity\n\t}\n"
+
+					# Alternative frames
+					if len(alternative_frames_list) == 1:
+						shader += "\t{\n\t\tmap \"textures/" + alternative_frames_list[0] + "\""
+					else:
+						shader += "\t{\n\t\tanimMap 2"
+						for frame in alternative_frames_list:
+							shader+= " \"textures/" + frame + "\""
+					shader += "\n\t\trgbgen oneminusentity\n\t\tblendFunc GL_ONE GL_ONE\n\t}\n"
+
+					# Lightmap
+					shader += "\t{\n\t\tmap $lightmap\n\t\tblendFunc GL_DST_COLOR GL_ZERO\n\t}\n"
+
+					#fullbrights
+					if have_any_fullbright_frame:
+						if len(fulbright_frames_list) == 1:
+							shader += "\t{\n\t\tmap \"textures/" + fulbright_frames_list[0] + "\""
+						else:
+							shader += "\t{\n\t\tanimMap 2"
+							for frame in fulbright_frames_list:
+								shader+= " \"textures/" + frame + "\""
+						shader += "\n\t\trgbgen entity\n\t\tblendFunc GL_ONE GL_ONE\n\t}\n"
+
+					# Alternative fullbrights
+					if have_any_alternative_fullbright_frame:
+						if len(alternative_fulbright_frames_list) == 1:
+							shader += "\t{\n\t\tmap \"textures/" + alternative_fulbright_frames_list[0] + "\""
+						else:
+							shader += "\t{\n\t\tanimMap 2"
+							for frame in alternative_fulbright_frames_list:
+								shader+= " \"textures/" + frame + "\""
+						shader += "\n\t\trgbgen oneminusentity\n\t\tblendFunc GL_ONE GL_ONE\n\t}\n"
+
+				else:
+					shader += "\t{\n\t\tmap $lightmap\n\t}\n"
+					if len(frames_list) == 1:
+						shader += "\t{\n\t\tmap \"textures/" + frames_list[0] + "\""
+					else:
+						shader += "\t{\n\t\tanimMap 2"
+						for frame in frames_list:
+							shader+= " \"textures/" + frame + "\""
+					shader += "\n\t\tblendFunc GL_DST_COLOR GL_ZERO\n\t}\n"
+
+					if have_any_fullbright_frame:
+						if len(fulbright_frames_list) == 1:
+							shader += "\t{\n\t\tmap \"textures/" + fulbright_frames_list[0] + "\""
+						else:
+							shader += "\t{\n\t\tanimMap 2"
+							for frame in fulbright_frames_list:
+								shader+= " \"textures/" + frame + "\""
+						shader += "\n\t\tblendFunc GL_ONE GL_ONE\n\t}\n"
+
+				shader += "}\n"
+
+				if len(frames_list) <= 1 and len(alternative_frames_list) == 0 and not have_any_fullbright_frame and not have_any_alternative_fullbright_frame:
+					shader = "" # Reset shader if it is not animated, with alternatives or with fullbrights.
 
 			# Not a sky, turb or animation - try to create shader with only fullbright component.
 			if shader == "" and os.path.exists(os.path.join(tga_textures_dir, fullbrights_file_name)):

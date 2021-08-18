@@ -232,7 +232,27 @@ void CG_AddEntities()
 		AnglesToAxis( anglesCorrected, out_ent.axis );
 
 		if ( in_ent_state->solid == SOLID_BMODEL )
+		{
 			out_ent.hModel = cgs.inlineDrawModel[modelindex];
+
+			// Use special shader for textures like buttons with two layers modulated by "entity"/"1-entity" color.
+			// Such approach allows us to switch between two sets of textures on brush model.
+
+			if (in_ent->frame != 0) // Non-zero frame is a flag for alternative textures.
+			{
+				out_ent.shaderRGBA[0] = 0;
+				out_ent.shaderRGBA[1] = 0;
+				out_ent.shaderRGBA[2] = 0;
+				out_ent.shaderRGBA[3] = 0;
+			}
+			else
+			{
+				out_ent.shaderRGBA[0] = 255;
+				out_ent.shaderRGBA[1] = 255;
+				out_ent.shaderRGBA[2] = 255;
+				out_ent.shaderRGBA[3] = 255;
+			}
+		}
 		else
 		{
 			out_ent.hModel= cgs.gameModels[modelindex].handle;
