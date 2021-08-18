@@ -29,6 +29,7 @@ typedef struct image_rgba_s
 {
 	int width, height;
 	unsigned char *pixels;
+	int num_nonempty_pixels;
 } image_rgba_t;
 
 /* 8-bit (256 colour) paletted image */
