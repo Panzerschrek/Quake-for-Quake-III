@@ -1010,6 +1010,17 @@ void Sbar_Draw (void)
 	const int item_width = 16;
 	const int item_height = 16;
 
+	float color[4];
+	color[0]= 1.0f;
+	color[1]= 1.0f;
+	color[2]= 1.0f;
+	color[3]= cg_sbar_alpha.value;
+	if (color[3] < 0.1f)
+		color[3]= 0.1f;
+	if (color[3] > 1.0f)
+		color[3]= 1.0f;
+	trap_R_SetColor(color);
+
 	Sbar_CalculateScale();
 	Sbar_CalculateLines();
 
@@ -1118,6 +1129,8 @@ void Sbar_Draw (void)
 		if (cg.gametype == GAME_DEATHMATCH)
 			Sbar_MiniDeathmatchOverlay ();
 	}
+
+	trap_R_SetColor(NULL);
 }
 
 //=============================================================================

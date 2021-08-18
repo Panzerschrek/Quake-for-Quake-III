@@ -113,6 +113,7 @@ vmCvar_t	cg_timescaleFadeSpeed;
 vmCvar_t	cg_timescale;
 vmCvar_t	cg_sbar_scale;
 vmCvar_t	cg_sbar_lines;
+vmCvar_t	cg_sbar_alpha;
 
 vmCvar_t	fov;
 vmCvar_t	teamplay; // PANZER TODO - register it?
@@ -143,6 +144,7 @@ static cvarTable_t cvarTable[] = {
 	{ &cg_timescale, "timescale", "1", 0},
 	{ &cg_sbar_scale, "cg_sbar_scale", "1", CVAR_ARCHIVE },
 	{ &cg_sbar_lines, "cg_sbar_lines", "2", CVAR_ARCHIVE },
+	{ &cg_sbar_alpha, "cg_sbar_alpha", "1", CVAR_ARCHIVE },
 	{ &fov, "fov", "90", CVAR_ARCHIVE },
 	{ &r_particle_size, "r_particle_size", "2", CVAR_ARCHIVE },
 	{ &sv_gravity, "sv_gravity", "800",  CVAR_ARCHIVE }, // PANZER TODO - maybe read this from server info?
