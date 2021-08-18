@@ -66,7 +66,10 @@ void ClientThink_real( client_t *client ) {
 	// read buttons
 	sv_player->v.button0 = ucmd->buttons & BUTTON_ATTACK;
 	sv_player->v.button2 = ucmd->upmove > 0;
-	sv_player->v.impulse = ucmd->weapon;
+
+	// Do not reset weapon select flag - this should do QuakeC code on next physics tick.
+	if (ucmd->weapon != 0)
+		sv_player->v.impulse = ucmd->weapon;
 
 	if( client->ps.pm_type == PM_NORMAL ) // Do not rotate camera in intermission mode.
 	{

@@ -555,6 +555,8 @@ void G_RunFrame( int levelTime ) {
 		effects = edict->v.effects;
 		if( edict->s.event == 0 )
 			edict->s.eFlags = effects; // Use "eFlags" for effects
+		// PANZER TODO - it's possible to lost muzzle flash effect if cleit nupdate frequency i lower than server update frequency.
+		// So, we need to handle this somehow.
 		edict->v.effects = effects & ~EF_MUZZLEFLASH; // We must always clear muzzleflash.
 
 		// Process generated ambient sound entity specially. Take fields from "v" struct and put them into "s" struct.
