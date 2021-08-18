@@ -2,6 +2,7 @@ import argparse
 import subprocess
 import os
 import sys
+from shaders import generate_models_shader_file
 
 
 g_models_converter_executable= "qwalk_converter"
@@ -10,6 +11,7 @@ def main():
 	parser= argparse.ArgumentParser(description= 'Converter script.')
 	parser.add_argument("--input-dir", help= "input directory with Quake models", type=str)
 	parser.add_argument("--output-dir", help= "output directory for models/textures", type=str)
+	parser.add_argument("--output-shader-file", help= "output shader file", type=str)
 
 	args= parser.parse_args()
 
@@ -25,6 +27,8 @@ def main():
 		out_file = os.path.join(output_dir, file_name.replace(".mdl", ".md3"))
 		out_texture_file = os.path.join(textures_dir, file_name.replace(".mdl", ""))
 		subprocess.call([g_models_converter_executable, "-i", in_file, "-outtex", out_texture_file, "-force", out_file])
+
+	generate_models_shader_file(textures_dir, args.output_shader_file)
 
 	return 0
 

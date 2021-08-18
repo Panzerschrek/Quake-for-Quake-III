@@ -339,7 +339,7 @@ bool_t model_md3_save(const model_t *model, xbuf_t *xbuf, char **out_error)
 {
 	md3_header_t header;
 	const frameinfo_t *frameinfo;
-	char **skinfilenames;
+	char **skinshaders;
 	const tag_t *tag;
 	const mesh_t *mesh;
 	int i, j, k, m;
@@ -354,11 +354,20 @@ bool_t model_md3_save(const model_t *model, xbuf_t *xbuf, char **out_error)
 	header.num_skins  = LittleLong(model->num_skins);
 
 /* create 32-bit skins and save them to TGA files */
-	skinfilenames = (char**)qmalloc(sizeof(char*) * model->num_skins);
+	skinshaders = (char**)qmalloc(sizeof(char*) * model->num_skins);
 	for (i = 0; i < model->num_skins; i++)
 	{
-		skinfilenames[i] = model->num_skins == 1 ? msprintf("%s.tga", g_skin_base_name) : msprintf("%s%d.tga", g_skin_base_name, i);
-		image_save(skinfilenames[i], model->meshes[0].skins[i].components[SKIN_DIFFUSE], out_error);
+		skinshaders[i] = model->num_skins == 1 ? msprintf("%s", g_skin_base_name) : msprintf("%s%d", g_skin_base_name, i);
+
+		char skin_image[1024];
+		snprintf(skin_image, sizeof(skin_image), "%s.tga", skinshaders[i]);
+		image_save(skin_image, model->meshes[0].skins[i].components[SKIN_DIFFUSE], out_error);
+
+		if (model->meshes[0].skins[i].components[SKIN_FULLBRIGHT]->num_nonempty_pixels > 0)
+		{
+			snprintf(skin_image, sizeof(skin_image), "%s_fb.tga", skinshaders[i]);
+			image_save(skin_image, model->meshes[0].skins[i].components[SKIN_FULLBRIGHT], out_error);
+		}
 	}
 
 /* calculate lump offsets */
@@ -499,7 +508,7 @@ bool_t model_md3_save(const model_t *model, xbuf_t *xbuf, char **out_error)
 		for (j = 0; j < model->total_skins; j++)
 		{
 			md3_shader_t md3_shader;
-			strcpy(md3_shader.name, skinfilenames[j]);
+			strcpy(md3_shader.name, skinshaders[j]);
 			xbuf_write_data(xbuf, sizeof(md3_shader), &md3_shader);
 		}
 
