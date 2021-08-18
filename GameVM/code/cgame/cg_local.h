@@ -270,6 +270,7 @@ extern	vmCvar_t		cg_sbar_scale;
 extern	vmCvar_t		cg_sbar_lines;
 
 extern	vmCvar_t	teamplay;
+extern	vmCvar_t	fov;
 
 // Size of particle in world space
 extern	vmCvar_t r_particle_size;

@@ -115,7 +115,17 @@ static void CG_CalcFov( void ) {
 	float	x;
 	float	fov_x, fov_y;
 
-	fov_x = 90;
+	if (fov.value < 10)
+	{
+		fov.value = 10;
+		trap_Cvar_Set ("fov","10");
+	}
+	if (fov.value > 170)
+	{
+		fov.value = 170;
+		trap_Cvar_Set ("fov","170");
+	}
+	fov_x = fov.value;
 
 	x = cg.refdef.width / tan( fov_x / 360 * M_PI );
 	fov_y = atan2( cg.refdef.height, x );
