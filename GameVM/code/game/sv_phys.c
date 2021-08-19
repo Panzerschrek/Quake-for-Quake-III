@@ -797,10 +797,8 @@ void SV_WalkMove (edict_t *ent)
 	if (sv_nostep.value)
 		return;
 	
-#if 0 // PANZER TODO - fix this
 	if ( (int)sv_player->v.flags & FL_WATERJUMP )
 		return;
-#endif
 
 	VectorCopy (ent->v.origin, nosteporg);
 	VectorCopy (ent->v.velocity, nostepvel);

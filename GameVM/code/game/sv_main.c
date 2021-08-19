@@ -369,7 +369,7 @@ static void SV_ProcessBufferMessages(sizebuf_t* buf, int clientNum /* -1 for glo
 			break;
 
 		case svc_damage:
-			// PANZER TODO - transmit damage.
+			// Actual damage transmitted in other way.
 			MSG_ReadByte ();
 			MSG_ReadByte ();
 			MSG_ReadCoord ();

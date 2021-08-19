@@ -295,8 +295,6 @@ void PF_sprint (void)
 	char		*s;
 	int			entnum;
 
-	// PANZER TODO - create separate function for client text messages printing and call it from here and from messages processing code.
-
 	entnum = G_EDICTNUM(OFS_PARM0);
 	s = PF_VarString(1);
 	

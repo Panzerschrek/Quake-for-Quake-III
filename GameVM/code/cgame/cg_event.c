@@ -88,8 +88,6 @@ static void CG_ProcessTEnt( entityState_t *ent )
 	int colorStart, colorLength;
 	dlight_t *dl;
 
-	// PANZER TODO - generate dynamic lights.
-
 	switch(ent->eType)
 	{
 	case TE_WIZSPIKE:			// spike hitting wall
