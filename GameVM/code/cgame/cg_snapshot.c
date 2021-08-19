@@ -111,23 +111,10 @@ static void CG_UpdateEntitiesEffects( int updateTimeDelta ) {
 	}
 }
 
-void CG_ProcessSnapshots( void ) {
+static void CG_UpdateEntitiesWithNewSnapshot (void) {
 	int				i, j, n, event_unique_id;
-	int				snapshotTime;
-	int				prevServerTime;
-	int				items;
 	entityState_t* entState;
 	centity_t*	cent;
-
-	trap_GetCurrentSnapshotNumber( &n, &snapshotTime );
-	if(n == cg.last_snap_num)
-		return;
-
-	prevServerTime = cg.snap.serverTime;
-	trap_GetSnapshot( n, &cg.snap );
-	cg.last_snap_num = n;
-
-	CG_ExecuteNewServerCommands( cg.snap.serverCommandSequence );
 
 	for( i = 0; i < cg.snap.numEntities; ++i )
 	{
@@ -155,17 +142,47 @@ void CG_ProcessSnapshots( void ) {
 			CG_CheckEvents( &cg.snap.entities[i] );
 		}
 	}
+}
+
+void CG_ProcessSnapshots( void ) {
+	int				i;
+	int				snapshotTime;
+	int				prevServerTime;
+	int				items;
+	int				snapshotNum, currentSnapshotNum, processSnapshotNum;
+
+	// Try to process more than one server snaposhots, not only last to properly process server commands and effects.
+	// But do not process to much snapshots at once.
+	const int maxSnapshotsToProcess = 5;
+
+	trap_GetCurrentSnapshotNumber( &currentSnapshotNum, &snapshotTime );
+	if(currentSnapshotNum == cg.last_snap_num)
+		return;
+
+	processSnapshotNum = currentSnapshotNum - maxSnapshotsToProcess;
+	if (processSnapshotNum <= cg.last_snap_num)
+		processSnapshotNum = cg.last_snap_num + 1;
+
+	for (snapshotNum = processSnapshotNum; snapshotNum <= currentSnapshotNum; ++snapshotNum)
+	{
+		prevServerTime = cg.snap.serverTime;
+		trap_GetSnapshot( snapshotNum, &cg.snap );
+
+		CG_ExecuteNewServerCommands( cg.snap.serverCommandSequence );
+		CG_UpdateEntitiesWithNewSnapshot();
+
+		CG_UpdateEntitiesEffects( cg.snap.serverTime - prevServerTime );
+	}
+
+	cg.last_snap_num = currentSnapshotNum;
 
 	items = GetItems();
 	if(cg.old_items != items)
 	{
-		for (j=0 ; j<32 ; j++)
-			if ( (items & (1<<j)) && !(cg.old_items & (1<<j)))
-				cg.item_gettime[j] = cg.time;
+		for (i=0 ; i<32 ; i++)
+			if ( (items & (1<<i)) && !(cg.old_items & (1<<i)))
+				cg.item_gettime[i] = cg.time;
 		cg.old_items = items;
 	}
-
-	// Update local entities only after reciewing new snapshot.
-	CG_UpdateEntitiesEffects( cg.snap.serverTime - prevServerTime );
 }
 
