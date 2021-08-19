@@ -345,12 +345,14 @@ static void CG_AddDlights(void) {
 	int		i;
 	dlight_t	*l;
 
+	const float scale = 2.0f;
+
 	l = cg_dlights;
 	for (i=0 ; i<MAX_DLIGHTS ; i++, l++)
 	{
 		if (l->die < cg.time || !l->radius)
 			continue;
-		trap_R_AddLightToScene(l->origin, l->radius, 1.0f, 1.0f, 1.0f );
+		trap_R_AddLightToScene(l->origin, scale * l->radius, 1.0f, 1.0f, 1.0f );
 	}
 }
 
