@@ -56,9 +56,11 @@ file(GLOB UI_SOURCES_VM_ASM code/ui/ui_syscalls.asm)
 add_library(ui${LIB_SUFFIX} SHARED ${UI_SOURCES} ${UI_SOURCES_MAIN} ${UI_HEADERS} ${UI_SOURCES_NATIVE})
 target_link_libraries(ui${LIB_SUFFIX} qcommon)
 
-
 set(Q3_LCC q3lcc)
 set(Q3_ASM q3asm)
+
+# For q3asm from ioquake3 set compatibility flag to create VM code compatible with Quake III 1.32b.
+set(VM_VERSION_FLAG -vq3)
 
 #
 # It's important to keep main.asm file first in list.
@@ -84,7 +86,7 @@ endforeach()
 add_custom_target(
 	qagame.qvm ALL
 	DEPENDS ${SERVER_LCC_ASM_FILES} ${SERVER_SOURCES_VM_ASM}
-	COMMAND ${Q3_ASM} -o ${CMAKE_CURRENT_BINARY_DIR}/qagame.qvm ${SERVER_LCC_ASM_FILES} ${SERVER_SOURCES_VM_ASM}
+	COMMAND ${Q3_ASM} ${VM_VERSION_FLAG} -o ${CMAKE_CURRENT_BINARY_DIR}/qagame.qvm ${SERVER_LCC_ASM_FILES} ${SERVER_SOURCES_VM_ASM}
 	)
 
 # Client VM
@@ -106,7 +108,7 @@ endforeach()
 add_custom_target(
 	cgame.qvm ALL
 	DEPENDS ${CLIENT_LCC_ASM_FILES} ${CLIENT_SOURCES_VM_ASM}
-	COMMAND ${Q3_ASM} -o ${CMAKE_CURRENT_BINARY_DIR}/cgame.qvm ${CLIENT_LCC_ASM_FILES} ${CLIENT_SOURCES_VM_ASM}
+	COMMAND ${Q3_ASM} ${VM_VERSION_FLAG} -o ${CMAKE_CURRENT_BINARY_DIR}/cgame.qvm ${CLIENT_LCC_ASM_FILES} ${CLIENT_SOURCES_VM_ASM}
 	)
 
 
@@ -129,5 +131,5 @@ endforeach()
 add_custom_target(
 	ui.qvm ALL
 	DEPENDS ${UI_LCC_ASM_FILES} ${UI_SOURCES_VM_ASM}
-	COMMAND ${Q3_ASM} -o ${CMAKE_CURRENT_BINARY_DIR}/ui.qvm ${UI_LCC_ASM_FILES} ${UI_SOURCES_VM_ASM}
+	COMMAND ${Q3_ASM} ${VM_VERSION_FLAG} -o ${CMAKE_CURRENT_BINARY_DIR}/ui.qvm ${UI_LCC_ASM_FILES} ${UI_SOURCES_VM_ASM}
 	)
