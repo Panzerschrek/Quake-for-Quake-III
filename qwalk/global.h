@@ -75,6 +75,7 @@ void *qmalloc_(size_t numbytes, const char *file, int line);
 void qfree(void *mem);
 
 char *mem_copystring(mem_pool_t *pool, const char *string);
+#define copystring QWALK_copystring
 char *copystring(const char *string);
 char *mem_sprintf(mem_pool_t *pool, const char *format, ...);
 char *msprintf(const char *format, ...);
