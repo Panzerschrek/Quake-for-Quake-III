@@ -102,6 +102,7 @@ static void convert_q1bsp(model_t *out_model)
 		int edge_index, first_vertex;
 		mesh_t* mesh;
 		q1_texinfo_t* tex;
+		q1_miptex_t* miptex;
 
 		face = q1_dfaces + i;
 
@@ -111,7 +112,9 @@ static void convert_q1bsp(model_t *out_model)
 
 		tex= &q1_texinfo[face->texinfo];
 
-		tex_scale[0]= tex_scale[1]= 1.0f; // TODO - set this
+		miptex= (q1_miptex_t*)(q1_dtexdata + ((q1_dmiptexlump_t*)q1_dtexdata)->dataofs[tex->miptex]);
+		tex_scale[0]= 1.0f / miptex->width;
+		tex_scale[1]= 1.0f / miptex->height;
 
 		mesh = &model.meshes[0]; // TODO - use different meshes
 
@@ -130,17 +133,15 @@ static void convert_q1bsp(model_t *out_model)
 
 			vert_num = first_vertex + edge_index;
 			memcpy(mesh->vertex3f + vert_num * 3, in_vertex->point, sizeof(float) * 3);
-			memcpy(mesh->normal3f + vert_num * 3, in_vertex->point, sizeof(float) * 3);
-			memcpy(mesh->texcoord2f + vert_num * 2, normal, sizeof(float) * 2);
+			memcpy(mesh->normal3f + vert_num * 3, normal, sizeof(float) * 3);
 
 			for(int k= 0; k < 2; ++k)
 			{
-				mesh->texcoord2f[vert_num * 2 + k]=
+				mesh->texcoord2f[vert_num * 2 + k]= tex_scale[k] * (
 					tex->vecs[k][0] * in_vertex->point[0] +
 					tex->vecs[k][1] * in_vertex->point[1] +
 					tex->vecs[k][2] * in_vertex->point[2] +
-					tex->vecs[k][3];
-				mesh->texcoord2f[vert_num * 2 + k]*= tex_scale[i];
+					tex->vecs[k][3] );
 			}
 		}
 
