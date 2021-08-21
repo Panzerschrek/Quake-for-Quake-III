@@ -35,7 +35,10 @@ static void CG_StartSoundEvent( entityState_t *ent )
 	case 2:
 	case 3:
 	default:
-		trap_S_StartSound(NULL, entityNum, channel, cgs.gameSounds[soundNum]);
+		// Use fixed position for almost all sounds as original Quake does.
+		// Only exception - player entity.
+		// This is needed to fix sounds for entities with zero position (like triggers).
+		trap_S_StartSound(entityNum == cg.viewentity ? NULL : ent->origin, entityNum, channel, cgs.gameSounds[soundNum]);
 		break;
 
 	}
