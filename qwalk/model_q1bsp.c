@@ -1,3 +1,4 @@
+#include <math.h>
 #include "global.h"
 #include "model.h"
 #include "palettes.h"
@@ -60,6 +61,101 @@ static bool_t load_q1bsp_moddel(void *filedata, size_t filesize, char **out_erro
 	return true;
 }
 
+// Combine all BSP textures into single atlas.
+
+static int q1bsp_combined_skin_size[2];
+static int q1bsp_skin_size[64][2];
+static int q1bsp_skin_offset[64][2];
+
+#define MAX_COMBINED_SKIN_AREA 512 * 512
+static unsigned char q1bsp_combined_skins[2][MAX_COMBINED_SKIN_AREA * 4];
+static unsigned char q1bsp_combined_skins_num_nonempty_pixels[2];
+
+static void create_combined_skin()
+{
+	int i, x, y, k;
+
+	const int half_padding = 4;
+
+	q1bsp_combined_skin_size[0] = 0;
+	q1bsp_combined_skin_size[1] = 0;
+
+	// Know skin size.
+	for(i = 0; i < q1_numtexinfo; ++i)
+	{
+		q1_texinfo_t* tex;
+		q1_miptex_t* miptex;
+
+		tex= &q1_texinfo[i];
+		miptex= (q1_miptex_t*)(q1_dtexdata + ((q1_dmiptexlump_t*)q1_dtexdata)->dataofs[tex->miptex]);
+
+		q1bsp_skin_size[i][0]= miptex->width;
+		q1bsp_skin_size[i][1]= miptex->height;
+		q1bsp_skin_offset[i][0]= q1bsp_combined_skin_size[0] + half_padding;
+		q1bsp_skin_offset[i][1]= 0;
+
+		q1bsp_combined_skin_size[0]+= half_padding + miptex->width + half_padding;
+		if( miptex->height > q1bsp_combined_skin_size[1])
+			q1bsp_combined_skin_size[1] = miptex->height;
+	}
+
+	for( k= 0; k < SKIN_NUMTYPES; ++k )
+		memset(q1bsp_combined_skins[k], 0, 4 * q1bsp_combined_skin_size[0] * q1bsp_combined_skin_size[1]);
+
+	// Make combined skin.
+	for(i = 0; i < q1_numtexinfo; ++i)
+	{
+		q1_texinfo_t* tex;
+		q1_miptex_t* miptex;
+
+		tex= &q1_texinfo[i];
+		miptex= (q1_miptex_t*)(q1_dtexdata + ((q1_dmiptexlump_t*)q1_dtexdata)->dataofs[tex->miptex]);
+
+		for( k= 0; k < SKIN_NUMTYPES; ++k )
+		{
+			// TODO - fill space around texture with some value.
+			q1bsp_combined_skins_num_nonempty_pixels[k]= 0;
+			for( y= 0; y < miptex->height; ++y )
+			for( x= 0; x < miptex->width ; ++x )
+			{
+				int dst_pixel_index, scr_pixel_index;
+				scr_pixel_index = x + y * miptex->width;
+				dst_pixel_index = x + q1bsp_skin_offset[i][0] + ( y + q1bsp_skin_offset[i][1] ) * q1bsp_combined_skin_size[0];
+
+				unsigned char c = ((unsigned char*)miptex)[ miptex->offsets[0] + scr_pixel_index ];
+
+				if (palette_quake.fullbright_flags[c >> 5] & (1U << (c & 31)))
+				{
+					/* fullbright */
+					q1bsp_combined_skins[SKIN_DIFFUSE][ dst_pixel_index * 4 + 0 ] = 0;
+					q1bsp_combined_skins[SKIN_DIFFUSE][ dst_pixel_index * 4 + 1 ] = 0;
+					q1bsp_combined_skins[SKIN_DIFFUSE][ dst_pixel_index * 4 + 2 ] = 0;
+					q1bsp_combined_skins[SKIN_DIFFUSE][ dst_pixel_index * 4 + 3 ] = 255;
+
+					q1bsp_combined_skins[SKIN_FULLBRIGHT][ dst_pixel_index * 4 + 0 ] = palette_quake.rgb[c*3+0];
+					q1bsp_combined_skins[SKIN_FULLBRIGHT][ dst_pixel_index * 4 + 1 ] = palette_quake.rgb[c*3+1];
+					q1bsp_combined_skins[SKIN_FULLBRIGHT][ dst_pixel_index * 4 + 2 ] = palette_quake.rgb[c*3+2];
+					q1bsp_combined_skins[SKIN_FULLBRIGHT][ dst_pixel_index * 4 + 3 ] = 255;
+					++q1bsp_combined_skins_num_nonempty_pixels[SKIN_FULLBRIGHT];
+				}
+				else
+				{
+					/* normal colour */
+					q1bsp_combined_skins[SKIN_DIFFUSE][ dst_pixel_index * 4 + 0 ] = palette_quake.rgb[c*3+0];
+					q1bsp_combined_skins[SKIN_DIFFUSE][ dst_pixel_index * 4 + 1 ] = palette_quake.rgb[c*3+1];
+					q1bsp_combined_skins[SKIN_DIFFUSE][ dst_pixel_index * 4 + 2 ] = palette_quake.rgb[c*3+2];
+					q1bsp_combined_skins[SKIN_DIFFUSE][ dst_pixel_index * 4 + 3 ] = 255;
+
+					q1bsp_combined_skins[SKIN_FULLBRIGHT][ dst_pixel_index * 4 + 0 ] = 0;
+					q1bsp_combined_skins[SKIN_FULLBRIGHT][ dst_pixel_index * 4 + 1 ] = 0;
+					q1bsp_combined_skins[SKIN_FULLBRIGHT][ dst_pixel_index * 4 + 2 ] = 0;
+					q1bsp_combined_skins[SKIN_FULLBRIGHT][ dst_pixel_index * 4 + 3 ] = 0;
+					++q1bsp_combined_skins_num_nonempty_pixels[SKIN_DIFFUSE];
+				}
+			}
+		}
+	}
+}
 
 static void convert_q1bsp(model_t *out_model)
 {
@@ -105,71 +201,32 @@ static void convert_q1bsp(model_t *out_model)
 	model.meshes->texcoord2f = mem_alloc(pool, max_vertices * sizeof(float) * 2);
 	model.meshes->triangle3i = mem_alloc(pool, max_vertices * sizeof(int) * 3);
 
+	create_combined_skin();
+
 	model.meshes->skins = (meshskin_t*)mem_alloc(pool, sizeof(meshskin_t));
 	{
-		q1_texinfo_t* tex;
-		q1_miptex_t* miptex;
 		meshskin_t* skin;
 
 		skin = model.meshes->skins;
 
-		tex= q1_texinfo;
-		miptex= (q1_miptex_t*)(q1_dtexdata + ((q1_dmiptexlump_t*)q1_dtexdata)->dataofs[tex->miptex]);
-
 		for( k= 0; k < SKIN_NUMTYPES; ++k )
 		{
 			skin->components[k] = (image_rgba_t*)mem_alloc(pool, sizeof(image_rgba_t));
-			skin->components[k]->width = miptex->width;
-			skin->components[k]->height = miptex->height;
-			skin->components[k]->num_nonempty_pixels = 0;
-			skin->components[k]->pixels = (unsigned char*)mem_alloc(pool, 4 * miptex->width * miptex->height);
-		}
-
-		for( k= 0; k < miptex->width * miptex->height; ++k)
-		{
-			unsigned char c = ((unsigned char*)miptex)[ miptex->offsets[0] + k ];
-
-			if (palette_quake.fullbright_flags[c >> 5] & (1U << (c & 31)))
-			{
-			/* fullbright */
-				skin->components[SKIN_DIFFUSE]->pixels[k*4+0] = 0;
-				skin->components[SKIN_DIFFUSE]->pixels[k*4+1] = 0;
-				skin->components[SKIN_DIFFUSE]->pixels[k*4+2] = 0;
-				skin->components[SKIN_DIFFUSE]->pixels[k*4+3] = 255;
-
-				skin->components[SKIN_FULLBRIGHT]->pixels[k*4+0] = palette_quake.rgb[c*3+0];
-				skin->components[SKIN_FULLBRIGHT]->pixels[k*4+1] = palette_quake.rgb[c*3+1];
-				skin->components[SKIN_FULLBRIGHT]->pixels[k*4+2] = palette_quake.rgb[c*3+2];
-				skin->components[SKIN_FULLBRIGHT]->pixels[k*4+3] = 255;
-
-				++skin->components[SKIN_FULLBRIGHT]->num_nonempty_pixels;
-			}
-			else
-			{
-			/* normal colour */
-				skin->components[SKIN_DIFFUSE]->pixels[k*4+0] = palette_quake.rgb[c*3+0];
-				skin->components[SKIN_DIFFUSE]->pixels[k*4+1] = palette_quake.rgb[c*3+1];
-				skin->components[SKIN_DIFFUSE]->pixels[k*4+2] = palette_quake.rgb[c*3+2];
-				skin->components[SKIN_DIFFUSE]->pixels[k*4+3] = 255;
-
-				skin->components[SKIN_FULLBRIGHT]->pixels[k*4+0] = 0;
-				skin->components[SKIN_FULLBRIGHT]->pixels[k*4+1] = 0;
-				skin->components[SKIN_FULLBRIGHT]->pixels[k*4+2] = 0;
-				skin->components[SKIN_FULLBRIGHT]->pixels[k*4+3] = 0;
-
-				++skin->components[SKIN_DIFFUSE]->num_nonempty_pixels;
-			}
+			skin->components[k]->width = q1bsp_combined_skin_size[0];
+			skin->components[k]->height = q1bsp_combined_skin_size[1];
+			skin->components[k]->num_nonempty_pixels = q1bsp_combined_skins_num_nonempty_pixels[k];
+			skin->components[k]->pixels = (unsigned char*)mem_alloc(pool, 4 * q1bsp_combined_skin_size[0] * q1bsp_combined_skin_size[1]);
+			memcpy(skin->components[k]->pixels, q1bsp_combined_skins[k], 4 * q1bsp_combined_skin_size[0] * q1bsp_combined_skin_size[1]);
 		}
 	}
 
 	for (i = 0; i < q1_numfaces; ++i)
 	{
 		q1_dface_t* face;
-		float normal_sign, normal[3], tex_scale[2];
+		float normal_sign, normal[3], min_tex_coord[2];
 		int edge_index, first_vertex;
 		mesh_t* mesh;
 		q1_texinfo_t* tex;
-		q1_miptex_t* miptex;
 
 		face = q1_dfaces + i;
 
@@ -179,9 +236,8 @@ static void convert_q1bsp(model_t *out_model)
 
 		tex= &q1_texinfo[face->texinfo];
 
-		miptex= (q1_miptex_t*)(q1_dtexdata + ((q1_dmiptexlump_t*)q1_dtexdata)->dataofs[tex->miptex]);
-		tex_scale[0]= 1.0f / miptex->width;
-		tex_scale[1]= 1.0f / miptex->height;
+		min_tex_coord[0]= 1e20f;
+		min_tex_coord[1]= 1e20f;
 
 		mesh = model.meshes;
 
@@ -204,11 +260,24 @@ static void convert_q1bsp(model_t *out_model)
 
 			for(k= 0; k < 2; ++k)
 			{
-				mesh->texcoord2f[vert_num * 2 + k]= tex_scale[k] * (
+				float tc = (
 					tex->vecs[k][0] * in_vertex->point[0] +
 					tex->vecs[k][1] * in_vertex->point[1] +
 					tex->vecs[k][2] * in_vertex->point[2] +
-					tex->vecs[k][3] );
+					tex->vecs[k][3] ) / q1bsp_skin_size[face->texinfo][k];
+				mesh->texcoord2f[vert_num * 2 + k]= tc;
+				if( tc < min_tex_coord[k] )
+					min_tex_coord[k]= tc;
+			}
+		}
+
+		// Normalize texture coordinates.
+		for(edge_index= 0; edge_index < face->numedges; ++edge_index)
+		{
+			for(k= 0; k < 2; ++k)
+			{
+				float* tc= &mesh->texcoord2f[(first_vertex + edge_index) * 2 + k];
+				*tc = ( (*tc - floorf(min_tex_coord[k])) * q1bsp_skin_size[face->texinfo][k] + q1bsp_skin_offset[face->texinfo][k] ) / q1bsp_combined_skin_size[k];
 			}
 		}
 
