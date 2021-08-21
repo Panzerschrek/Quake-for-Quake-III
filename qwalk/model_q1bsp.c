@@ -84,6 +84,7 @@ static void convert_q1bsp(model_t *out_model)
 	model.frameinfo->frames->name = mem_copystring(pool, "some frame");
 
 	model.num_skins = 1;
+	model.total_skins = 1;
 	model.skininfo = (skininfo_t*)mem_alloc(pool, sizeof(skininfo_t));
 	memset(model.skininfo, 0, sizeof(skininfo_t));
 	model.skininfo->num_skins = 1;
@@ -94,35 +95,28 @@ static void convert_q1bsp(model_t *out_model)
 	model.skininfo->skins->offset = 0;
 	model.skininfo->skins->name = mem_copystring(pool, "some skin");
 
-	model.num_meshes = q1_numtexinfo;
-	model.meshes = (mesh_t*)mem_alloc(pool, model.num_meshes * sizeof(mesh_t));
+	model.num_meshes = 1;
+	model.meshes = (mesh_t*)mem_alloc(pool, sizeof(mesh_t));
 	memset(model.meshes, 0, model.num_meshes * sizeof(mesh_t));
 
-	for (i= 0; i < model.num_meshes; ++i)
-	{
-		mesh_t* mesh;
-		mesh = &model.meshes[i];
+	model.meshes->name = mem_copystring(pool, "some mesh");
+	model.meshes->vertex3f = mem_alloc(pool, max_vertices * sizeof(float) * 3);
+	model.meshes->normal3f = mem_alloc(pool, max_vertices * sizeof(float) * 3);
+	model.meshes->texcoord2f = mem_alloc(pool, max_vertices * sizeof(float) * 2);
+	model.meshes->triangle3i = mem_alloc(pool, max_vertices * sizeof(int) * 3);
 
-		mesh->name = mem_copystring(pool, "some mesh");
-		mesh->vertex3f = mem_alloc(pool, max_vertices * sizeof(float) * 3);
-		mesh->normal3f = mem_alloc(pool, max_vertices * sizeof(float) * 3);
-		mesh->texcoord2f = mem_alloc(pool, max_vertices * sizeof(float) * 2);
-		mesh->triangle3i = mem_alloc(pool, max_vertices * sizeof(int) * 3);
-	}
-
-	model.meshes->skins = (meshskin_t*)mem_alloc(pool, q1_numtexinfo * sizeof(meshskin_t));
-	for( i= 0; i < q1_numtexinfo; ++i )
+	model.meshes->skins = (meshskin_t*)mem_alloc(pool, sizeof(meshskin_t));
 	{
 		q1_texinfo_t* tex;
 		q1_miptex_t* miptex;
 		meshskin_t* skin;
 
-		skin = &model.meshes->skins[i];
+		skin = model.meshes->skins;
 
-		tex= &q1_texinfo[i];
+		tex= q1_texinfo;
 		miptex= (q1_miptex_t*)(q1_dtexdata + ((q1_dmiptexlump_t*)q1_dtexdata)->dataofs[tex->miptex]);
 
-		for( k= 0; k < 2; ++k )
+		for( k= 0; k < SKIN_NUMTYPES; ++k )
 		{
 			skin->components[k] = (image_rgba_t*)mem_alloc(pool, sizeof(image_rgba_t));
 			skin->components[k]->width = miptex->width;
@@ -189,7 +183,7 @@ static void convert_q1bsp(model_t *out_model)
 		tex_scale[0]= 1.0f / miptex->width;
 		tex_scale[1]= 1.0f / miptex->height;
 
-		mesh = &model.meshes[0]; // TODO - use different meshes
+		mesh = model.meshes;
 
 		// Extract vertices.
 		first_vertex = mesh->num_vertices;
