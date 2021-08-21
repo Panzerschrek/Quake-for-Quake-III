@@ -24,8 +24,8 @@ def main():
 
 	for file_name in os.listdir(input_dir):
 		in_file = os.path.join(input_dir, file_name)
-		out_file = os.path.join(output_dir, file_name.replace(".mdl", ".md3"))
-		out_texture_file = os.path.join(textures_dir, file_name.replace(".mdl", ""))
+		out_file = os.path.join(output_dir, file_name.replace(".mdl", ".md3").replace(".bsp", ".md3"))
+		out_texture_file = os.path.join(textures_dir, file_name.replace(".mdl", "").replace(".bsp", ""))
 		subprocess.call([g_models_converter_executable, "-i", in_file, "-outtex", out_texture_file, "-force", out_file])
 
 	generate_models_shader_file(textures_dir, args.output_shader_file)

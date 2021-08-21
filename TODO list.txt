@@ -22,8 +22,8 @@ Shaders:
 
 Data export:
 * Sprites
-* BSP items models (health boxes, ammo boxes)
 * Properly export frames of flame models (should export more than 1-2 frames)
+* Support animated textures on exported BSP models
 * Replace '*' in texture names (in maps, wad) with something else, because '*' is not a valid symbol for file names. Also Quake-utilities recognize '/*' as comment start.
 
 Maps:
