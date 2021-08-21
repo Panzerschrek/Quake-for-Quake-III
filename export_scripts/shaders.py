@@ -142,14 +142,14 @@ shader_generic_turb_template = """
 """
 
 shader_for_models_with_fullbrights_template = """
-"textures/%(shader_name)"
+"models_textures/%(shader_name)"
 {
 	{
-		map "textures/%(file_name)"
+		map "models_textures/%(file_name)"
 		rgbGen lightingDiffuse
 	}
 	{
-		map "textures/%(fullbrights_file_name)"
+		map "models_textures/%(fullbrights_file_name)"
 		blendFunc GL_ONE GL_ONE
 		rgbGen identity
 	}

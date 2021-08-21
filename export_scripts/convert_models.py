@@ -17,7 +17,7 @@ def main():
 
 	input_dir = args.input_dir
 	output_dir = args.output_dir
-	textures_dir = "textures"
+	textures_dir = "models_textures"
 
 	os.makedirs(output_dir, exist_ok= True)
 	os.makedirs(textures_dir, exist_ok= True)
