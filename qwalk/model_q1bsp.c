@@ -113,13 +113,12 @@ static void create_combined_skin()
 
 		for( k= 0; k < SKIN_NUMTYPES; ++k )
 		{
-			// TODO - fill space around texture with some value.
 			q1bsp_combined_skins_num_nonempty_pixels[k]= 0;
-			for( y= 0; y < miptex->height; ++y )
-			for( x= 0; x < miptex->width ; ++x )
+			for( y= 0; y < q1bsp_combined_skin_size[1]; ++y )
+			for( x= -half_padding; x < ((int)miptex->width) + half_padding; ++x )
 			{
 				int dst_pixel_index, scr_pixel_index;
-				scr_pixel_index = x + y * miptex->width;
+				scr_pixel_index = (x + (int)miptex->width) % miptex->width + (y % miptex->height) * miptex->width;
 				dst_pixel_index = x + q1bsp_skin_offset[i][0] + ( y + q1bsp_skin_offset[i][1] ) * q1bsp_combined_skin_size[0];
 
 				unsigned char c = ((unsigned char*)miptex)[ miptex->offsets[0] + scr_pixel_index ];
@@ -301,7 +300,6 @@ static void convert_q1bsp(model_t *out_model)
 
 bool_t model_q1bsp_load(void *filedata, size_t filesize, model_t *out_model, char **out_error)
 {
-
 	Q1_AllocMaxBSP();
 
 	if (!load_q1bsp_moddel(filedata, filesize, out_error))
