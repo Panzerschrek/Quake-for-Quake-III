@@ -1,5 +1,6 @@
 #include "global.h"
 #include "model.h"
+#include "palettes.h"
 
 #undef copystring
 #undef LittleShort
@@ -82,17 +83,89 @@ static void convert_q1bsp(model_t *out_model)
 	model.frameinfo->frames->offset = 0;
 	model.frameinfo->frames->name = mem_copystring(pool, "some frame");
 
+	model.num_skins = 1;
+	model.skininfo = (skininfo_t*)mem_alloc(pool, sizeof(skininfo_t));
+	memset(model.skininfo, 0, sizeof(skininfo_t));
+	model.skininfo->num_skins = 1;
+	model.skininfo->frametime = 1.0f;
+
+	model.skininfo->skins = (singleskin_t*)mem_alloc(pool, sizeof(singleskin_t));
+	memset(model.skininfo->skins, 0, sizeof(singleskin_t));
+	model.skininfo->skins->offset = 0;
+	model.skininfo->skins->name = mem_copystring(pool, "some skin");
+
 	model.num_meshes = q1_numtexinfo;
 	model.meshes = (mesh_t*)mem_alloc(pool, model.num_meshes * sizeof(mesh_t));
 	memset(model.meshes, 0, model.num_meshes * sizeof(mesh_t));
 
 	for (i= 0; i < model.num_meshes; ++i)
 	{
-		model.meshes[i].name = mem_copystring(pool, "some mesh");
-		model.meshes[i].vertex3f = mem_alloc(pool, max_vertices * sizeof(float) * 3);
-		model.meshes[i].normal3f = mem_alloc(pool, max_vertices * sizeof(float) * 3);
-		model.meshes[i].texcoord2f = mem_alloc(pool, max_vertices * sizeof(float) * 2);
-		model.meshes[i].triangle3i = mem_alloc(pool, max_vertices * sizeof(int) * 3);
+		mesh_t* mesh;
+		mesh = &model.meshes[i];
+
+		mesh->name = mem_copystring(pool, "some mesh");
+		mesh->vertex3f = mem_alloc(pool, max_vertices * sizeof(float) * 3);
+		mesh->normal3f = mem_alloc(pool, max_vertices * sizeof(float) * 3);
+		mesh->texcoord2f = mem_alloc(pool, max_vertices * sizeof(float) * 2);
+		mesh->triangle3i = mem_alloc(pool, max_vertices * sizeof(int) * 3);
+	}
+
+	model.meshes->skins = (meshskin_t*)mem_alloc(pool, q1_numtexinfo * sizeof(meshskin_t));
+	for( i= 0; i < q1_numtexinfo; ++i )
+	{
+		q1_texinfo_t* tex;
+		q1_miptex_t* miptex;
+		meshskin_t* skin;
+
+		skin = &model.meshes->skins[i];
+
+		tex= &q1_texinfo[i];
+		miptex= (q1_miptex_t*)(q1_dtexdata + ((q1_dmiptexlump_t*)q1_dtexdata)->dataofs[tex->miptex]);
+
+		for( k= 0; k < 2; ++k )
+		{
+			skin->components[k] = (image_rgba_t*)mem_alloc(pool, sizeof(image_rgba_t));
+			skin->components[k]->width = miptex->width;
+			skin->components[k]->height = miptex->height;
+			skin->components[k]->num_nonempty_pixels = 0;
+			skin->components[k]->pixels = (unsigned char*)mem_alloc(pool, 4 * miptex->width * miptex->height);
+		}
+
+		for( k= 0; k < miptex->width * miptex->height; ++k)
+		{
+			unsigned char c = ((unsigned char*)miptex)[ miptex->offsets[0] + k ];
+
+			if (palette_quake.fullbright_flags[c >> 5] & (1U << (c & 31)))
+			{
+			/* fullbright */
+				skin->components[SKIN_DIFFUSE]->pixels[k*4+0] = 0;
+				skin->components[SKIN_DIFFUSE]->pixels[k*4+1] = 0;
+				skin->components[SKIN_DIFFUSE]->pixels[k*4+2] = 0;
+				skin->components[SKIN_DIFFUSE]->pixels[k*4+3] = 255;
+
+				skin->components[SKIN_FULLBRIGHT]->pixels[k*4+0] = palette_quake.rgb[c*3+0];
+				skin->components[SKIN_FULLBRIGHT]->pixels[k*4+1] = palette_quake.rgb[c*3+1];
+				skin->components[SKIN_FULLBRIGHT]->pixels[k*4+2] = palette_quake.rgb[c*3+2];
+				skin->components[SKIN_FULLBRIGHT]->pixels[k*4+3] = 255;
+
+				++skin->components[SKIN_FULLBRIGHT]->num_nonempty_pixels;
+			}
+			else
+			{
+			/* normal colour */
+				skin->components[SKIN_DIFFUSE]->pixels[k*4+0] = palette_quake.rgb[c*3+0];
+				skin->components[SKIN_DIFFUSE]->pixels[k*4+1] = palette_quake.rgb[c*3+1];
+				skin->components[SKIN_DIFFUSE]->pixels[k*4+2] = palette_quake.rgb[c*3+2];
+				skin->components[SKIN_DIFFUSE]->pixels[k*4+3] = 255;
+
+				skin->components[SKIN_FULLBRIGHT]->pixels[k*4+0] = 0;
+				skin->components[SKIN_FULLBRIGHT]->pixels[k*4+1] = 0;
+				skin->components[SKIN_FULLBRIGHT]->pixels[k*4+2] = 0;
+				skin->components[SKIN_FULLBRIGHT]->pixels[k*4+3] = 0;
+
+				++skin->components[SKIN_DIFFUSE]->num_nonempty_pixels;
+			}
+		}
 	}
 
 	for (i = 0; i < q1_numfaces; ++i)
@@ -135,7 +208,7 @@ static void convert_q1bsp(model_t *out_model)
 			memcpy(mesh->vertex3f + vert_num * 3, in_vertex->point, sizeof(float) * 3);
 			memcpy(mesh->normal3f + vert_num * 3, normal, sizeof(float) * 3);
 
-			for(int k= 0; k < 2; ++k)
+			for(k= 0; k < 2; ++k)
 			{
 				mesh->texcoord2f[vert_num * 2 + k]= tex_scale[k] * (
 					tex->vecs[k][0] * in_vertex->point[0] +
