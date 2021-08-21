@@ -22,11 +22,6 @@ Foundation, Inc., 51 Franklin St, Fifth Floor, Boston, MA  02110-1301  USA
 //
 // bg_public.h -- definitions shared by both the server game and client game modules
 
-// because games can change separately from the main system version, we need a
-// second version that must match between game and cgame
-
-#define	GAME_VERSION		BASEGAME "-1"
-
 //
 // config strings are a general means of communicating variable length strings
 // from the server to all connected clients.
