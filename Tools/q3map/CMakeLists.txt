@@ -1,4 +1,4 @@
-set(Q3_SOURCES ${CMAKE_CURRENT_SOURCE_DIR}/../Quake-III-Arena)
+set(Q3_SOURCES ${CMAKE_CURRENT_SOURCE_DIR}/../../Quake-III-Arena)
 
 file(GLOB SOURCES ${Q3_SOURCES}/q3map/*.c)
 file(GLOB SOURCE_BUGGY_CAST ${Q3_SOURCES}/q3map/light_trace.c)

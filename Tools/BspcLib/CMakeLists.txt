@@ -1,7 +1,7 @@
-set(Q3_CODE_DIR ${CMAKE_CURRENT_SOURCE_DIR}/../Quake-III-Arena/code)
-set(BSPC_DIR ${Q3_CODE_DIR}/bspc)
-set(BOTLIB_DIR ${Q3_CODE_DIR}/botlib)
-set(COMMON_DIR ${CMAKE_CURRENT_SOURCE_DIR}/../Quake-III-Arena/common)
+set(Q3_DIR ${CMAKE_CURRENT_SOURCE_DIR}/../../Quake-III-Arena)
+set(BSPC_DIR ${Q3_DIR}/code/bspc)
+set(BOTLIB_DIR ${Q3_DIR}/code/botlib)
+set(COMMON_DIR ${Q3_DIR}/common)
 
 set(
 	SOURCES
