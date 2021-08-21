@@ -552,6 +552,8 @@ void G_RunFrame( int levelTime ) {
 
 		SV_UpdateEdictSValues(edict);
 
+		edict->s.generic1 = edict->v.skin;
+
 		effects = edict->v.effects;
 		if( edict->s.event == 0 )
 			edict->s.eFlags = effects; // Use "eFlags" for effects

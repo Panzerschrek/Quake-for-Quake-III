@@ -267,6 +267,7 @@ void CG_AddEntities()
 		{
 			out_ent.hModel= cgs.gameModels[modelindex].handle;
 			out_ent.frame = out_ent.oldframe = in_ent->frame;
+			out_ent.skinNum = in_ent_state->generic1;
 		}
 
 		trap_R_AddRefEntityToScene(&out_ent);
