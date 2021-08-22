@@ -263,6 +263,14 @@ void CG_AddEntities()
 				out_ent.shaderRGBA[3] = 255;
 			}
 		}
+		else if( cgs.gameModels[modelindex].is_sprite )
+		{
+			out_ent.reType = RT_SPRITE;
+			out_ent.radius = 32.0f;
+			out_ent.customShader = cgs.gameModels[modelindex].handle;
+			// Sprite shader uses "1" for sprite frequency. So, frame is mapped to time 1 to 1.
+			out_ent.shaderTime = -in_ent->frame;
+		}
 		else
 		{
 			out_ent.hModel= cgs.gameModels[modelindex].handle;
@@ -434,6 +442,9 @@ void CG_DrawActiveFrame( int serverTime, stereoFrame_t stereoView, qboolean demo
 	CL_DecayLights();
 	CG_UpdateEntities();
 
+	cg.refdef.time = cg.time;
+	memcpy( cg.refdef.areamask, cg.snap.areamask, sizeof( cg.refdef.areamask ) );
+
 	CG_AddEntities();
 	CG_AndAddTEnts();
 	CG_AddDlights();
@@ -451,9 +462,6 @@ void CG_DrawActiveFrame( int serverTime, stereoFrame_t stereoView, qboolean demo
 
 	if( cg.snap.ps.pm_type == PM_NORMAL )
 		CG_AddViewWeapon( &cg.snap.ps );
-
-	cg.refdef.time = cg.time;
-	memcpy( cg.refdef.areamask, cg.snap.areamask, sizeof( cg.refdef.areamask ) );
 
 	// update audio positions
 	trap_S_Respatialize( cg.snap.ps.clientNum, cg.refdef.vieworg, cg.refdef.viewaxis, inwater );
