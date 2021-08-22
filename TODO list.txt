@@ -1,10 +1,8 @@
 Server:
-* Fix invalid locations of some sounds (secrets, info messages)
 * Coop/deathmatch
 
 Client:
 * Fix looping sounds for entites such elevators
-* Sprite entities
 * Addons (rogue/hipnotic) support in status bar
 * Fix deathmatch scoreborad drawing code
 * Entities/player interpolation/extrapolation (smooth movement, rotation, animation, rocket trails based on actual trajectory)
@@ -21,7 +19,6 @@ Shaders:
 * Shaders for in-game UI elements (avoid ugly interpolation and power of 2 textures conversion)
 
 Data export:
-* Sprites
 * Properly export frames of flame models (should export more than 1-2 frames)
 * Support animated textures on exported BSP models
 * Replace '*' in texture names (in maps, wad) with something else, because '*' is not a valid symbol for file names. Also Quake-utilities recognize '/*' as comment start.
