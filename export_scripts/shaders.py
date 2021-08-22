@@ -330,7 +330,6 @@ def generate_sprites_shader_file(tga_sprites_dir, out_shader_file):
 
 			shader  = "\"progs/" + shader_name + "\"\n"
 			shader += "{\n"
-			shader += "\t{\n"
 			shader += "\t{\n\t\tanimMap 4"
 			for i in range(10):
 				frame_name = shader_name + str(i) + ".tga"
