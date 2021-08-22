@@ -1,4 +1,3 @@
-#include "BspcLibIncludes.hpp"
 #include <array>
 #include <cstdint>
 #include <cstdio>
@@ -7,6 +6,56 @@
 #include <string>
 #include <vector>
 
+typedef unsigned char byte;
+
+#define SPRITE_VERSION	1
+
+// must match definition in modelgen.h
+#ifndef SYNCTYPE_T
+#define SYNCTYPE_T
+typedef enum {ST_SYNC=0, ST_RAND } synctype_t;
+#endif
+
+// TODO: shorten these?
+typedef struct {
+	int			ident;
+	int			version;
+	int			type;
+	float		boundingradius;
+	int			width;
+	int			height;
+	int			numframes;
+	float		beamlength;
+	synctype_t	synctype;
+} dsprite_t;
+
+#define SPR_VP_PARALLEL_UPRIGHT		0
+#define SPR_FACING_UPRIGHT			1
+#define SPR_VP_PARALLEL				2
+#define SPR_ORIENTED				3
+#define SPR_VP_PARALLEL_ORIENTED	4
+
+typedef struct {
+	int			origin[2];
+	int			width;
+	int			height;
+} dspriteframe_t;
+
+typedef struct {
+	int			numframes;
+} dspritegroup_t;
+
+typedef struct {
+	float	interval;
+} dspriteinterval_t;
+
+typedef enum { SPR_SINGLE=0, SPR_GROUP } spriteframetype_t;
+
+typedef struct {
+	spriteframetype_t	type;
+} dspriteframetype_t;
+
+#define IDSPRITEHEADER	(('P'<<24)+('S'<<16)+('D'<<8)+'I') // little-endian "IDSP"
 
 void ReadFile(FILE& f, const uint64_t offset, const uint64_t size, void* const out_data)
 {
@@ -104,4 +153,13 @@ int main(const int argc, const char* const argv[])
 	std::fclose(in_file);
 
 	// TODO - read sprite here.
+	const auto& sprite_header = *reinterpret_cast<const dsprite_t*>(file_data.data());
+
+	if (sprite_header.ident != IDSPRITEHEADER)
+	{
+		std::cerr << "\""<< in_file_name << "\" is not a Quake sprite file." << std::endl;
+		return -1;
+	}
+	std::cout << "Sprite ident: " << sprite_header.ident << ", num frames: " << sprite_header.numframes << std::endl;
+
 }
