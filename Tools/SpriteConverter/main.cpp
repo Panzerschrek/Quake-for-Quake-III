@@ -6,7 +6,9 @@
 #include <string>
 #include <vector>
 
+// Avoid includeng BSPC includes to prevent name conflicts.
 typedef unsigned char byte;
+extern "C" void WriteTGA (const char *filename, byte *data, int width, int height);
 
 #define SPRITE_VERSION	1
 
@@ -152,14 +154,75 @@ int main(const int argc, const char* const argv[])
 
 	std::fclose(in_file);
 
-	// TODO - read sprite here.
 	const auto& sprite_header = *reinterpret_cast<const dsprite_t*>(file_data.data());
+	// TODo - do byteswap.
 
 	if (sprite_header.ident != IDSPRITEHEADER)
 	{
 		std::cerr << "\""<< in_file_name << "\" is not a Quake sprite file." << std::endl;
 		return -1;
 	}
-	std::cout << "Sprite ident: " << sprite_header.ident << ", num frames: " << sprite_header.numframes << std::endl;
 
+	size_t frame_number= 0;
+	std::vector<byte> data_rgba;
+	data_rgba.resize(sprite_header.width * sprite_header.height * 4);
+
+	auto ptr= file_data.data() + sizeof(dsprite_t);
+	for( int i= 0; i < sprite_header.numframes; ++i )
+	{
+		const auto frametype= *reinterpret_cast<const spriteframetype_t*>(ptr);
+		ptr+= sizeof(spriteframetype_t);
+
+		const auto process_frame =
+		[&]
+		{
+			const auto& frame = *reinterpret_cast<const dspriteframe_t*>(ptr);
+			ptr+= sizeof(dspriteframe_t);
+
+			const auto frame_data= ptr;
+			const int size = frame.width * frame.height;
+
+			std::memset(data_rgba.data(), 0, data_rgba.size());
+
+			const int start_x = sprite_header.width  / 2 + frame.origin[0];
+			const int start_y = sprite_header.height / 2 - frame.origin[1];
+			for( int y= 0; y < frame.height; ++y )
+			for( int x= 0; x < frame.width ; ++x )
+			{
+				const int dst_pixel = x + start_x  + (y + start_y) * sprite_header.width;
+				const byte pixel= frame_data[ x + y * frame.width ];
+				data_rgba[ dst_pixel * 4 + 0 ] = palette[ pixel * 3 + 0 ];
+				data_rgba[ dst_pixel * 4 + 1 ] = palette[ pixel * 3 + 1 ];
+				data_rgba[ dst_pixel * 4 + 2 ] = palette[ pixel * 3 + 2 ];
+				data_rgba[ dst_pixel * 4 + 3 ] = pixel == 255 ? 0 : 255;
+			}
+
+			WriteTGA((out_file_name_base + std::to_string(frame_number) + ".tga").c_str(), data_rgba.data(), frame.width, frame.height);
+			++frame_number;
+
+			ptr+= size;
+		};
+
+		if(frametype == SPR_SINGLE)
+			process_frame();
+		else if(frametype == SPR_GROUP)
+		{
+			const auto& group = *reinterpret_cast<const dspritegroup_t*>(ptr);
+			ptr+= sizeof(dspritegroup_t);
+
+			for( int j= 0; j < group.numframes; ++j )
+			{
+				const auto& interval = reinterpret_cast<const dspriteinterval_t*>(ptr);
+				ptr+= sizeof(dspriteinterval_t);
+			}
+
+			for( int j= 0; j < group.numframes; ++j )
+				process_frame();
+		}
+		else
+		{
+			std::cerr << "Unknown frame type: " << frametype << std::endl;
+			return -1;
+		}
+	}
 }
