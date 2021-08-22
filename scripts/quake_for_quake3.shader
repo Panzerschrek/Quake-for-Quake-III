@@ -20,7 +20,7 @@ textures/CLIP
 	surfaceparm slime
 	cull disable
 	{
-		map "textures/*SLIME0.tga"
+		map "textures/*SLIME2.tga"
 		tcmod turb 0 0.125 0.0 0.125
 		blendFunc GL_ONE GL_ZERO
 		rgbGen identity
