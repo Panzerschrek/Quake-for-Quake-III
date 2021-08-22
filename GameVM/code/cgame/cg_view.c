@@ -265,26 +265,11 @@ void CG_AddEntities()
 		}
 		else if( cgs.gameModels[modelindex].is_sprite )
 		{
-			int i, j;
-			polyVert_t verts[4];
-			static const vec3_t quad_delta[4] = { { -1, -1, 0 }, { -1, +1, 0 }, { +1, +1, 0 }, { +1, -1, 0 } };
-
-			for(i= 0; i < 4; ++i)
-			{
-				for( j= 0; j < 4; ++j )
-					verts[i].modulate[j]= 255;
-
-				for( j= 0; j < 3; ++j )
-					verts[i].xyz[j]=
-						in_ent->origin[j] +
-							32.0f * (
-								cg.refdef.viewaxis[2][j] * quad_delta[i][0] +
-								cg.refdef.viewaxis[1][j] * quad_delta[i][1]);
-
-				verts[i].st[0]= (quad_delta[i][0] + 1.0f) * 0.5f;
-				verts[i].st[1]= (quad_delta[i][1] + 1.0f) * 0.5f;
-			}
-			trap_R_AddPolyToScene( cgs.gameModels[modelindex].handle, 4, verts );
+			out_ent.reType = RT_SPRITE;
+			out_ent.radius = 32.0f;
+			out_ent.customShader = cgs.gameModels[modelindex].handle;
+			// Sprite shader uses "1" for sprite frequency. So, frame is mapped to time 1 to 1.
+			out_ent.shaderTime = -in_ent->frame;
 		}
 		else
 		{
@@ -457,6 +442,9 @@ void CG_DrawActiveFrame( int serverTime, stereoFrame_t stereoView, qboolean demo
 	CL_DecayLights();
 	CG_UpdateEntities();
 
+	cg.refdef.time = cg.time;
+	memcpy( cg.refdef.areamask, cg.snap.areamask, sizeof( cg.refdef.areamask ) );
+
 	CG_AddEntities();
 	CG_AndAddTEnts();
 	CG_AddDlights();
@@ -474,9 +462,6 @@ void CG_DrawActiveFrame( int serverTime, stereoFrame_t stereoView, qboolean demo
 
 	if( cg.snap.ps.pm_type == PM_NORMAL )
 		CG_AddViewWeapon( &cg.snap.ps );
-
-	cg.refdef.time = cg.time;
-	memcpy( cg.refdef.areamask, cg.snap.areamask, sizeof( cg.refdef.areamask ) );
 
 	// update audio positions
 	trap_S_Respatialize( cg.snap.ps.clientNum, cg.refdef.vieworg, cg.refdef.viewaxis, inwater );
