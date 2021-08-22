@@ -122,6 +122,7 @@ shader_lava_fullbright_template = """
 	}
 }
 """
+
 shader_generic_turb_template = """
 "textures/%(shader_name)"
 {
@@ -313,3 +314,32 @@ def generate_models_shader_file(tga_textures_dir, out_shader_file):
 			# Do not create shader for regular textures without turb, animation, fullbright pixels.
 			if shader != "":
 				f.write(shader)
+
+
+def generate_sprites_shader_file(tga_sprites_dir, out_shader_file):
+
+	with open(out_shader_file, mode = "w") as f:
+		for file_name in os.listdir(tga_sprites_dir):
+
+			file_name_without_extension = file_name.replace(".tga", "")
+
+			if not file_name.endswith("0.tga"):
+				continue # Generate shaders once per group
+
+			shader_name = file_name.replace("0.tga", "")
+
+			shader  = "\"progs/" + shader_name + "\"\n"
+			shader += "{\n"
+			shader += "\t{\n"
+			shader += "\t{\n\t\tanimMap 4"
+			for i in range(10):
+				frame_name = shader_name + str(i) + ".tga"
+				if os.path.exists(os.path.join(tga_sprites_dir, frame_name)):
+					shader+= " \"sprites/" + frame_name + "\""
+
+			shader+= "\n"
+			shader+= "\t\tblendFunc GL_SRC_ALPHA GL_ONE_MINUS_SRC_ALPHA\n"
+			shader+= "\t}\n"
+			shader+= "}\n\n"
+
+			f.write(shader)
