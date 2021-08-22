@@ -196,7 +196,7 @@ int main(const int argc, const char* const argv[])
 			for( int y= 0; y < frame.height; ++y )
 			for( int x= 0; x < frame.width ; ++x )
 			{
-				const int dst_pixel = x + start_x  + (y + start_y) * MAX_SPRITE_SIZE;
+				const int dst_pixel = x + start_x  + (MAX_SPRITE_SIZE - 1 - (y + start_y)) * MAX_SPRITE_SIZE;
 				const byte pixel= frame_data[ x + y * frame.width ];
 				data_rgba[ dst_pixel * 4 + 0 ] = palette[ pixel * 3 + 0 ];
 				data_rgba[ dst_pixel * 4 + 1 ] = palette[ pixel * 3 + 1 ];
