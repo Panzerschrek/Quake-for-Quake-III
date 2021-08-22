@@ -65,6 +65,8 @@ void ReadFile(FILE& f, const uint64_t offset, const uint64_t size, void* const o
 	std::fread(out_data, size, 1, &f); // TODO - read in loop
 }
 
+#define MAX_SPRITE_SIZE 64
+
 int main(const int argc, const char* const argv[])
 {
 	std::string in_file_name;
@@ -162,10 +164,15 @@ int main(const int argc, const char* const argv[])
 		std::cerr << "\""<< in_file_name << "\" is not a Quake sprite file." << std::endl;
 		return -1;
 	}
+	if (sprite_header.width > MAX_SPRITE_SIZE || sprite_header.height > MAX_SPRITE_SIZE)
+	{
+		std::cerr << "Sprite is too big - " << sprite_header.width << "x" << sprite_header.height << ", maximum size is " << MAX_SPRITE_SIZE << "x" << MAX_SPRITE_SIZE << std::endl;
+		return 01;
+	}
 
 	size_t frame_number= 0;
 	std::vector<byte> data_rgba;
-	data_rgba.resize(sprite_header.width * sprite_header.height * 4);
+	data_rgba.resize(MAX_SPRITE_SIZE * MAX_SPRITE_SIZE * 4);
 
 	auto ptr= file_data.data() + sizeof(dsprite_t);
 	for( int i= 0; i < sprite_header.numframes; ++i )
@@ -184,12 +191,12 @@ int main(const int argc, const char* const argv[])
 
 			std::memset(data_rgba.data(), 0, data_rgba.size());
 
-			const int start_x = sprite_header.width  / 2 + frame.origin[0];
-			const int start_y = sprite_header.height / 2 - frame.origin[1];
+			const int start_x = (MAX_SPRITE_SIZE - sprite_header.width ) / 2 + frame.width  / 2 + frame.origin[0];
+			const int start_y = (MAX_SPRITE_SIZE - sprite_header.height) / 2 + frame.height / 2 - frame.origin[1];
 			for( int y= 0; y < frame.height; ++y )
 			for( int x= 0; x < frame.width ; ++x )
 			{
-				const int dst_pixel = x + start_x  + (y + start_y) * sprite_header.width;
+				const int dst_pixel = x + start_x  + (y + start_y) * MAX_SPRITE_SIZE;
 				const byte pixel= frame_data[ x + y * frame.width ];
 				data_rgba[ dst_pixel * 4 + 0 ] = palette[ pixel * 3 + 0 ];
 				data_rgba[ dst_pixel * 4 + 1 ] = palette[ pixel * 3 + 1 ];
@@ -197,7 +204,7 @@ int main(const int argc, const char* const argv[])
 				data_rgba[ dst_pixel * 4 + 3 ] = pixel == 255 ? 0 : 255;
 			}
 
-			WriteTGA((out_file_name_base + std::to_string(frame_number) + ".tga").c_str(), data_rgba.data(), frame.width, frame.height);
+			WriteTGA((out_file_name_base + std::to_string(frame_number) + ".tga").c_str(), data_rgba.data(), MAX_SPRITE_SIZE, MAX_SPRITE_SIZE);
 			++frame_number;
 
 			ptr+= size;
