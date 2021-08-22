@@ -327,9 +327,17 @@ static void CG_RegisterResources( void ) {
 				outModel->numFrames= header.num_frames;
 				trap_FS_FCloseFile(f);
 			}
-		}
 
-		outModel->handle = trap_R_RegisterModel( modelName );
+			outModel->handle = trap_R_RegisterModel( modelName );
+			outModel->is_sprite = qfalse;
+		}
+		else if(n >= 4 && modelName[n-4] == '.' && modelName[n-3] == 's' && modelName[n-2] == 'p' && modelName[n-1] == 'r')
+		{
+			// Register shader for sprite.
+			modelName[n-4]= '\0';
+			outModel->handle = trap_R_RegisterShader(modelName);
+			outModel->is_sprite = qtrue;
+		}
 	}
 
 	// register all the server specified sounds

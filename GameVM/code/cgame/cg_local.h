@@ -136,6 +136,7 @@ typedef struct {
 	qhandle_t handle;
 	int flags;
 	int numFrames;
+	qboolean is_sprite;
 } gameModel_t;
 
 // The client game static (cgs) structure hold everything

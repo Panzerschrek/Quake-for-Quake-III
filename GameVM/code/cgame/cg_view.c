@@ -263,6 +263,29 @@ void CG_AddEntities()
 				out_ent.shaderRGBA[3] = 255;
 			}
 		}
+		else if( cgs.gameModels[modelindex].is_sprite )
+		{
+			int i, j;
+			polyVert_t verts[4];
+			static const vec3_t quad_delta[4] = { { -1, -1, 0 }, { -1, +1, 0 }, { +1, +1, 0 }, { +1, -1, 0 } };
+
+			for(i= 0; i < 4; ++i)
+			{
+				for( j= 0; j < 4; ++j )
+					verts[i].modulate[j]= 255;
+
+				for( j= 0; j < 3; ++j )
+					verts[i].xyz[j]=
+						in_ent->origin[j] +
+							32.0f * (
+								cg.refdef.viewaxis[2][j] * quad_delta[i][0] +
+								cg.refdef.viewaxis[1][j] * quad_delta[i][1]);
+
+				verts[i].st[0]= (quad_delta[i][0] + 1.0f) * 0.5f;
+				verts[i].st[1]= (quad_delta[i][1] + 1.0f) * 0.5f;
+			}
+			trap_R_AddPolyToScene( cgs.gameModels[modelindex].handle, 4, verts );
+		}
 		else
 		{
 			out_ent.hModel= cgs.gameModels[modelindex].handle;
