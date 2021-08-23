@@ -269,7 +269,7 @@ void CG_AddEntities()
 			out_ent.radius = 32.0f;
 			out_ent.customShader = cgs.gameModels[modelindex].handle;
 			// Sprite shader uses "1" for sprite frequency. So, frame is mapped to time 1 to 1.
-			out_ent.shaderTime = -in_ent->frame;
+			out_ent.shaderTime = cg.time / 1000.0f - in_ent->frame - 0.5f;
 		}
 		else
 		{
@@ -442,23 +442,23 @@ void CG_DrawActiveFrame( int serverTime, stereoFrame_t stereoView, qboolean demo
 	CL_DecayLights();
 	CG_UpdateEntities();
 
-	cg.refdef.time = cg.time;
-	memcpy( cg.refdef.areamask, cg.snap.areamask, sizeof( cg.refdef.areamask ) );
-
-	CG_AddEntities();
-	CG_AndAddTEnts();
-	CG_AddDlights();
-	R_DrawParticles();
-
 	// build cg.refdef
 	if( cg.snap.ps.pm_type == PM_NORMAL )
 		CG_CalcViewValues();
 	else
 		CG_CalcIntermissionViewValues();
 
+	cg.refdef.time = cg.time;
+	memcpy( cg.refdef.areamask, cg.snap.areamask, sizeof( cg.refdef.areamask ) );
+
 	cg.viewContents = trap_CM_PointContents( cg.refdef.vieworg, 0 );
 
 	inwater = CorrectUnwderwaterView();
+
+	CG_AddEntities();
+	CG_AndAddTEnts();
+	CG_AddDlights();
+	R_DrawParticles();
 
 	if( cg.snap.ps.pm_type == PM_NORMAL )
 		CG_AddViewWeapon( &cg.snap.ps );
