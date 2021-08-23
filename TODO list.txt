@@ -19,7 +19,6 @@ Shaders:
 * Shaders for in-game UI elements (avoid ugly interpolation and power of 2 textures conversion)
 
 Data export:
-* Properly export frames of flame models (should export more than 1-2 frames)
 * Support animated textures on exported BSP models
 * Replace '*' in texture names (in maps, wad) with something else, because '*' is not a valid symbol for file names. Also Quake-utilities recognize '/*' as comment start.
 

@@ -342,13 +342,13 @@ bool_t model_md3_save(const model_t *model, xbuf_t *xbuf, char **out_error)
 	char **skinshaders;
 	const tag_t *tag;
 	const mesh_t *mesh;
-	int i, j, k, m;
+	int i, j, k, m, n;
 
 	memcpy(header.ident, "IDP3", 4);
 	header.version    = LittleLong(15);
 	strlcpy(header.name, "md3model", sizeof(header.name));
 	header.flags      = LittleLong(model->flags);
-	header.num_frames = LittleLong(model->num_frames);
+	header.num_frames = LittleLong(model->total_frames); // Export all frames (include all frames inside frame groups).
 	header.num_tags   = LittleLong(model->num_tags);
 	header.num_meshes = LittleLong(model->num_meshes);
 	header.num_skins  = LittleLong(model->num_skins);
@@ -374,10 +374,10 @@ bool_t model_md3_save(const model_t *model, xbuf_t *xbuf, char **out_error)
 	i = sizeof(md3_header_t);
 
 	header.lump_frameinfo = LittleLong(i);
-	i += sizeof(md3_frameinfo_t) * model->num_frames;
+	i += sizeof(md3_frameinfo_t) * model->total_frames;
 
 	header.lump_tags = LittleLong(i);
-	i += sizeof(md3_tag_t) * model->num_frames * model->num_tags;
+	i += sizeof(md3_tag_t) * model->total_frames * model->num_tags;
 
 	header.lump_meshes = i;
 	for (j = 0, mesh = model->meshes; j < model->num_meshes; j++, mesh++)
@@ -386,7 +386,7 @@ bool_t model_md3_save(const model_t *model, xbuf_t *xbuf, char **out_error)
 		i += mesh->num_triangles * sizeof(int[3]); /* triangle elements */
 		i += model->num_skins * sizeof(md3_shader_t);
 		i += mesh->num_vertices * sizeof(float[2]); /* texcoords */
-		i += mesh->num_vertices * model->num_frames * sizeof(md3_vertex_t); /* framevertices */
+		i += mesh->num_vertices * model->total_frames * sizeof(md3_vertex_t); /* framevertices */
 	}
 
 	header.lump_end = i;
@@ -396,8 +396,9 @@ bool_t model_md3_save(const model_t *model, xbuf_t *xbuf, char **out_error)
 
 /* write frameinfo */
 	for (i = 0, frameinfo = model->frameinfo; i < model->num_frames; i++, frameinfo++)
+	for( n = 0; n < frameinfo->num_frames; n++ )
 	{
-		const singleframe_t *singleframe = &frameinfo->frames[0];
+		const singleframe_t *singleframe = &frameinfo->frames[n];
 		md3_frameinfo_t md3_frameinfo;
 		float mins[3], maxs[3], dist[3];
 		bool_t first = true;
@@ -432,9 +433,8 @@ bool_t model_md3_save(const model_t *model, xbuf_t *xbuf, char **out_error)
 		xbuf_write_data(xbuf, sizeof(md3_frameinfo_t), &md3_frameinfo);
 	}
 
-
 /* write tags */
-	for (i = 0, frameinfo = model->frameinfo; i < model->num_frames; i++, frameinfo++)
+	for (i = 0, frameinfo = model->frameinfo; i < model->total_frames; i++, frameinfo++)
 	{
 		for (j = 0, tag = model->tags; j < model->num_tags; j++, tag++)
 		{
@@ -469,7 +469,7 @@ bool_t model_md3_save(const model_t *model, xbuf_t *xbuf, char **out_error)
 		strlcpy(md3_mesh.name, mesh->name, sizeof(md3_mesh.name));
 		md3_mesh.flags = 0; /* unused */
 
-		md3_mesh.num_frames = LittleLong(model->num_frames);
+		md3_mesh.num_frames = LittleLong(model->total_frames);
 		md3_mesh.num_shaders = model->total_skins;
 		md3_mesh.num_vertices = LittleLong(mesh->num_vertices);
 		md3_mesh.num_triangles = LittleLong(mesh->num_triangles);
@@ -486,7 +486,7 @@ bool_t model_md3_save(const model_t *model, xbuf_t *xbuf, char **out_error)
 		j += mesh->num_vertices * sizeof(float[2]);
 
 		md3_mesh.lump_framevertices = j;
-		j += mesh->num_vertices * model->num_frames * sizeof(md3_vertex_t);
+		j += mesh->num_vertices * model->total_frames * sizeof(md3_vertex_t);
 
 		md3_mesh.lump_end = j;
 
@@ -525,8 +525,9 @@ bool_t model_md3_save(const model_t *model, xbuf_t *xbuf, char **out_error)
 
 	/* write framevertices */
 		for (j = 0, frameinfo = model->frameinfo; j < model->num_frames; j++, frameinfo++)
+		for( n = 0; n < frameinfo->num_frames; n++ )
 		{
-			const singleframe_t *singleframe = &frameinfo->frames[0];
+			const singleframe_t *singleframe = &frameinfo->frames[n];
 			const float *v = mesh->vertex3f + singleframe->offset * mesh->num_vertices * 3;
 			const float *n = mesh->normal3f + singleframe->offset * mesh->num_vertices * 3;
 
