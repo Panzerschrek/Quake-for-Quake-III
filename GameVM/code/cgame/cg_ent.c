@@ -39,7 +39,8 @@ void CG_UpdateEntities (void)
 		if( entState->frame == 65535 ) // Client-side animation
 		{
 			// Assume 10 frames/s monotonic animation.
-			ent->frame = cg.time / 100 % cgs.gameModels[modelindex].numFrames;
+			// shift phase based on entity number
+			ent->frame = ( cg.time / 100 + entState->number * 79 ) % cgs.gameModels[modelindex].numFrames;
 		}
 	}
 }
