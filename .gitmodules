@@ -3,4 +3,4 @@
 	url = https://github.com/id-Software/Quake-III-Arena.git
 [submodule "quake_map_source"]
 	path = quake_map_source
-	url = https://github.com/fzwoch/quake_map_source.git
+	url = git@github.com:Panzerschrek/quake_map_source.git
