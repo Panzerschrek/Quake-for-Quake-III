@@ -557,6 +557,8 @@ void M_SinglePlayer_Key (int key)
 			if (m_ingame)
 				trap_Cmd_ExecuteText (EXEC_APPEND, "disconnect\n");
 
+			trap_Cmd_ExecuteText (EXEC_APPEND,"deathmatch 0\n");
+			trap_Cmd_ExecuteText (EXEC_APPEND,"coop 0\n");
 			trap_Cmd_ExecuteText (EXEC_APPEND,"maxplayers 1\n");
 			trap_Cmd_ExecuteText (EXEC_APPEND,"map start\n");
 			break;
@@ -2390,6 +2392,8 @@ void M_GameOptions_Key (int key)
 			trap_Cmd_ExecuteText (EXEC_APPEND, "disconnect\n");
 			trap_Cmd_ExecuteText (EXEC_APPEND, "listen 0\n");	// so host_netport will be re-examined
 			trap_Cmd_ExecuteText (EXEC_APPEND,  va ("maxplayers %u\n", maxplayers) );
+
+			trap_Cmd_ExecuteText (EXEC_APPEND,"deathmatch 1\n");
 
 			if (hipnotic)
 				trap_Cmd_ExecuteText (EXEC_APPEND,  va ("map %s\n", hipnoticlevels[hipnoticepisodes[startepisode].firstLevel + startlevel].name) );

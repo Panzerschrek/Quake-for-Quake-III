@@ -219,6 +219,9 @@ static void M_LoadGame_f()
 	trap_Cvar_Set("g_server_start_save_file", savename);
 
 	// Run selected map.
+	trap_Cmd_ExecuteText (EXEC_APPEND,"deathmatch 0\n");
+	trap_Cmd_ExecuteText (EXEC_APPEND,"coop 0\n");
+	trap_Cmd_ExecuteText (EXEC_APPEND,"maxplayers 1\n");
 	trap_Cmd_ExecuteText (EXEC_APPEND, va ("map %s\n", mapname) );
 }
 
