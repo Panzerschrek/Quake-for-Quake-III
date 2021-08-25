@@ -15,44 +15,44 @@ else()
 endif()
 
 # QCommon library
-file(GLOB QCOMMON_SOURCES ${CMAKE_CURRENT_SOURCE_DIR}/code/qcommon/*.c)
-file(GLOB QCOMMON_HEADERS ${CMAKE_CURRENT_SOURCE_DIR}/code/qcommon/*.h)
+file(GLOB QCOMMON_SOURCES ${CMAKE_CURRENT_SOURCE_DIR}/qcommon/*.c)
+file(GLOB QCOMMON_HEADERS ${CMAKE_CURRENT_SOURCE_DIR}/qcommon/*.h)
 add_library(qcommon STATIC ${QCOMMON_SOURCES} ${QCOMMON_HEADERS})
 
 # Server
-file(GLOB SERVER_SOURCES code/game/*.c)
-file(GLOB SERVER_SOURCES_MAIN code/game/g_main.c)
+file(GLOB SERVER_SOURCES game/*.c)
+file(GLOB SERVER_SOURCES_MAIN game/g_main.c)
 list(REMOVE_ITEM SERVER_SOURCES ${SERVER_SOURCES_MAIN})
-file(GLOB SERVER_HEADERS code/game/*.h)
-file(GLOB SERVER_SOURCES_NATIVE code/game/g_syscalls.c)
-file(GLOB SERVER_SOURCES_VM_ASM code/game/g_syscalls.asm)
+file(GLOB SERVER_HEADERS game/*.h)
+file(GLOB SERVER_SOURCES_NATIVE game/g_syscalls.c)
+file(GLOB SERVER_SOURCES_VM_ASM game/g_syscalls.asm)
 add_library(qagame${LIB_SUFFIX} SHARED ${SERVER_SOURCES} ${SERVER_SOURCES_MAIN} ${SERVER_HEADERS})
 target_link_libraries(qagame${LIB_SUFFIX} qcommon)
 
 # Client
 file(GLOB CLIENT_SOURCES
-	code/cgame/*.c
-	code/game/bg_lib.c
-	code/game/view.c
+	cgame/*.c
+	game/bg_lib.c
+	game/view.c
 	)
-file(GLOB CLIENT_SOURCES_MAIN code/cgame/cg_main.c)
+file(GLOB CLIENT_SOURCES_MAIN cgame/cg_main.c)
 list(REMOVE_ITEM CLIENT_SOURCES ${CLIENT_SOURCES_MAIN})
-file(GLOB CLIENT_HEADERS code/cgame/*.h)
-file(GLOB CLIENT_SOURCES_NATIVE code/cgame/cg_syscalls.c)
-file(GLOB CLIENT_SOURCES_VM_ASM code/cgame/cg_syscalls.asm)
+file(GLOB CLIENT_HEADERS cgame/*.h)
+file(GLOB CLIENT_SOURCES_NATIVE cgame/cg_syscalls.c)
+file(GLOB CLIENT_SOURCES_VM_ASM cgame/cg_syscalls.asm)
 add_library(cgame${LIB_SUFFIX} SHARED ${CLIENT_SOURCES} ${CLIENT_SOURCES_MAIN} ${CLIENT_HEADERS})
 target_link_libraries(cgame${LIB_SUFFIX} qcommon)
 
 # UI
 file(GLOB UI_SOURCES
-	code/q3_ui/*.c
-	code/game/bg_lib.c
+	q3_ui/*.c
+	game/bg_lib.c
 	)
-file(GLOB UI_SOURCES_MAIN code/q3_ui/ui_main.c)
+file(GLOB UI_SOURCES_MAIN q3_ui/ui_main.c)
 list(REMOVE_ITEM UI_SOURCES ${UI_SOURCES_MAIN})
-file(GLOB UI_HEADERS code/q3_ui/*.h)
-file(GLOB UI_SOURCES_NATIVE code/ui/ui_syscalls.c)
-file(GLOB UI_SOURCES_VM_ASM code/ui/ui_syscalls.asm)
+file(GLOB UI_HEADERS q3_ui/*.h)
+file(GLOB UI_SOURCES_NATIVE ui/ui_syscalls.c)
+file(GLOB UI_SOURCES_VM_ASM ui/ui_syscalls.asm)
 add_library(ui${LIB_SUFFIX} SHARED ${UI_SOURCES} ${UI_SOURCES_MAIN} ${UI_HEADERS} ${UI_SOURCES_NATIVE})
 target_link_libraries(ui${LIB_SUFFIX} qcommon)
 
