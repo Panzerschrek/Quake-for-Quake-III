@@ -624,6 +624,12 @@ void G_RunFrame( int levelTime ) {
 		client->ps.stats[STAT_MONSTERS] = pr_global_struct->killed_monsters;
 		client->ps.stats[STAT_TIME] = sv.time;
 
+		client->ps.pm_flags = 0;
+		if ( (int)edict->v.flags & FL_ONGROUND)
+			client->ps.pm_flags |= SU_ONGROUND;
+		if ( edict->v.waterlevel >= 2)
+			client->ps.pm_flags |= SU_INWATER;
+
 		{
 			eval_t* val;
 			int items;

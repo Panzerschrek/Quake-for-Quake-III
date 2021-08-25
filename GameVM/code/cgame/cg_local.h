@@ -111,6 +111,8 @@ typedef struct {
 	int			time;			// this is the time value that the client
 								// is rendering at.
 
+	float		old_player_z;
+
 	int			faceanimtime;
 	int			old_items;
 	int			item_gettime[32];	// cl.time of aquiring item, for blinking

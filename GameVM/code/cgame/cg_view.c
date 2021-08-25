@@ -107,6 +107,20 @@ static void CG_OffsetFirstPersonView( void ) {
 
 	bob = V_CalcBob();
 
+	// smooth out stair step ups
+	if ((cg.snap.ps.pm_flags & SU_ONGROUND) != 0 && origin[2] - cg.old_player_z > 0)
+	{
+		cg.old_player_z += cg.frametime / 1000.0f * 80;
+		if (cg.old_player_z > origin[2])
+			cg.old_player_z = origin[2];
+		if (origin[2] - cg.old_player_z > 12)
+			cg.old_player_z = origin[2] - 12;
+		origin[2] = cg.old_player_z;
+		cg.snap.ps.origin[2] = origin[2];
+	}
+	else
+		cg.old_player_z = origin[2];
+
 	// add view height
 	origin[2] += cg.snap.ps.viewheight + V_CalcBob();
 }
