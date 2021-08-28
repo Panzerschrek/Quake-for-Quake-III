@@ -2597,7 +2597,7 @@ void M_Init (void)
 void M_Draw (void)
 {
 	// PANZER TODO - do not forget to update this version.
-	static const char version_string[]= "Quake for Quake-III v 0.5 (" __DATE__ ")";
+	static const char version_string[]= "Quake for Quake-III v 0.6 (" __DATE__ ")";
 
 	if (m_state == m_none)
 		return;
