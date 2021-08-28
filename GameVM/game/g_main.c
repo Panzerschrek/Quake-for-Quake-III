@@ -582,8 +582,6 @@ void G_RunFrame( int levelTime ) {
 			continue;
 		}
 
-		client->ps.clientNum = i;
-
 		edict = svs.clients[i].edict;
 
 		if ( edict->v.fixangle )

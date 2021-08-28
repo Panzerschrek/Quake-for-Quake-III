@@ -451,7 +451,7 @@ void CG_DrawActiveFrame( int serverTime, stereoFrame_t stereoView, qboolean demo
 	if(cg.last_snap_num == 0)
 		return; // Did not recieve any snapshot yet.
 
-	cg.viewentity = cg.snap.ps.clientNum + 1;
+	cg.viewentity = cg.snap.ps.clientNum;
 
 	CL_DecayLights();
 	CG_UpdateEntities();
@@ -478,7 +478,8 @@ void CG_DrawActiveFrame( int serverTime, stereoFrame_t stereoView, qboolean demo
 		CG_AddViewWeapon( &cg.snap.ps );
 
 	// update audio positions
-	trap_S_Respatialize( cg.snap.ps.clientNum, cg.refdef.vieworg, cg.refdef.viewaxis, inwater );
+	trap_S_UpdateEntityPosition( cg.viewentity, cg.refdef.vieworg );
+	trap_S_Respatialize( cg.viewentity, cg.refdef.vieworg, cg.refdef.viewaxis, inwater );
 
 	trap_R_RenderScene( &cg.refdef );
 
