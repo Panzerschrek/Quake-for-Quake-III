@@ -602,6 +602,9 @@ void G_RunFrame( int levelTime ) {
 			event->s.constantLight= (((int)edict->v.dmg_save) & 255) | ((((int)edict->v.dmg_take) & 255) << 8);
 			edict->v.dmg_take = 0;
 			edict->v.dmg_save = 0;
+			// Send this event only to this client.
+			event->r.singleClient = i;
+			event->r.svFlags = SVF_SINGLECLIENT;
 		}
 
 		VectorCopy(edict->v.origin, client->ps.origin);
