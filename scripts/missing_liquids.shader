@@ -1,5 +1,23 @@
 // Shaders for missing in QUAKE101.wad water/slime textures.
 
+"textures/*SLIME"
+{
+	q3map_globaltexture
+	q3map_tessSize 96
+	surfaceparm noimpact
+	surfaceparm nolightmap
+	surfaceparm nonsolid
+	surfaceparm trans
+	surfaceparm slime
+	cull disable
+	{
+		map "textures/*SLIME1.tga"
+		tcmod turb 0 0.125 0.0 0.125
+		blendFunc GL_ONE GL_ZERO
+		rgbGen identity
+	}
+}
+
 "textures/*SLIME0"
 {
 	q3map_globaltexture
@@ -47,7 +65,7 @@
 	surfaceparm water
 	cull disable
 	{
-		map "textures/*WATER2.tga"
+		map "textures/*WATER1.tga"
 		tcmod turb 0 0.125 0.0 0.125
 		blendFunc GL_ONE GL_ZERO
 		rgbGen identity
