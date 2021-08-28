@@ -240,9 +240,6 @@ void CG_AddEntities()
 		if( modelindex == 0 )
 			continue;
 
-		if( in_ent_state->number == cg.viewentity )
-			continue; // Do not draw player itself.
-
 		in_ent = &cg_entities[in_ent_state->number];
 
 		memset (&out_ent, 0, sizeof(out_ent));
@@ -478,7 +475,8 @@ void CG_DrawActiveFrame( int serverTime, stereoFrame_t stereoView, qboolean demo
 		CG_AddViewWeapon( &cg.snap.ps );
 
 	// update audio positions
-	trap_S_UpdateEntityPosition( cg.viewentity, cg.refdef.vieworg );
+	// Server does not send client entity to this client. So, take position for player entity sound from player state structure.
+	trap_S_UpdateEntityPosition( cg.viewentity, cg.snap.ps.origin );
 	trap_S_Respatialize( cg.viewentity, cg.refdef.vieworg, cg.refdef.viewaxis, inwater );
 
 	trap_R_RenderScene( &cg.refdef );
