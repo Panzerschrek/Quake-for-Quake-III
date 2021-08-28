@@ -116,5 +116,18 @@ void ClientBegin( int clientNum ) {
 }
 
 void ClientDisconnect( int clientNum ) {
-	// PANZER TODO
+	client_t	*client;
+	int			saveSelf;
+
+	client = svs.clients + clientNum;
+
+	saveSelf = pr_global_struct->self;
+	pr_global_struct->self = EDICT_TO_PROG(client->edict);
+	PR_ExecuteProgram (pr_global_struct->ClientDisconnect);
+	pr_global_struct->self = saveSelf;
+
+	client->active = qfalse;
+	client->connected = qfalse;
+	client->name[0] = 0;
+	client->old_frags = -999999;
 }
