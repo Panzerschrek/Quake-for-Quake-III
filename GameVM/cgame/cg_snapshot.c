@@ -123,7 +123,6 @@ static void CG_UpdateEntitiesWithNewSnapshot (void) {
 		cent = &cg_entities[n];
 
 		VectorCopy(entState->origin, cent->origin);
-		VectorCopy(entState->angles, cent->angles);
 
 		if ( entState->solid == SOLID_BMODEL )
 		{
@@ -149,6 +148,10 @@ static void CG_UpdateEntitiesWithNewSnapshot (void) {
 			cent->modelindex = entState->modelindex;
 			cent->oldframe = cent->frame = entState->frame;
 			cent->framelerp = 1.0f;
+
+			// Reset angles interpolation too.
+			VectorCopy(entState->angles, cent->angles);
+			VectorCopy(entState->angles, cent->oldangles);
 		}
 		else if(cent->frame != entState->frame)
 		{
@@ -156,6 +159,23 @@ static void CG_UpdateEntitiesWithNewSnapshot (void) {
 			cent->oldframe= cent->frame;
 			cent->frame= entState->frame;
 			cent->framelerp= 0.0f;
+		}
+
+		if (cent->modelindex != 0 &&
+			!(cent->angles[0] == entState->angles[0] && cent->angles[1] == entState->angles[1] && cent->angles[2] == entState->angles[2]))
+		{
+			// Calculate last interpolated angles, save them into old angles, set target angle and reset interpolation.
+			for (j= 0; j < 3; ++j)
+			{
+				float angle, oldangle, delta;
+				angle= AngleNormalize360(cent->angles[j]);
+				oldangle= AngleNormalize360(cent->oldangles[j]);
+				delta= AngleNormalize180( angle - oldangle );
+
+				cent->oldangles[j]= oldangle + delta * cent->anglelerp;
+				cent->angles[j]= entState->angles[j];
+			}
+			cent->anglelerp= 0.0f;
 		}
 	}
 }

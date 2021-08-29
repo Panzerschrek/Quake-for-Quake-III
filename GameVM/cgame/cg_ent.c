@@ -16,9 +16,12 @@ void CG_UpdateEntities (void)
 	int i, modelindex;
 	entityState_t*	entState;
 	centity_t*	ent;
-	float bobjrotate;
+	float bobjrotate, lerpdelta;
 
 	bobjrotate = AngleNormalize360(cg.time / 10.0);
+
+	// Switch frames and iterpolate angles in 1/10 s - as default frames update frequency in QuakeC.
+	lerpdelta = cg.frametime / 100.0f;
 
 	for( i = 0; i < cg.snap.numEntities; ++i )
 	{
@@ -32,9 +35,17 @@ void CG_UpdateEntities (void)
 		if ( entState->solid == SOLID_BMODEL )
 			continue;
 
-
 		if (cgs.gameModels[modelindex].flags & EF_ROTATE)
-			ent->angles[YAW] = bobjrotate;
+		{
+			ent->angles[YAW] = ent->oldangles[YAW] = bobjrotate;
+			ent->anglelerp= 1.0f;
+		}
+		else
+		{
+			ent->anglelerp+= lerpdelta;
+			if( ent->anglelerp > 1.0f )
+				ent->anglelerp= 1.0f;
+		}
 
 		if( entState->frame == 65535 ) // Client-side animation
 		{
@@ -46,8 +57,7 @@ void CG_UpdateEntities (void)
 		}
 		else
 		{
-			// Switch frames in 1/10 s - as default frames update frequency in QuakeC.
-			ent->framelerp+= cg.frametime / 100.0f;
+			ent->framelerp+= lerpdelta;
 			if(ent->framelerp > 1.0f)
 				ent->framelerp= 1.0f;
 		}

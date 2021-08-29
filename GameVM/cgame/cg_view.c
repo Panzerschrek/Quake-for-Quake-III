@@ -222,11 +222,11 @@ static int CorrectUnwderwaterView(void) {
 
 void CG_AddEntities()
 {
-	int				num, modelindex;
+	int				num, modelindex, i;
 	entityState_t*	in_ent_state;
 	centity_t*		in_ent;
 	refEntity_t		out_ent;
-	vec3_t			anglesCorrected;
+	vec3_t			anglesInterpolated;
 
 	// Directly take entities from snapshot and add them to scene.
 
@@ -242,16 +242,22 @@ void CG_AddEntities()
 		if( modelindex == 0 )
 			continue;
 
-
 		memset (&out_ent, 0, sizeof(out_ent));
 		VectorCopy( in_ent->origin, out_ent.origin);
 		VectorCopy( in_ent->origin, out_ent.oldorigin);
 
+		for (i= 0; i < 3; ++i)
+		{
+			float angle, oldangle, delta;
+			angle= AngleNormalize360(in_ent->angles[i]);
+			oldangle= AngleNormalize360(in_ent->oldangles[i]);
+			delta= AngleNormalize180( angle - oldangle );
+			anglesInterpolated[i] = oldangle + delta * in_ent->anglelerp;
+		}
 		// I do not know why, but i need to revert pitch to get correct models orientation.
-		anglesCorrected[PITCH]= -AngleNormalize360(in_ent->angles[PITCH]);
-		anglesCorrected[YAW]= AngleNormalize360(in_ent->angles[YAW]);
-		anglesCorrected[ROLL]= AngleNormalize360(in_ent->angles[ROLL]);
-		AnglesToAxis( anglesCorrected, out_ent.axis );
+		anglesInterpolated[PITCH]= -anglesInterpolated[PITCH];
+
+		AnglesToAxis( anglesInterpolated, out_ent.axis );
 
 		if ( in_ent_state->solid == SOLID_BMODEL )
 		{

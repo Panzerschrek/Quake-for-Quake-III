@@ -40,12 +40,15 @@ typedef struct
 {
 	int prev_unique_event_id;
 	vec3_t origin;
-	vec3_t angles;
 
 	int modelindex;
 	int oldframe;
 	int	frame;
 	float framelerp; // 0 - old, 1 - new
+
+	vec3_t angles;
+	vec3_t oldangles;
+	float anglelerp; // 0 - old, 1 - new
 } centity_t;
 
 
