@@ -117,6 +117,11 @@ typedef struct {
 
 	float		old_player_z;
 
+	int			weaponModel;
+	int			weaponFrame;
+	int			weaponOldFrame;
+	float		weaponFrameLerp;
+
 	int			faceanimtime;
 	int			old_items;
 	int			item_gettime[32];	// cl.time of aquiring item, for blinking

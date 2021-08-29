@@ -381,6 +381,34 @@ static void CG_AddDlights(void) {
 	}
 }
 
+static void CG_AnimateWeapon()
+{
+	int		model, frame;
+
+	model= cg.snap.ps.weapon;
+	frame= cg.snap.ps.weaponstate;
+
+	if (cg.weaponModel != model)
+	{
+		// Reset animation if model was changed.
+		cg.weaponModel = model;
+		cg.weaponFrame= cg.weaponOldFrame = frame;
+		cg.weaponFrameLerp= 1.0f;
+	}
+	else if(cg.weaponFrame != frame)
+	{
+		// Reset frame interpolation if target frame was changed.
+		cg.weaponOldFrame= cg.weaponFrame;
+		cg.weaponFrame= frame;
+		cg.weaponFrameLerp= 0.0f;
+	}
+
+	// Swith frames in 1/10 s.
+	cg.weaponFrameLerp+= cg.frametime / 100.0f;
+	if (cg.weaponFrameLerp > 1.0f)
+		cg.weaponFrameLerp= 1.0f;
+}
+
 /*
 ==============
 CG_AddViewWeapon
@@ -420,8 +448,10 @@ void CG_AddViewWeapon( playerState_t *ps ) {
 	hand.oldorigin[2] += ps->viewheight;
 	AnglesToAxis( ps->viewangles, hand.axis );
 
-	hand.hModel = cgs.gameModels[ps->weapon].handle;
-	hand.frame= hand.oldframe= ps->weaponstate; // Use "weaponstate" for weapon frame.
+	hand.hModel = cgs.gameModels[cg.weaponModel].handle;
+	hand.frame= cg.weaponFrame;
+	hand.oldframe= cg.weaponOldFrame;
+	hand.backlerp= 1.0f - cg.weaponFrameLerp;
 	hand.renderfx = RF_DEPTHHACK | RF_FIRST_PERSON | RF_MINLIGHT;
 
 	trap_R_AddRefEntityToScene(&hand);
@@ -457,6 +487,7 @@ void CG_DrawActiveFrame( int serverTime, stereoFrame_t stereoView, qboolean demo
 
 	CL_DecayLights();
 	CG_UpdateEntities();
+	CG_AnimateWeapon();
 
 	// build cg.refdef
 	if( cg.snap.ps.pm_type == PM_NORMAL )
