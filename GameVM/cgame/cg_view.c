@@ -232,7 +232,9 @@ void CG_AddEntities()
 
 	for ( num = 0 ; num < cg.snap.numEntities ; num++ ) {
 		in_ent_state = &cg.snap.entities[num];
-		modelindex= in_ent_state->modelindex;
+		in_ent = &cg_entities[in_ent_state->number];
+
+		modelindex= in_ent->modelindex;
 
 		if( in_ent_state->loopSound )
 			CG_SetAmbientSound( in_ent_state );
@@ -240,7 +242,6 @@ void CG_AddEntities()
 		if( modelindex == 0 )
 			continue;
 
-		in_ent = &cg_entities[in_ent_state->number];
 
 		memset (&out_ent, 0, sizeof(out_ent));
 		VectorCopy( in_ent->origin, out_ent.origin);
@@ -285,7 +286,11 @@ void CG_AddEntities()
 		else
 		{
 			out_ent.hModel= cgs.gameModels[modelindex].handle;
-			out_ent.frame = out_ent.oldframe = in_ent->frame;
+
+			out_ent.frame= in_ent->frame;
+			out_ent.oldframe= in_ent->oldframe;
+			out_ent.backlerp = 1.0f - in_ent->framelerp;
+
 			out_ent.skinNum = in_ent_state->generic1;
 		}
 

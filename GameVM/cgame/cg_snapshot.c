@@ -124,7 +124,6 @@ static void CG_UpdateEntitiesWithNewSnapshot (void) {
 
 		VectorCopy(entState->origin, cent->origin);
 		VectorCopy(entState->angles, cent->angles);
-		cent->frame = entState->frame;
 
 		if ( entState->solid == SOLID_BMODEL )
 		{
@@ -140,6 +139,23 @@ static void CG_UpdateEntitiesWithNewSnapshot (void) {
 		{
 			cent->prev_unique_event_id = event_unique_id;
 			CG_CheckEvents( &cg.snap.entities[i] );
+		}
+
+		if (entState->modelindex == 0)
+			cent->modelindex = 0;
+		else if (cent->modelindex != entState->modelindex)
+		{
+			// Reset frames interpolation if model index changed.
+			cent->modelindex = entState->modelindex;
+			cent->oldframe = cent->frame = entState->frame;
+			cent->framelerp = 1.0f;
+		}
+		else if(cent->frame != entState->frame)
+		{
+			// Reset frames interpolation if target frame changed.
+			cent->oldframe= cent->frame;
+			cent->frame= entState->frame;
+			cent->framelerp= 0.0f;
 		}
 	}
 }

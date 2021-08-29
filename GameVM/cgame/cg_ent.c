@@ -41,6 +41,15 @@ void CG_UpdateEntities (void)
 			// Assume 10 frames/s monotonic animation.
 			// shift phase based on entity number
 			ent->frame = ( cg.time / 100 + entState->number * 79 ) % cgs.gameModels[modelindex].numFrames;
+			ent->oldframe = ent->frame;
+			ent->framelerp= 1.0f;
+		}
+		else
+		{
+			// Switch frames in 1/10 s - as default frames update frequency in QuakeC.
+			ent->framelerp+= cg.frametime / 100.0f;
+			if(ent->framelerp > 1.0f)
+				ent->framelerp= 1.0f;
 		}
 	}
 }
