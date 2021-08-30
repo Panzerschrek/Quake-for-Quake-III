@@ -240,6 +240,9 @@ void CG_AddEntities()
 		if( modelindex == 0 )
 			continue;
 
+		if( in_ent_state->number == cg.viewentity )
+			continue; // Do not draw player model itself.
+
 		in_ent = &cg_entities[in_ent_state->number];
 
 		memset (&out_ent, 0, sizeof(out_ent));
@@ -448,7 +451,7 @@ void CG_DrawActiveFrame( int serverTime, stereoFrame_t stereoView, qboolean demo
 	if(cg.last_snap_num == 0)
 		return; // Did not recieve any snapshot yet.
 
-	cg.viewentity = cg.snap.ps.clientNum;
+	cg.viewentity = cg.snap.ps.clientNum + 1;
 
 	CL_DecayLights();
 	CG_UpdateEntities();

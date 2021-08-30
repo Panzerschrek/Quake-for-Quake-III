@@ -61,9 +61,7 @@ char *ClientConnect( int clientNum, qboolean firstTime, qboolean isBot ) {
 	client->active = qfalse;
 	client->edict = ent;
 
-	// Hack! Add 1 to client number, because Quake III engine implicitely map 0-N entities to clients,
-	// but Quake 1 code uses 0 entity for world.
-	client->ps.clientNum = clientNum + 1;
+	client->ps.clientNum = clientNum;
 
 	client->message.data = client->msgbuf;
 	client->message.maxsize = sizeof(client->msgbuf);

@@ -1,4 +1,5 @@
 Server:
+* Fix missing player entities in multiplayer
 
 Client:
 * Fix looping sounds for entites such elevators
@@ -22,6 +23,5 @@ Data export:
 * Replace '*' in texture names (in maps, wad) with something else, because '*' is not a valid symbol for file names. Also Quake-utilities recognize '/*' as comment start.
 
 Maps:
-* Fix missing textures (mostly water)
 * Fix invalid skies
 * Fix water brushes - mark side brushes with "nodraw" shader.
