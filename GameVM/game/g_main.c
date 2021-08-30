@@ -102,8 +102,7 @@ static cvarTable_t		gameCvarTable[] = {
 	{ &cl_rollspeed, "cl_rollspeed", "200", CVAR_SERVERINFO | CVAR_ARCHIVE, 0 },
 	{ &cl_rollangle, "cl_rollangle", "2.0", CVAR_SERVERINFO | CVAR_ARCHIVE, 0 },
 
-	// PANZER TODO - know exact version (trial/registered). Or maybe just say "funck you" to Bethesda and treat the game as registered only?
-	{ &g_registered, "registered", "1.0", CVAR_ARCHIVE, 0 },
+	{ &g_registered, "registered", "0", CVAR_SERVERINFO | CVAR_ROM, 0 },
 
 	{ &g_server_start_save_file, "g_server_start_save_file", "", CVAR_TEMP, 0 },
 };
@@ -384,6 +383,33 @@ void SV_SpawnServer()
 		sv.loadgame = qfalse;
 }
 
+static void G_CheckRegistered (void)
+{
+	fileHandle_t f;
+	char val[16];
+
+
+	f = 0;
+	trap_FS_FOpenFile( "gfx/pop.lmp", &f, FS_READ );
+	if( f == 0 )
+	{
+		g_registered.integer = 0;
+		g_registered.value = 0;
+		strcpy( g_registered.string, "0" );
+	}
+	else
+	{
+		trap_FS_FCloseFile(f);
+
+		g_registered.integer = 1;
+		g_registered.value = 1;
+		strcpy( g_registered.string, "1" );
+	}
+
+	G_Printf( "Detected %s version\n", g_registered.integer ? "registered" : "shareware" );
+	trap_Cvar_Set( "registered", g_registered.integer ? "1" : "0" );
+}
+
 /*
 ============
 G_InitGame
@@ -410,6 +436,7 @@ void G_InitGame( int levelTime, int randomSeed, int restart ) {
 	memset( svs.clients, 0, svs.maxclientslimit * sizeof(svs.clients[0]) );
 
 	G_RegisterCvars();
+	G_CheckRegistered();
 
 	PR_Init();
 
