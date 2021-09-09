@@ -11,8 +11,8 @@ Also such mod allows Quake mappers to build maps with advanced textures/effects/
 It's possible to use 32-bit textures, advanced textures animations and scrolling, transparency, alpha-test, colored lighting, fog, and a lot of other features and effects of Quake III engine.
 
 ## How may i get it?
-
-Now you can't do it so easily. Because of legal reasons i can't distribute a build of this mod via (for example) GitHub.
+Build based on shareware Quake resources is available on _releases_ page.
+But you can't get full version so easily. Because of legal reasons i can't distribute a build of this mod via (for example) GitHub.
 But later i may found a way to distribute it without getting blocked by Bethesda (current Quake resources copyright holder).
 So, check periodically for updates of this README.
 
