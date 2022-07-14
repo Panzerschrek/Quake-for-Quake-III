@@ -607,9 +607,7 @@ break()
 */
 void PF_break (void)
 {
-G_Printf ("break statement\n");
-*(int *)-4 = 0;	// dump to debugger
-//	PR_RunError ("break statement");
+	Com_Error(ERR_DROP, "break statement\n");
 }
 
 /*
